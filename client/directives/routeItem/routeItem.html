@@ -1,0 +1,29 @@
+<div ng-class="{ white: ctrl.useBlackText(route) }" ng-style="{ color: ctrl.useBlackText(route) ? '#000000' : ('#' + route.route_color) }">
+  <h2>
+    <img ng-show="route.route_display_short_name.elements[0]" class="{{ 'img' + ctrl.getImageSize(route) }}" ng-src="{{ ctrl.getImageUrl(route, 0) }}" /><!--
+ --><span>{{ route.route_display_short_name.elements[1] }}<i ng-bind="route.branch_code"></i></span><!--
+ --><img ng-show="route.route_display_short_name.elements[2]" class="{{ 'img' + ctrl.getImageSize(route) }}" ng-src="{{ ctrl.getImageUrl(route, 2) }}" />
+  </h2>
+
+  <div class="content" ng-repeat="dir in route.itineraries">
+    <div class="stop_name" style="background-image: url('{{ ctrl.getPinUrl(route) }}')">{{ dir.closest_stop.stop_name }}</div>
+    <div class="direction" ng-style="ctrl.getCellStyle(route)">
+      <h3 ng-bind="dir.merged_headsign"></h3>
+
+      <div class="time" ng-show="ctrl.hasShownDeparture(route, dir)">
+        <h4 ng-repeat="item in dir.schedule_items | filter: ctrl.shouldShowDeparture">
+          <span ng-bind="ctrl.getTime(item.departure_time) | amDifference : null : 'minutes'"></span>
+
+          <i ng-show="item.is_real_time" class="realtime"></i>
+          <small ng-class="{ last: item.is_last }">{{ (item.is_last ? 'last' : 'min') }}</small>
+        </h4><h4>
+          <span class="inactive">&nbsp;</span>
+        </h4><h4>
+          <span class="inactive">&nbsp;</span>
+        </h4><h4>
+          <span class="inactive">&nbsp;</span>
+        </h4>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,4 @@
+@@ -1,136 +1,10 @@
 # Logs
 logs
 *.log
@@ -89,6 +90,12 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
+.DS_Store
+node_modules
+public
+.tmp
+.idea
+client/bower_components
 dist
 
 # Gatsby files
@@ -134,3 +141,19 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+/server/config/local.env.js
+npm-debug.log
+configs.json
+No newline at end of file
+
+
+.DS_Store
+node_modules
+public
+.tmp
+.idea
+client/bower_components
+dist
+/server/config/local.env.js
+npm-debug.log
+configs.json

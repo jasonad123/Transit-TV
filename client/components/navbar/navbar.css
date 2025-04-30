@@ -1,0 +1,85 @@
+header {
+  color: #ffffff;
+  background-color: #30b566;
+}
+
+header table {
+  width: 100%;
+}
+
+
+#logo {
+  width: 33%;
+}
+
+#logo a {
+  display: block;
+  height: 2em;
+  width: 100%;
+
+  color: #ffffff;
+
+  line-height: 1.1em;
+  font-family: Helvetica, Arial, serif;
+  font-weight: lighter;
+  font-size: 2.0em;
+  text-decoration: none;
+
+  background: url('/assets/images/transit.svg') no-repeat center left;
+  background-size: auto 2em;
+  padding-left: 130px;
+}
+
+
+#title {
+  width: 33%;
+  margin: 0 auto;
+  border: none;
+  text-align: center;
+}
+
+#title h1 {
+  font-family: Helvetica, Arial, serif;
+  font-size: 2em;
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 1.4em;
+  margin-bottom: -0.1em;
+}
+
+.show-cog #title button,
+#title:hover button {
+  opacity: 1.0;
+}
+
+#title button {
+  padding: 0;
+  margin-top: 0.45em;
+  display: inline-block;
+  width: 1.6em;
+  height: 1.6em;
+  background: none;
+  background-image: url('/assets/images/settings@2x.png');
+  background-size: 1.6em auto;
+  outline: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .3s ease-in-out;
+  vertical-align: top;
+}
+
+#utilities {
+  width: 33%;
+  min-width: 20em;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.clock {
+  font-size: 1.8em;
+  font-family: Helvetica, Arial, serif;
+  line-height: 2em;
+  display: inline-block;
+  margin-left: 3em;
+  margin-right: 0.5em;
+}

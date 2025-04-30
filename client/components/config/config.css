@@ -1,0 +1,177 @@
+.config_panel {
+  max-height: 1000px;
+
+  position: absolute;
+  top: 100px;
+  bottom: 100px;
+  left: 50%;
+
+  -webkit-transform: perspective(1px) translate(-50%, 0);
+          transform: perspective(1px) translate(-50%, 0);
+
+  font-family: Helvetica, Arial, serif;
+  font-weight: lighter;
+
+  margin: 0;
+}
+
+.config_panel .modal-content {
+  height: 100%;
+}
+
+.config_panel .modal-body {
+  max-height: calc(100% - 130px);
+
+  overflow-y: auto;
+}
+
+.config_panel hr {
+  height: 1px;
+
+  background: rgba(0, 0, 0, 0.1);
+
+  margin: 40px 0 35px;
+}
+
+.form-group + div > hr {
+  margin-top: 25px;
+}
+
+.config_panel label {
+  display: block;
+
+  font-size: 1.2em;
+  font-family: Helvetica, Arial, serif;
+
+  margin: 5px 0;
+}
+
+.config_panel button.save {
+  color: #ffffff;
+  background-color: #30b566;
+}
+
+.config_panel .close {
+  width: 20px;
+  height: 20px;
+
+  position: absolute;
+  right: 10px;
+  top: 10px;
+
+  background: url('/assets/images/close@2x.png');
+  background-size: 20px auto;
+
+  opacity: 0.2;
+}
+
+.config_panel .close:hover {
+  opacity: 1.0
+}
+
+.hidden_routes,
+.list_options {
+  padding: 0;
+  margin: 0;
+  margin-bottom: 20px;
+
+  list-style: none;
+}
+
+.hidden_routes li:not(.empty) {
+  display: inline-block;
+
+  padding: 3px 5px 3px 10px;
+  font-size: 1.2em;
+  line-height: 1.42857143;
+
+  color: #555555;
+  background-color: #ffffff;
+  background-image: none;
+
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+
+  outline: 0;
+  margin: 0 5px 5px 0;
+}
+
+.unhide {
+  width: 15px;
+  height: 15px;
+
+  background: url('/assets/images/close@2x.png');
+  background-size: 12px auto;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  opacity: 0.5;
+}
+
+.unhide:hover {
+  opacity: 1.0;
+}
+
+.map_layers li:not(.empty) {
+  font-size: 1.2em;
+  line-height: 1.42857143;
+
+  vertical-align: middle;
+}
+
+.toggle {
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+  background: #ffffff;
+
+  border: 1px solid #cccccc;
+  padding: 0;
+
+  vertical-align: middle;
+
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.toggle:after {
+  display: block;
+  content: '';
+
+  border-radius: 50%;
+
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  bottom: 5px;
+  right: 5px;
+}
+
+.toggle:hover {
+  border-color: #30b566;
+}
+
+.toggle:hover:after,
+.toggle.active:after {
+  background: #30b566;
+}
+
+.empty {
+  color: #959595;
+}
+
+.empty + input {
+  margin-top: 10px;
+}
+
+.copy_url {
+  display: block;
+
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.pac-container {
+  z-index: 1500;
+}
