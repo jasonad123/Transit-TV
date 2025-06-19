@@ -51,6 +51,7 @@ cp .env.docker.example .env.docker
 ## Local testing/deployment
 
 1. Follow the **getting started** steps
+
 This includes getting an API key from Transit and setting up the `.env` file.
 
 2. Test locally
