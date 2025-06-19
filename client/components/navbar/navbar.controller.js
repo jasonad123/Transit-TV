@@ -2,9 +2,9 @@
 
 angular
   .module('transitScreenApp')
-  .controller('NavbarCtrl', NavbarCtrl);
+  .controller('NavbarCtrl', ['$interval', '$scope', 'ScreenConfig', NavbarCtrl]);
 
-function NavbarCtrl($interval, ScreenConfig) {
+function NavbarCtrl($interval, $scope, ScreenConfig) {
   var vm = this;
 
   angular.extend(vm, {
@@ -14,9 +14,17 @@ function NavbarCtrl($interval, ScreenConfig) {
     currentTime: Date.now(),
   });
 
-  $interval(function() {
+  // Update time every second
+  var timeInterval = $interval(function() {
     vm.currentTime = Date.now();
   }, 1000);
+
+  // Clean up interval when scope is destroyed to prevent memory leaks
+  $scope.$on('$destroy', function() {
+    if (timeInterval) {
+      $interval.cancel(timeInterval);
+    }
+  });
 
   function editConfig() {
     ScreenConfig.isEditing = !ScreenConfig.isEditing;

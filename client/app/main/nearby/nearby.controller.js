@@ -2,9 +2,9 @@
 
 angular
   .module('transitScreenApp')
-  .controller('NearbyCtrl', NearbyCtrl);
+  .controller('NearbyCtrl', ['$rootScope', '$interval', '$scope', 'ScreenConfig', 'Nearby', NearbyCtrl]);
 
-function NearbyCtrl($rootScope, $interval, ScreenConfig, Nearby) {
+function NearbyCtrl($rootScope, $interval, $scope, ScreenConfig, Nearby) {
   var vm = this;
 
   angular.extend(vm, {
@@ -18,9 +18,17 @@ function NearbyCtrl($rootScope, $interval, ScreenConfig, Nearby) {
     onChangeOrder: onChangeOrder
   });
 
-  $interval(function () {
+  // Refresh data every 20 seconds
+  var refreshInterval = $interval(function () {
     loadNearby();
   }, 20000);
+  
+  // Clean up interval when scope is destroyed to prevent memory leaks
+  $scope.$on('$destroy', function() {
+    if (refreshInterval) {
+      $interval.cancel(refreshInterval);
+    }
+  });
 
   loadNearby();
 
@@ -58,6 +66,8 @@ function NearbyCtrl($rootScope, $interval, ScreenConfig, Nearby) {
       }
 
       vm.routes = routes;
+    }).catch(function(error) {
+      console.error('Error loading nearby routes:', error);
     });
   }
 
