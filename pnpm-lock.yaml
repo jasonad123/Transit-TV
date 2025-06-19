@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.30
         version: 1.0.30(angular@1.8.3)
       body-parser:
-        specifier: ~1.5.2
-        version: 1.5.2
+        specifier: ~1.20.2
+        version: 1.20.3
       bootstrap:
         specifier: ^3.4.1
         version: 3.4.1
@@ -74,9 +74,9 @@ importers:
       jquery:
         specifier: ^3.7.1
         version: 3.7.1
-      jquery-ui:
-        specifier: ^1.13.2
-        version: 1.14.1
+      jquery-ui-dist:
+        specifier: ^1.13.3
+        version: 1.13.3
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -584,10 +584,6 @@ packages:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
-  body-parser@1.5.2:
-    resolution: {integrity: sha512-e4V5PN/KJTx381nRvKBSFaoRxS/6IImUMy6kouZPHPKan8RZoDPFE+GeT8RdtbUFNIyhNUW2C4vj4lLbVZiodA==}
-    engines: {node: '>= 0.8'}
-
   body@5.1.0:
     resolution: {integrity: sha512-chUsBxGRtuElD6fmw1gHLpvnKdVLK302peeFa9ZqAEk8TyzZ3fygLyUEDDPTJvL9+Bor0dIwn6ePOsRM2y0zQQ==}
 
@@ -928,10 +924,6 @@ packages:
   delayed-stream@1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
-
-  depd@0.4.4:
-    resolution: {integrity: sha512-NoEUYrSLv7re4u8OtA4yp3ktNC0HaB4dDGPg89TO+suwiVYoBMG8MeSPVpq8RNX9llVyrhknE/pGccsfRMxbhA==}
-    engines: {node: '>= 0.8.0'}
 
   depd@2.0.0:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
@@ -1622,10 +1614,6 @@ packages:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
     engines: {node: '>=0.10.0'}
 
-  iconv-lite@0.4.4:
-    resolution: {integrity: sha512-BnjNp13aZpK4WBGbmjaNHN2MCp3P850n8zd/JLinQJ8Lsnq2Br4o2467C2waMsY5kr7Z41SL1gEqh8Vbfzg15A==}
-    engines: {node: '>=0.8.0'}
-
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
@@ -1844,8 +1832,8 @@ packages:
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
 
-  jquery-ui@1.14.1:
-    resolution: {integrity: sha512-DhzsYH8VeIvOaxwi+B/2BCsFFT5EGjShdzOcm5DssWjtcpGWIMsn66rJciDA6jBruzNiLf1q0KvwMoX1uGNvnQ==}
+  jquery-ui-dist@1.13.3:
+    resolution: {integrity: sha512-qeTR3SOSQ0jgxaNXSFU6+JtxdzNUSJKgp8LCzVrVKntM25+2YBJW1Ea8B2AwjmmSHfPLy2dSlZxJQN06OfVFhg==}
 
   jquery@3.7.1:
     resolution: {integrity: sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==}
@@ -2014,10 +2002,6 @@ packages:
     resolution: {integrity: sha512-wcahMInmGtg/7c6a75fr21Ch/Ks1Tb+Jtoan5Ft4bAI0ZvJqyOw8kkM7e7p8hDSzY805vmxwHT50KcjGwKyJ0g==}
     engines: {node: '>=10'}
 
-  media-typer@0.2.0:
-    resolution: {integrity: sha512-TSggxYk75oP4tae7JkT8InpcFGUP4340zg1dOWjcu9qcphaDKtXEuNUv3OD4vJ+gVTvIDK797W0uYeNm8qqsDg==}
-    engines: {node: '>= 0.8.0'}
-
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
@@ -2051,10 +2035,6 @@ packages:
   mime-db@1.54.0:
     resolution: {integrity: sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ==}
     engines: {node: '>= 0.6'}
-
-  mime-types@1.0.2:
-    resolution: {integrity: sha512-echfutj/t5SoTL4WZpqjA1DCud1XO0WQF3/GJ48YBmc4ZMhCK77QA6Z/w6VTQERLKuJ4drze3kw2TUT8xZXVNw==}
-    engines: {node: '>= 0.8.0'}
 
   mime-types@2.1.35:
     resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
@@ -2426,9 +2406,6 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
-  qs@0.6.6:
-    resolution: {integrity: sha512-kN+yNdAf29Jgp+AYHUmC7X4QdJPR8czuMWLNLc0aRxkQ7tB3vJQEONKKT9ou/rW7EbqVec11srC9q9BiVbcnHA==}
-
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
     engines: {node: '>=0.6'}
@@ -2443,10 +2420,6 @@ packages:
 
   raw-body@1.1.7:
     resolution: {integrity: sha512-WmJJU2e9Y6M5UzTOkHaM7xJGAPQD8PNzx3bAd2+uhZAim6wDk6dAZxPVYLF67XhbR4hmKGh33Lpmh4XWrCH5Mg==}
-    engines: {node: '>= 0.8.0'}
-
-  raw-body@1.3.0:
-    resolution: {integrity: sha512-iuI1bOSi9tEmVCrXq02ZysXatTrhAu+fSo7XOQHhMo4g87dSy9YB2W/9Udwhz0bPpFk4UcoLhjrHgpPbRD3ktA==}
     engines: {node: '>= 0.8.0'}
 
   raw-body@2.5.2:
@@ -2873,10 +2846,6 @@ packages:
 
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
-
-  type-is@1.3.2:
-    resolution: {integrity: sha512-sdIhnvhWEyIP2DKjj1o9tL31m8vFxDfLPD56KXz2absqY5AF2QYkJC7Wrw2fkzsZA9mv+PCtgyB7EqYOgR+r3Q==}
-    engines: {node: '>= 0.8'}
 
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
@@ -3533,16 +3502,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  body-parser@1.5.2:
-    dependencies:
-      bytes: 1.0.0
-      depd: 0.4.4
-      iconv-lite: 0.4.4
-      media-typer: 0.2.0
-      qs: 0.6.6
-      raw-body: 1.3.0
-      type-is: 1.3.2
-
   body@5.1.0:
     dependencies:
       continuable-cache: 0.3.1
@@ -3929,8 +3888,6 @@ snapshots:
       isobject: 3.0.1
 
   delayed-stream@1.0.0: {}
-
-  depd@0.4.4: {}
 
   depd@2.0.0: {}
 
@@ -4834,8 +4791,6 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  iconv-lite@0.4.4: {}
-
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
@@ -5005,7 +4960,7 @@ snapshots:
 
   jose@4.15.9: {}
 
-  jquery-ui@1.14.1:
+  jquery-ui-dist@1.13.3:
     dependencies:
       jquery: 3.7.1
 
@@ -5204,8 +5159,6 @@ snapshots:
       gzip-size: 5.1.1
       pretty-bytes: 5.6.0
 
-  media-typer@0.2.0: {}
-
   media-typer@0.3.0: {}
 
   merge-descriptors@1.0.3: {}
@@ -5244,8 +5197,6 @@ snapshots:
   mime-db@1.52.0: {}
 
   mime-db@1.54.0: {}
-
-  mime-types@1.0.2: {}
 
   mime-types@2.1.35:
     dependencies:
@@ -5625,8 +5576,6 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  qs@0.6.6: {}
-
   qs@6.13.0:
     dependencies:
       side-channel: 1.1.0
@@ -5639,11 +5588,6 @@ snapshots:
     dependencies:
       bytes: 1.0.0
       string_decoder: 0.10.31
-
-  raw-body@1.3.0:
-    dependencies:
-      bytes: 1.0.0
-      iconv-lite: 0.4.4
 
   raw-body@2.5.2:
     dependencies:
@@ -6138,11 +6082,6 @@ snapshots:
       safe-buffer: 5.2.1
 
   tweetnacl@0.14.5: {}
-
-  type-is@1.3.2:
-    dependencies:
-      media-typer: 0.2.0
-      mime-types: 1.0.2
 
   type-is@1.6.18:
     dependencies:
