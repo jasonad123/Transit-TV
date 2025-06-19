@@ -50,6 +50,9 @@ importers:
       cookie-parser:
         specifier: ~1.4.7
         version: 1.4.7
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       ejs:
         specifier: ~3.1.10
         version: 3.1.10
@@ -68,6 +71,9 @@ importers:
       firebase-admin:
         specifier: ~13.4.0
         version: 13.4.0
+      helmet:
+        specifier: ^7.1.0
+        version: 7.2.0
       jquery:
         specifier: ^3.7.1
         version: 3.7.1
@@ -75,7 +81,7 @@ importers:
         specifier: ^1.13.3
         version: 1.13.3
       lodash:
-        specifier: ^4.17.21
+        specifier: '>=4.17.21'
         version: 4.17.21
       method-override:
         specifier: ~1.0.2
@@ -1558,6 +1564,10 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  helmet@7.2.0:
+    resolution: {integrity: sha512-ZRiwvN089JfMXokizgqEPXsl2Guk094yExfoDXR0cBYWxtBbaSww/w+vT4WEJsBW2iTUi1GgZ6swmoug3Oy4Xw==}
+    engines: {node: '>=16.0.0'}
 
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
@@ -4703,6 +4713,8 @@ snapshots:
       function-bind: 1.1.2
 
   he@1.2.0: {}
+
+  helmet@7.2.0: {}
 
   homedir-polyfill@1.0.3:
     dependencies:

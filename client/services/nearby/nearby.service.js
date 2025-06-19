@@ -2,7 +2,7 @@
 
 angular
   .module('transitScreenApp')
-  .factory('Nearby', Nearby);
+  .factory('Nearby', ['$http', '$q', Nearby]);
 
 function Nearby($http, $q) {
   var vm = this;
@@ -37,13 +37,25 @@ function Nearby($http, $q) {
   }
 
   function hasShownDeparture(route, itinerary) {
+    if (!route) {
+      return false;
+    }
+    
     if (itinerary) {
+      if (!itinerary.schedule_items || !itinerary.schedule_items.length) {
+        return false;
+      }
+      
       for (var j = 0; j < itinerary.schedule_items.length; j++) {
         if (shouldShowDeparture(itinerary.schedule_items[j].departure_time)) {
           return true;
         }
       }
     } else {
+      if (!route.itineraries || !route.itineraries.length) {
+        return false;
+      }
+      
       for (var i = 0; i < route.itineraries.length; i++) {
         if (hasShownDeparture(route, route.itineraries[i])) {
           return true;
@@ -68,8 +80,6 @@ function Nearby($http, $q) {
       if (ids.indexOf(route.global_route_id + '') === -1) {
         result.push(route);
         ids.push(route.global_route_id + '');
-      } else {
-        console.log(route);
       }
     });
 

@@ -2,7 +2,7 @@
 
 angular
   .module('transitScreenApp')
-  .config(MainRoutes);
+  .config(['$stateProvider', MainRoutes]);
 
 function MainRoutes($stateProvider) {
   $stateProvider
@@ -19,10 +19,5 @@ function MainRoutes($stateProvider) {
   loadConfig.$inject = ['ScreenConfig'];
   function loadConfig(ScreenConfig) {
     return ScreenConfig.load();
-  }
-
-  updateLocale.$inject = ['$stateParams', '$translate'];
-  function updateLocale($stateParams, $translate) {
-    $translate.use($stateParams.locale);
   }
 }

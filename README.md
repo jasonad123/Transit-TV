@@ -112,18 +112,20 @@ When running with Docker, you can configure the application using environment va
 ```
 .
 ├── client/
-│   ├── app/
-│   ├── components/
-│   ├── directives/
-│   └── services/
+│   ├── app/              # Main application code
+│   ├── components/       # Reusable UI components
+│   ├── directives/       # Angular directives
+│   ├── services/         # Angular services
+│   └── assets/           # Static assets (images, i18n)
 ├── server/
-│   ├── api/
-│   ├── config/
-│   └── components/
-├── .env.example
-├── .env.docker
-├── compose.yml
-└── Dockerfile
+│   ├── api/              # API endpoints
+│   ├── config/           # Server configuration
+│   └── components/       # Server components
+├── .env.example          # Example environment variables
+├── .env.docker           # Docker environment variables
+├── .eslintrc.js          # ESLint configuration
+├── compose.yml           # Docker Compose configuration
+└── Dockerfile            # Docker build configuration
 ```
 
 ## Architecture

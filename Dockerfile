@@ -43,4 +43,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Start the app
-CMD ["node", "server/app.js"]
+CMD ["node", "-r", "dotenv/config", "server/app.js"]
