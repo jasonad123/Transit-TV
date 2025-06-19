@@ -45,6 +45,7 @@
 }
 
 .route h3 {
+  font-family: Poppins, Helvetica, Arial, serif;
   font-size: 2em;
   padding: 0.4em 0.35em 0.3em 0.35em;
   border-bottom: 1px solid rgba(255, 255, 255, .2);
@@ -72,7 +73,7 @@
 .route small {
   color: inherit;
 
-  font-family: Helvetica, Arial, serif;
+  font-family: Poppins, Helvetica, Arial, serif;
   font-weight: lighter;
   font-size: 0.4em;
   line-height: 0.4em;

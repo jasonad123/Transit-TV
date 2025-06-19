@@ -1,6 +1,6 @@
 header {
   color: #ffffff;
-  background-color: #30b566;
+  background-color: #1c335f;
 }
 
 header table {
@@ -9,7 +9,7 @@ header table {
 
 
 #logo {
-  width: 33%;
+  width: 25%;
 }
 
 #logo a {
@@ -27,8 +27,31 @@ header table {
 
   background: url('/assets/images/transit.svg') no-repeat center left;
   background-size: auto 2em;
-  padding-left: 130px;
+  padding-left: 10px;
 }
+
+#logo-1 {
+  width: 10%;
+}
+
+#logo-1 a {
+  display: block;
+  height: 2em;
+  width: 100%;
+
+  color: #ffffff;
+
+  line-height: 1.1em;
+  font-family: Helvetica, Arial, serif;
+  font-weight: lighter;
+  font-size: 2.0em;
+  text-decoration: none;
+
+  background: url('/assets/images/word-logo-blue.svg') no-repeat center left;
+  background-size: auto 2em;
+  padding-left: 125px;
+}
+
 
 
 #title {
@@ -39,7 +62,7 @@ header table {
 }
 
 #title h1 {
-  font-family: Helvetica, Arial, serif;
+  font-family: Poppins, Helvetica, Arial, serif;
   font-size: 2em;
   vertical-align: middle;
   display: inline-block;
@@ -77,7 +100,7 @@ header table {
 
 .clock {
   font-size: 1.8em;
-  font-family: Helvetica, Arial, serif;
+  font-family: Poppins, Helvetica, Arial, serif;
   line-height: 2em;
   display: inline-block;
   margin-left: 3em;
