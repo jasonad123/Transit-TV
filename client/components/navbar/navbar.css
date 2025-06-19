@@ -1,85 +1,139 @@
 header {
-  color: #ffffff;
-  background-color: #30b566;
+ color: #ffffff;
+ background-color: #30b566;
+ position: relative; /* Add relative positioning for absolute child */
 }
-
 header table {
-  width: 100%;
+ width: 100%;
 }
-
-
 #logo {
-  width: 33%;
+ width: 33%;
+ min-width: 200px; /* Prevent it from getting too small */
 }
-
 #logo a {
-  display: block;
-  height: 2em;
-  width: 100%;
-
-  color: #ffffff;
-
-  line-height: 1.1em;
-  font-family: Helvetica, Arial, serif;
-  font-weight: lighter;
-  font-size: 2.0em;
-  text-decoration: none;
-
-  background: url('/assets/images/transit.svg') no-repeat center left;
-  background-size: auto 2em;
-  padding-left: 130px;
+ display: block;
+ height: 2em;
+ width: 100%;
+ color: #ffffff;
+ line-height: 1.1em;
+ font-family: Helvetica, Arial, serif;
+ font-weight: lighter;
+ font-size: 2.0em;
+ text-decoration: none;
+ background: url('/assets/images/transit.svg') no-repeat center left;
+ background-size: auto 2em;
+ padding-left: 130px;
+ min-width: 200px; /* Ensure enough space for image + text */
 }
-
-
 #title {
-  width: 33%;
-  margin: 0 auto;
-  border: none;
-  text-align: center;
+ position: absolute; /* Absolute positioning */
+ left: 50%; /* Move left edge to center */
+ transform: translateX(-50%); /* Center the element itself */
+ top: 0; /* Align with top of header */
+ height: 100%; /* Match header height */
+ display: flex; /* Use flexbox for vertical centering */
+ align-items: center; /* Vertically center content */
+ border: none;
+ text-align: center;
+ max-width: calc(100% - 260px); /* Prevent overlap with logo and utilities */
+ min-width: 150px; /* Ensure minimum readable width */
 }
-
 #title h1 {
-  font-family: Helvetica, Arial, serif;
-  font-size: 2em;
-  vertical-align: middle;
-  display: inline-block;
-  line-height: 1.4em;
-  margin-bottom: -0.1em;
+ font-family: Helvetica, Arial, serif;
+ font-size: 2em;
+ vertical-align: middle;
+ display: inline-block;
+ line-height: 1.4em;
+ margin-bottom: -0.1em;
+ white-space: nowrap; /* Prevent text wrapping */
+ overflow: hidden; /* Hide overflow */
+ text-overflow: ellipsis; /* Add ellipsis for long text */
 }
-
 .show-cog #title button,
 #title:hover button {
-  opacity: 1.0;
+ opacity: 1.0;
 }
-
 #title button {
-  padding: 0;
-  margin-top: 0.45em;
-  display: inline-block;
-  width: 1.6em;
-  height: 1.6em;
-  background: none;
-  background-image: url('/assets/images/settings@2x.png');
-  background-size: 1.6em auto;
-  outline: none;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity .3s ease-in-out;
-  vertical-align: top;
+ padding: 0;
+ margin-top: 0.45em;
+ display: inline-block;
+ width: 1.6em;
+ height: 1.6em;
+ background: none;
+ background-image: url('/assets/images/settings@2x.png');
+ background-size: 1.6em auto;
+ outline: none;
+ cursor: pointer;
+ opacity: 0;
+ transition: opacity .3s ease-in-out;
+ vertical-align: top;
 }
-
 #utilities {
-  width: 33%;
-  min-width: 20em;
-  text-align: right;
-  vertical-align: middle;
+ width: 33%;
+ min-width: 20em;
+ text-align: right;
+ vertical-align: middle;
+}
+.clock {
+ font-size: 1.8em;
+ font-family: Helvetica, Arial, serif;
+ line-height: 2em;
+ display: inline-block;
+ margin-left: 3em;
+ margin-right: 0.5em;
 }
 
-.clock {
-  font-size: 1.8em;
-  font-family: Helvetica, Arial, serif;
-  line-height: 2em;
-  display: inline-block;
-  margin-left: 3em;
-  margin-right: 0.5em;
+/* Media query for narrow screens */
+@media (max-width: 768px) {
+ #title h1 {
+  font-size: 1.7em; /* Slightly smaller font */
+ }
+ #title {
+  max-width: calc(100% - 240px); /* Adjust for smaller screens */
+ }
+ #logo {
+  min-width: 180px; /* Reduce minimum width slightly */
+ }
+ #logo a {
+  min-width: 180px;
+ }
+}
+
+@media (max-width: 600px) {
+ #title h1 {
+  font-size: 1.5em; /* Reduce font size on narrow screens */
+ }
+ #title {
+  max-width: calc(100% - 220px);
+ }
+ #logo {
+  min-width: 160px;
+ }
+ #logo a {
+  min-width: 160px;
+  padding-left: 100px; /* Reduce padding to save space */
+ }
+ .clock {
+  margin-left: 2em; /* Reduce clock margin */
+ }
+}
+
+@media (max-width: 480px) {
+ #title h1 {
+  font-size: 1.3em; /* Even smaller font for very narrow screens */
+ }
+ #title {
+  max-width: calc(100% - 200px);
+ }
+ #logo {
+  min-width: 140px;
+ }
+ #logo a {
+  min-width: 140px;
+  padding-left: 80px; /* Further reduce padding */
+ }
+ .clock {
+  margin-left: 1em;
+  font-size: 1.6em; /* Slightly smaller clock */
+ }
 }
