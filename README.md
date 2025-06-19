@@ -15,21 +15,23 @@ A real-time transit display application that shows arrival times for nearby publ
 
 ## Prerequisites
 
-- An API key from Transit - [keys can be requested here](https://transitapp.com/apis)[^1]
+- An API key from Transit - [keys can be requested here](https://transitapp.com/apis)
+  - Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough.
 - Node.js (version specified in .node-version)
 - pnpm (preferred package manager)
 - Docker (optional, for containerized deployment)
 
-[^1]: Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough.
-
 ## Getting started
 1. Request API access
+
 Go the the [Transit API page](https://transitapp.com/apis) and request access to the an API key. Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough. When you have the API key, you can place it in your environment file. 
 
 > `.env` for local development using `pnpm`
+
 > `.env.docker` for deployment using docker
 
 2. Create your `.env` files
+
 Depending on if you're deploying using `pnpm` or if you're using Docker, create your `.env` file from an example.
 
 For testing/deployment with `pnpm`:
@@ -76,14 +78,14 @@ This includes getting an API key from Transit and setting up the `.env.docker` f
 
 Using Docker Compose (recommended)
 
-* Configure your environment variables:
+**Configure your environment variables:**
    
    ```bash
    # Review and edit .env.docker file with your API key
    nano .env.docker
    ```
 
-* Create/review the Docker Compose file at `compose.yml`
+**Create/review the Docker Compose file at `compose.yml`**
 
    ```yaml
     services:
@@ -116,7 +118,8 @@ Using Docker Compose (recommended)
     transit-network:
       driver: bridge
    ```
-* Run with Docker Compose:
+
+**Run with Docker Compose:**
 
    ```bash
    # Start the application
@@ -130,7 +133,6 @@ Using Docker Compose (recommended)
    ```
 
 The application will be available at http://localhost:8080
-
 
 Using Docker run:
 
