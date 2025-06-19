@@ -2,24 +2,32 @@
 
 angular
   .module('transitScreenApp')
-  .factory('ScreenConfig', ScreenConfig);
+  .factory('ScreenConfig', ['$rootScope', '$state', '$http', '$q', '$cookies', ScreenConfig]);
 
 function ScreenConfig($rootScope, $state, $http, $q, $cookies) {
   var vm = this,
     _deferred = null
 
   Object.defineProperty(vm, 'latLngStr', {
-    get: function() { return vm.latLng.latitude + ', ' + vm.latLng.longitude; },
+    get: function() { 
+      return vm.latLng.latitude + ', ' + vm.latLng.longitude; 
+    },
     set: function(val) {
       if (val) {
         var latLngArr = val.split(',');
-        vm.latLng = {
-          latitude: parseFloat(latLngArr[0].trim()),
-          longitude: parseFloat(latLngArr[1].trim())
-        };
+        if (latLngArr.length === 2) {
+          var lat = parseFloat(latLngArr[0].trim());
+          var lng = parseFloat(latLngArr[1].trim());
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            vm.latLng = {
+              latitude: lat,
+              longitude: lng
+            };
+            $rootScope.$emit('locationChanged');
+          }
+        }
       }
-
-      $rootScope.$emit('locationChanged');
     }
   });
 
@@ -50,14 +58,20 @@ function ScreenConfig($rootScope, $state, $http, $q, $cookies) {
 
       var loadedConfig = $cookies.get('config');
       if (loadedConfig) {
-        angular.extend(vm, JSON.parse(loadedConfig));
-        vm.isEditing = false;
+        try {
+          var parsedConfig = JSON.parse(loadedConfig);
+          angular.extend(vm, parsedConfig);
+          vm.isEditing = false;
+        } catch (e) {
+          console.error('Error parsing saved config:', e);
+          // Continue with default config
+        }
       }
 
       _deferred.resolve(vm);
     }
 
-		return _deferred.promise;
+    return _deferred.promise;
   }
 
   function save() {
@@ -67,8 +81,13 @@ function ScreenConfig($rootScope, $state, $http, $q, $cookies) {
     angular.extend(config, vm);
     delete config.isEditing;
 
-    $cookies.put('config', JSON.stringify(config));
-    deferred.resolve(true);
+    try {
+      $cookies.put('config', JSON.stringify(config));
+      deferred.resolve(true);
+    } catch (e) {
+      console.error('Error saving config:', e);
+      deferred.reject(e);
+    }
 
     return deferred.promise;
   }

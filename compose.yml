@@ -11,7 +11,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      LOG_LEVEL: "info"  # Example of an additional environment variable
+      NODE_ENV: "production"
+      # These environment variables will override those in .env.docker if set
+      # LOG_LEVEL: "info"
     volumes:
       # Persist any data that needs to be saved between container restarts
       - ./logs:/app/logs
@@ -23,6 +25,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
 networks:
   transit-network:

@@ -2,7 +2,7 @@
 
 angular
   .module('transitScreenApp')
-  .controller('ConfigCtrl', ConfigCtrl);
+  .controller('ConfigCtrl', ['$rootScope', '$state', '$translate', 'ScreenConfig', ConfigCtrl]);
 
 function ConfigCtrl($rootScope, $state, $translate, ScreenConfig) {
   var vm = this;

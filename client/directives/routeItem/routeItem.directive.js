@@ -19,6 +19,7 @@ function RouteItem() {
   return directive;
 }
 
+RouteItemCtrl.$inject = ['Nearby'];
 function RouteItemCtrl(Nearby) {
   var vm = this;
 
@@ -47,7 +48,7 @@ function RouteItemCtrl(Nearby) {
   }
 
   function getImageSize(route) {
-    if (route.route_display_short_name) {
+    if (route && route.route_display_short_name && route.route_display_short_name.elements) {
       return route.route_display_short_name.elements[1] ? 28 : 34;
     }
 
@@ -55,7 +56,8 @@ function RouteItemCtrl(Nearby) {
   }
 
   function getImageUrl(route, index) {
-    if (route.route_display_short_name && route.route_display_short_name.elements[index]) {
+    if (route && route.route_display_short_name && route.route_display_short_name.elements && 
+        route.route_display_short_name.elements[index]) {
       var hex = useBlackText(route) ? '000000' : route.route_color;
       return '/api/images/' + route.route_display_short_name.elements[index] + '.svg?primaryColor=' + hex;
     }
