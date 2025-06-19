@@ -22,68 +22,101 @@ A real-time transit display application that shows arrival times for nearby publ
 
 [^1]: Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough.
 
-## Development Setup
+## Getting started
+1. Request API access
+Go the the [Transit API page](https://transitapp.com/apis) and request access to the an API key. Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough. When you have the API key, you can place it in your environment file. 
 
-### Installation
+> `.env` for local development using `pnpm`
+> `.env.docker` for deployment using docker
+
+2. Create your `.env` files
+Depending on if you're deploying using `pnpm` or if you're using Docker, create your `.env` file from an example.
+
+For testing/deployment with `pnpm`:
+
+```bash
+# create .env for local deployment with pnpm
+cp .env.example .env
+```
+
+For testing/deployment with Docker:
+
+```bash
+# create .env for local deployment with docker
+cp .env.docker.example .env.docker
+```
+
+## Local testing/deployment
+
+1. Follow the **getting started** steps
+This includes getting an API key from Transit and setting up the `.env` file.
+
+2. Test locally
+
+Assuming you have `node` and `pnpm` installed (we recommend using `nodenv` to follow the `.node-version` file):
 
 ```bash
 # Install dependencies
 pnpm i
-```
-
-### Configuration
-
-1. Create an `.env` file from the example:
-
-```bash
-cp .env.example .env
-```
-
-2. Edit the `.env` file and add your Transit API key.
-
-### Running Locally
-
-```bash
-# Start the development server
-pnpm dev
-```
-
-The application will be available at http://localhost:7753
-
-### Building for Production
-
-```bash
 pnpm build
+pnpm start
 ```
 The application will be available at http://localhost:8080
 
-## Docker Deployment
+3. Deploy somewhere!
 
-### Using Docker
+If all looks good, you should be ready to deploy somewhere if you want to use it for a longer amount of time.
 
-Build and run the application using Docker:
+## Deployment with Docker
 
-```bash
-# Build the Docker image
-docker build -t transit-tv .
+1. Follow the **getting started** steps
+This includes getting an API key from Transit and setting up the `.env.docker` file.
 
-# Run the container
-docker run -p 8080:8080 -e TRANSIT_API_KEY=your_api_key_here transit-tv
-```
-The application will be available at http://localhost:8080
+2. Deploy in Docker
 
-### Using Docker Compose
+Using Docker Compose (recommended)
 
-For a more comprehensive deployment with Docker Compose:
-
-1. Configure your environment variables:
+* Configure your environment variables:
    
    ```bash
    # Review and edit .env.docker file with your API key
    nano .env.docker
    ```
 
-2. Run with Docker Compose:
+* Create/review the Docker Compose file at `compose.yml`
+
+   ```yaml
+    services:
+      transit-tv:
+        env_file:
+          - .env.docker
+        build:
+          context: .
+          dockerfile: Dockerfile
+        image: transit-tv
+        container_name: transit-tv
+        restart: unless-stopped
+        ports:
+          - "8080:8080" # Default port for the application is 8080, change the left side if needed
+      environment:
+        LOG_LEVEL: "info"  # Example of an additional environment variable
+      volumes:
+        # Persist any data that needs to be saved between container restarts
+        - ./logs:/app/logs # change this to your desired log directory
+      networks:
+        - transit-network
+      healthcheck:
+        test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 10s
+
+  networks:
+    transit-network:
+      driver: bridge
+   ```
+* Run with Docker Compose:
 
    ```bash
    # Start the application
@@ -95,6 +128,19 @@ For a more comprehensive deployment with Docker Compose:
    # Stop the application
    docker compose down
    ```
+
+The application will be available at http://localhost:8080
+
+
+Using Docker run:
+
+```bash
+# Build the Docker image
+docker build -t transit-tv .
+
+# Run the container
+docker run -p 8080:8080 -e TRANSIT_API_KEY=your_api_key_here transit-tv
+```
 
 The application will be available at http://localhost:8080
 

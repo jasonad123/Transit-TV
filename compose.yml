@@ -1,5 +1,5 @@
 services:
-  app:
+  transit-tv:
     env_file:
       - .env.docker
     build:
@@ -9,12 +9,12 @@ services:
     container_name: transit-tv
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8080:8080" # Default port for the application is 8080, change the left side if needed
     environment:
       LOG_LEVEL: "info"  # Example of an additional environment variable
     volumes:
       # Persist any data that needs to be saved between container restarts
-      - ./logs:/app/logs
+      - ./logs:/app/logs # change this to your desired log directory
     networks:
       - transit-network
     healthcheck:
