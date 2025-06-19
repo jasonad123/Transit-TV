@@ -146,7 +146,7 @@ module.exports = function (grunt) {
     // Add vendor prefixed styles
     autoprefixer: {
       options: {
-        browsers: ['last 1 version']
+        browsers: ['last 2 versions', 'not ie <= 11']
       },
 
       dist: {
@@ -287,13 +287,6 @@ module.exports = function (grunt) {
             cwd: 'node_modules/angular-moment',
             src: ['angular-moment.js', 'angular-moment.min.js'],
             dest: '<%= yeoman.client %>/vendor/angular-moment'
-          },
-          // ES5 shim
-          {
-            expand: true,
-            cwd: 'node_modules/es5-shim',
-            src: ['es5-shim.js', 'es5-shim.min.js'],
-            dest: '<%= yeoman.client %>/vendor/es5-shim'
           }
         ]
       },
@@ -401,7 +394,10 @@ module.exports = function (grunt) {
           removeEmptyAttributes: true,
           removeRedundantAttributes: true,
           removeScriptTypeAttributes: true,
-          removeStyleLinkTypeAttributes: true
+          removeStyleLinkTypeAttributes: true,
+          removeComments: true,
+          minifyJS: true,
+          minifyCSS: true
         },
         usemin: 'app/app.js'
       },

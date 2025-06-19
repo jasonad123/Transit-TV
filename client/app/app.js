@@ -20,7 +20,7 @@ function configUiRouter($urlRouterProvider, $locationProvider) {
   $urlRouterProvider.when('', initMain);
   $urlRouterProvider.otherwise('');
 
-  $locationProvider.html5Mode(false);
+  $locationProvider.html5Mode(true);
   $locationProvider.hashPrefix('');
 }
 

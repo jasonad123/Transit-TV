@@ -1,12 +1,7 @@
 <!doctype html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html class="no-js">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
     <base href="/">
 
     <title></title>
@@ -30,9 +25,6 @@
     <!-- endbuild -->
   </head>
   <body ng-app="transitScreenApp" on-move-add-class="show-cog" on-move-timeout="3000" ensure-even-dimensions>
-    <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
 
     <!-- Add your site or application content here -->
     <div ui-view=""></div>
@@ -41,9 +33,6 @@
       window.dataLayer = window.dataLayer || [];
     </script>
 
-    <!--[if lt IE 9]>
-      <script src="vendor/es5-shim/es5-shim.js"></script>
-    <![endif]-->
 
     <!-- build:js({client,node_modules}) app/vendor.js -->
       <script src="/node_modules/jquery/dist/jquery.js"></script>

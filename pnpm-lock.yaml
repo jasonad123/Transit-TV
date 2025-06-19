@@ -56,9 +56,6 @@ importers:
       errorhandler:
         specifier: ~1.5.1
         version: 1.5.1
-      es5-shim:
-        specifier: ~4.6.7
-        version: 4.6.7
       express:
         specifier: ^4.19.2
         version: 4.21.2
@@ -1065,10 +1062,6 @@ packages:
   es-set-tostringtag@2.1.0:
     resolution: {integrity: sha512-j6vWzfrGVfyXxge+O0x5sh6cvxAog0a/4Rdd2K36zCMV5eJ+/+tOAngRO8cODMNWbVRdVlmGZQL2YS3yR8bIUA==}
     engines: {node: '>= 0.4'}
-
-  es5-shim@4.6.7:
-    resolution: {integrity: sha512-jg21/dmlrNQI7JyyA2w7n+yifSxBng0ZralnSfVZjoCawgNTCnS+yBCyVM9DL5itm7SUnDGgv7hcq2XCZX4iRQ==}
-    engines: {node: '>=0.4.0'}
 
   es6-promise@2.3.0:
     resolution: {integrity: sha512-oyOjMhyKMLEjOOtvkwg0G4pAzLQ9WdbbeX7WdqKzvYXu+UFgD0Zo/Brq5Q49zNmnGPPzV5rmYvrr0jz1zWx8Iw==}
@@ -4034,8 +4027,6 @@ snapshots:
       has-tostringtag: 1.0.2
       hasown: 2.0.2
     optional: true
-
-  es5-shim@4.6.7: {}
 
   es6-promise@2.3.0: {}
 
