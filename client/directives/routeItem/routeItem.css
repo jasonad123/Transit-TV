@@ -46,6 +46,12 @@
 
 .route h3 {
   font-size: 2em;
+  font-family: Arial Narrow, serif;
+  /* -moz-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  transform: scale(-1, 1); */
   padding: 0.4em 0.35em 0.3em 0.35em;
   border-bottom: 1px solid rgba(255, 255, 255, .2);
 }
@@ -72,7 +78,7 @@
 .route small {
   color: inherit;
 
-  font-family: Helvetica, Arial, serif;
+  font-family: Arial Narrow, serif;
   font-weight: lighter;
   font-size: 0.4em;
   line-height: 0.4em;
@@ -118,6 +124,7 @@
   padding-left: 1em;
 
   font-size: 1.4em;
+  font-family: Arial Narrow, serif;
   margin-bottom: 0.4em;
   display: block;
 
