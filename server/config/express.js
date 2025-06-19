@@ -31,13 +31,28 @@ module.exports = function(app) {
     app.use(require('connect-livereload')());
     app.use(express.static(path.join(config.root, '.tmp')));
     app.use(express.static(path.join(config.root, 'client')));
+    app.use('/node_modules', express.static(path.join(config.root, 'node_modules')));
     app.set('appPath', path.join(config.root, 'client'));
     app.use(morgan('dev'));
     app.use(errorHandler()); // Error handler - has to be last
   } else {
-    app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
-    app.use(express.static(path.join(config.root, 'public')));
-    app.set('appPath', path.join(config.root, 'public'));
+    try {
+      app.use(favicon(path.join(config.root, 'client', 'favicon.ico')));
+    } catch(e) {
+      console.warn('Favicon not found, continuing without it');
+    }
+    app.use(express.static(path.join(config.root, 'client')));
+    app.use('/node_modules', express.static(path.join(config.root, 'node_modules')));
+    app.set('appPath', path.join(config.root, 'client'));
     app.use(morgan('dev'));
+    
+    // Add production error handler
+    app.use(function(err, req, res, next) {
+      console.error(err);
+      res.status(err.status || 500).send({
+        message: err.message,
+        error: {}
+      });
+    });
   }
 };

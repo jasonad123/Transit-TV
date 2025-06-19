@@ -27,9 +27,19 @@ function configUiRouter($urlRouterProvider, $locationProvider) {
 function configTranslation($translateProvider) {
 	$translateProvider
 		.useSanitizeValueStrategy('sanitize')
-		.useStaticFilesLoader({
-			prefix: '/assets/i18n/',
-			suffix: '.json'
+		.translations('en', {
+			'TITLE': 'Transit TV',
+			'SETTINGS': 'Settings',
+			'CLOSE': 'Close',
+			'SAVE': 'Save',
+			'CANCEL': 'Cancel'
+		})
+		.translations('fr', {
+			'TITLE': 'Transit TV',
+			'SETTINGS': 'Paramètres',
+			'CLOSE': 'Fermer',
+			'SAVE': 'Sauvegarder',
+			'CANCEL': 'Annuler'
 		})
 		.registerAvailableLanguageKeys(['en', 'fr'], {
 	    'en_*': 'en',
