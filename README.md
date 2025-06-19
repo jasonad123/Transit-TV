@@ -108,6 +108,8 @@ When running with Docker, you can configure the application using environment va
 - `SESSION_SECRET`: Secret for session encryption
 
 ## Project Structure
+
+```
 .
 ├── client/
 │   ├── app/
@@ -122,6 +124,7 @@ When running with Docker, you can configure the application using environment va
 ├── .env.docker
 ├── compose.yml
 └── Dockerfile
+```
 
 ## Architecture
 
