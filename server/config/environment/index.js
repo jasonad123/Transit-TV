@@ -10,6 +10,11 @@ function requiredProcessEnv(name) {
   return process.env[name];
 }
 
+// Check for Transit API key in production
+if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
+  console.warn('WARNING: TRANSIT_API_KEY is not set. The application may not function correctly.');
+}
+
 // All configurations will extend these options
 // ============================================
 var all = {
@@ -24,8 +29,11 @@ var all = {
 
   // Secret for session, you will want to change this and make it an environment variable
   secrets: {
-    session: 'transit-screen-secret'
-  }
+    session: process.env.SESSION_SECRET || 'transit-screen-secret'
+  },
+  
+  // Transit API Key
+  transitApiKey: process.env.TRANSIT_API_KEY || ''
 };
 
 module.exports = all;

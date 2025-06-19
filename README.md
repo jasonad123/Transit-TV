@@ -1,33 +1,140 @@
-# Transit-TV
-Use the Transit API to show next departure of a location in big for a TV context. 
+# Transit TV
 
-![Transit-TV Screenshot](./screenshot.png)
+A real-time transit display application that shows arrival times for nearby public transportation.
+
+![Screenshot](screenshot.png)
+
+[![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
 
 > [!WARNING]  
-> Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no garantee of any kind. 
+> Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind. 
 
-## How to get started 
+> [!WARNING]
+> Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
-1) Request API access
 
-Go the the [Transit API page](https://transitapp.com/apis) and request access to the an API key. Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough. When you have the API key, you can place it in the `.env` file. 
+## Prerequisites
 
-2) Test locally
+- An API key from Transit - [keys can be requested here](https://transitapp.com/apis)[^1]
+- Node.js (version specified in .node-version)
+- pnpm (preferred package manager)
+- Docker (optional, for containerized deployment)
 
-Assuming you have node and pnpm installed (we recommend using `nodenv` to follow the `.node-version` file)
+[^1]: Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough.
 
-```sh
+## Development Setup
+
+### Installation
+
+```bash
+# Install dependencies
 pnpm i
-pnpm build
-pnpm start
 ```
 
-Then follow the instructions and open http://localhost:8080
+### Configuration
 
-3) Deploy somewhere! 
+1. Create an `.env` file from the example:
 
-You should be ready to deploy somewhere if you want to use it for a longer amount of time. 
+```bash
+cp .env.example .env
+```
 
-## Contribute
+2. Edit the `.env` file and add your Transit API key.
 
-This project was built mostly for fun and hasn't been updated recently and needs some love. PRs welcome!
+### Running Locally
+
+```bash
+# Start the development server
+pnpm dev
+```
+
+The application will be available at http://localhost:7753
+
+### Building for Production
+
+```bash
+pnpm build
+```
+The application will be available at http://localhost:8080
+
+## Docker Deployment
+
+### Using Docker
+
+Build and run the application using Docker:
+
+```bash
+# Build the Docker image
+docker build -t transit-tv .
+
+# Run the container
+docker run -p 8080:8080 -e TRANSIT_API_KEY=your_api_key_here transit-tv
+```
+The application will be available at http://localhost:8080
+
+### Using Docker Compose
+
+For a more comprehensive deployment with Docker Compose:
+
+1. Configure your environment variables:
+   
+   ```bash
+   # Review and edit .env.docker file with your API key
+   nano .env.docker
+   ```
+
+2. Run with Docker Compose:
+
+   ```bash
+   # Start the application
+   docker compose up -d
+
+   # View logs
+   docker compose logs -f
+
+   # Stop the application
+   docker compose down
+   ```
+
+The application will be available at http://localhost:8080
+
+### Environment Variables
+
+When running with Docker, you can configure the application using environment variables:
+
+- `NODE_ENV`: Set to `production` for production deployment
+- `PORT`: The port the application will listen on (default: 8080)
+- `TRANSIT_API_KEY`: Your Transit API key
+- `SESSION_SECRET`: Secret for session encryption
+
+## Project Structure
+.
+├── client/
+│   ├── app/
+│   ├── components/
+│   ├── directives/
+│   └── services/
+├── server/
+│   ├── api/
+│   ├── config/
+│   └── components/
+├── .env.example
+├── .env.docker
+├── compose.yml
+└── Dockerfile
+
+## Architecture
+
+- `client/`: Frontend code
+  - `app/`: Angular.js application
+  - `components/`: Reusable components
+  - `directives/`: Angular.js directives
+  - `services/`: Angular.js services
+- `server/`: Backend code
+  - `api/`: API endpoints
+  - `config/`: Server configuration
+  - `components/`: Server components
+
+## License
+
+See the [LICENSE](LICENSE) file for details.

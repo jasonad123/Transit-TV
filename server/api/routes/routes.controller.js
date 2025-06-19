@@ -11,7 +11,7 @@ exports.nearby = function (req, res) {
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'apiKey': process.env.API_KEY,
+      'apiKey': process.env.TRANSIT_API_KEY,
     }
   }).pipe(res);
 };

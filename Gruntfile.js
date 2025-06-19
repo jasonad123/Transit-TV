@@ -14,11 +14,10 @@ module.exports = function (grunt) {
     express: 'grunt-express-server',
     useminPrepare: 'grunt-usemin',
     ngtemplates: 'grunt-angular-templates',
-    cdnify: 'grunt-google-cdn',
     buildcontrol: 'grunt-build-control'
   });
 
-  // Time how long tasks take. Can help when optimizing build times
+    // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
   // Define the configuration for all the tasks
@@ -29,8 +28,9 @@ module.exports = function (grunt) {
 
     yeoman: {
       // configurable paths
-      client: require('./bower.json').appPath || 'client',
-      dist: 'dist'
+      client: 'client',
+      dist: 'dist',
+      node_modules: 'node_modules'
     },
 
     express: {
@@ -184,12 +184,153 @@ module.exports = function (grunt) {
       }
     },
 
-    // Automatically inject Bower components into the app
-    wiredep: {
-      target: {
-        src: '<%= yeoman.client %>/index.html',
-        ignorePath: '<%= yeoman.client %>/',
-        exclude: ['/es5-shim/']
+    // Copy dependencies from node_modules to client/vendor
+    copy: {
+      vendor: {
+        files: [
+          // Angular and related libraries
+          {
+            expand: true,
+            cwd: 'node_modules/angular',
+            src: ['angular.js', 'angular.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-cookies',
+            src: ['angular-cookies.js', 'angular-cookies.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-cookies'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-resource',
+            src: ['angular-resource.js', 'angular-resource.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-resource'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-sanitize',
+            src: ['angular-sanitize.js', 'angular-sanitize.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-sanitize'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-ui-router/release',
+            src: ['angular-ui-router.js', 'angular-ui-router.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-ui-router'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/ui-select/dist',
+            src: ['select.js', 'select.min.js', 'select.css', 'select.min.css'],
+            dest: '<%= yeoman.client %>/vendor/angular-ui-select'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-translate/dist',
+            src: ['angular-translate.js', 'angular-translate.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-translate'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/angular-translate-loader-static-files/dist',
+            src: ['angular-translate-loader-static-files.js', 'angular-translate-loader-static-files.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-translate-loader-static-files'
+          },
+          // jQuery and related libraries
+          {
+            expand: true,
+            cwd: 'node_modules/jquery/dist',
+            src: ['jquery.js', 'jquery.min.js'],
+            dest: '<%= yeoman.client %>/vendor/jquery'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/jquery-ui',
+            src: ['jquery-ui.js', 'jquery-ui.min.js'],
+            dest: '<%= yeoman.client %>/vendor/jquery-ui'
+          },
+          {
+            expand: true, 
+            cwd: 'node_modules/angular-dragdrop/src',
+            src: ['angular-dragdrop.js', 'angular-dragdrop.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-dragdrop'
+          },
+          // Bootstrap
+          {
+            expand: true,
+            cwd: 'node_modules/bootstrap/dist/css',
+            src: ['bootstrap.css', 'bootstrap.min.css'],
+            dest: '<%= yeoman.client %>/vendor/bootstrap/css'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/bootstrap/dist/js',
+            src: ['bootstrap.js', 'bootstrap.min.js'],
+            dest: '<%= yeoman.client %>/vendor/bootstrap/js'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/bootstrap/dist/fonts',
+            src: ['*'],
+            dest: '<%= yeoman.client %>/vendor/bootstrap/fonts'
+          },
+          // Moment
+          {
+            expand: true,
+            cwd: 'node_modules/moment',
+            src: ['moment.js', 'min/moment.min.js'],
+            dest: '<%= yeoman.client %>/vendor/moment'
+          },
+          {
+            expand: true, 
+            cwd: 'node_modules/angular-moment',
+            src: ['angular-moment.js', 'angular-moment.min.js'],
+            dest: '<%= yeoman.client %>/vendor/angular-moment'
+          },
+          // ES5 shim
+          {
+            expand: true,
+            cwd: 'node_modules/es5-shim',
+            src: ['es5-shim.js', 'es5-shim.min.js'],
+            dest: '<%= yeoman.client %>/vendor/es5-shim'
+          }
+        ]
+      },
+      dist: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.client %>',
+          dest: '<%= yeoman.dist %>/public',
+          src: [
+            '*.{ico,png,txt}',
+            '.htaccess',
+            'vendor/**/*',
+            'assets/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
+            'assets/fonts/**/*',
+            'assets/i18n/*',
+            'index.html'
+          ]
+        }, {
+          expand: true,
+          cwd: '.tmp/images',
+          dest: '<%= yeoman.dist %>/public/assets/images',
+          src: ['generated/*']
+        }, {
+          expand: true,
+          dest: '<%= yeoman.dist %>',
+          src: [
+            'package.json',
+            'server/**/*'
+          ]
+        }]
+      },
+      styles: {
+        expand: true,
+        cwd: '<%= yeoman.client %>',
+        dest: '.tmp/',
+        src: ['{app,components,directives}/**/*.css']
       }
     },
 
@@ -276,51 +417,7 @@ module.exports = function (grunt) {
       }
     },
 
-    // Replace Google CDN references
-    cdnify: {
-      dist: {
-        html: ['<%= yeoman.dist %>/public/*.html']
-      }
-    },
 
-    // Copies remaining files to places other tasks can use
-    copy: {
-      dist: {
-        files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= yeoman.client %>',
-          dest: '<%= yeoman.dist %>/public',
-          src: [
-            '*.{ico,png,txt}',
-            '.htaccess',
-            'bower_components/**/*',
-            'assets/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
-            'assets/fonts/**/*',
-            'assets/i18n/*',
-            'index.html'
-          ]
-        }, {
-          expand: true,
-          cwd: '.tmp/images',
-          dest: '<%= yeoman.dist %>/public/assets/images',
-          src: ['generated/*']
-        }, {
-          expand: true,
-          dest: '<%= yeoman.dist %>',
-          src: [
-            'package.json',
-            'server/**/*'
-          ]
-        }]
-      },
-      styles: {
-        expand: true,
-        cwd: '<%= yeoman.client %>',
-        dest: '.tmp/',
-        src: ['{app,components,directives}/**/*.css']
-      }
-    },
 
     buildcontrol: {
       options: {
@@ -357,8 +454,7 @@ module.exports = function (grunt) {
         }
       },
       dist: [
-        'imagemin',
-        'svgmin'
+        // Removed imagemin task reference
       ]
     },
 
@@ -439,8 +535,8 @@ module.exports = function (grunt) {
         'clean:server',
         'env:all',
         'concurrent:server',
+        'copy:vendor',
         'injector',
-        'wiredep',
         'autoprefixer',
         'concurrent:debug'
       ]);
@@ -450,8 +546,8 @@ module.exports = function (grunt) {
       'clean:server',
       'env:all',
       'concurrent:server',
+      'copy:vendor',
       'injector',
-      'wiredep',
       'autoprefixer',
       'express:dev',
       'wait',
@@ -464,14 +560,12 @@ module.exports = function (grunt) {
     'clean:dist',
     'concurrent:dist',
     'injector',
-    'wiredep',
     'useminPrepare',
     'autoprefixer',
     'ngtemplates',
     'concat',
     'ngAnnotate',
     'copy:dist',
-    //'cdnify',
     'cssmin',
     'uglify',
     'rev',

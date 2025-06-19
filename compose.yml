@@ -1,0 +1,29 @@
+services:
+  app:
+    env_file:
+      - .env.docker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: transit-tv
+    container_name: transit-tv
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      LOG_LEVEL: "info"  # Example of an additional environment variable
+    volumes:
+      # Persist any data that needs to be saved between container restarts
+      - ./logs:/app/logs
+    networks:
+      - transit-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  transit-network:
+    driver: bridge
