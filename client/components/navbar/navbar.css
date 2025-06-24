@@ -1,14 +1,45 @@
 header {
  color: #ffffff;
  background-color: #30b566;
- position: relative; /* Add relative positioning for absolute child */
+ position: relative;
 }
 header table {
  width: 100%;
+ table-layout: fixed;
+}
+#logo-alt {
+ width: 6%;
+ min-width: 60px;
+ padding-right: 8px;
+ display: none; /* Hidden by default - enable with .show-secondary-logo */
+}
+#logo-alt a {
+ display: block;
+ height: 2em;
+ width: 100%;
+ color: #ffffff;
+ line-height: 1.1em;
+ font-family: Helvetica, Arial, serif;
+ font-weight: lighter;
+ font-size: 2.0em;
+ text-decoration: none;
+ background-size: auto 2em;
+ padding-left: 30px;
+ min-width: 60px;
+}
+.show-secondary-logo #logo-alt {
+ display: table-cell;
+}
+.show-secondary-logo #logo {
+ width: 12%;
+ min-width: 120px;
+}
+.show-secondary-logo #title {
+ width: 28%;
 }
 #logo {
  width: 33%;
- min-width: 200px; /* Prevent it from getting too small */
+ min-width: 200px;
 }
 #logo a {
  display: block;
@@ -23,20 +54,13 @@ header table {
  background: url('/assets/images/transit.svg') no-repeat center left;
  background-size: auto 2em;
  padding-left: 130px;
- min-width: 200px; /* Ensure enough space for image + text */
+ min-width: 200px;
 }
 #title {
- position: absolute; /* Absolute positioning */
- left: 50%; /* Move left edge to center */
- transform: translateX(-50%); /* Center the element itself */
- top: 0; /* Align with top of header */
- height: 100%; /* Match header height */
- display: flex; /* Use flexbox for vertical centering */
- align-items: center; /* Vertically center content */
- border: none;
+ width: 34%;
  text-align: center;
- max-width: calc(100% - 260px); /* Prevent overlap with logo and utilities */
- min-width: 150px; /* Ensure minimum readable width */
+ vertical-align: middle;
+ border: none;
 }
 #title h1 {
  font-family: Helvetica, Arial, serif;
@@ -69,10 +93,11 @@ header table {
  vertical-align: top;
 }
 #utilities {
- width: 33%;
- min-width: 20em;
+ width: 30%;
+ min-width: 15em;
  text-align: right;
  vertical-align: middle;
+ padding-right: 1em;
 }
 .clock {
  font-size: 1.8em;
@@ -83,57 +108,30 @@ header table {
  margin-right: 0.5em;
 }
 
-/* Media query for narrow screens */
-@media (max-width: 768px) {
- #title h1 {
-  font-size: 1.7em; /* Slightly smaller font */
- }
- #title {
-  max-width: calc(100% - 240px); /* Adjust for smaller screens */
- }
+/* iPad and smaller tablet screens */
+@media (max-width: 1024px) {
  #logo {
-  min-width: 180px; /* Reduce minimum width slightly */
- }
- #logo a {
   min-width: 180px;
  }
-}
-
-@media (max-width: 600px) {
- #title h1 {
-  font-size: 1.5em; /* Reduce font size on narrow screens */
- }
- #title {
-  max-width: calc(100% - 220px);
- }
- #logo {
-  min-width: 160px;
- }
  #logo a {
-  min-width: 160px;
-  padding-left: 100px; /* Reduce padding to save space */
+  font-size: 1.8em;
+  padding-left: 110px;
+  min-width: 180px;
+ }
+ #title h1 {
+  font-size: 1.8em;
+ }
+ #utilities {
+  min-width: 18em;
  }
  .clock {
-  margin-left: 2em; /* Reduce clock margin */
+  font-size: 1.6em;
+  margin-left: 2.5em;
  }
-}
-
-@media (max-width: 480px) {
- #title h1 {
-  font-size: 1.3em; /* Even smaller font for very narrow screens */
+ .show-secondary-logo #logo {
+  min-width: 110px;
  }
- #title {
-  max-width: calc(100% - 200px);
- }
- #logo {
-  min-width: 140px;
- }
- #logo a {
-  min-width: 140px;
-  padding-left: 80px; /* Further reduce padding */
- }
- .clock {
-  margin-left: 1em;
-  font-size: 1.6em; /* Slightly smaller clock */
+ .show-secondary-logo #logo a {
+  padding-left: 45px;
  }
 }
