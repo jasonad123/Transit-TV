@@ -23,7 +23,7 @@ A real-time transit display application that shows arrival times for nearby publ
 ## Getting started
 1. Request API access
 
-Go the the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file. 
+Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file. 
 
 > `.env` for local development using `pnpm`
 
@@ -77,7 +77,7 @@ This includes getting an API key from Transit and setting up the `.env.docker` f
 
 2. Deploy in Docker
 
-Using Docker Compose (recommended)
+### Using Docker Compose (recommended)
 
 **Configure your environment variables:**
    
@@ -135,7 +135,7 @@ Using Docker Compose (recommended)
 
 The application will be available at http://localhost:8080
 
-Using Docker Run:
+### Using Docker run:
 
 ```bash
 # Build the Docker image
@@ -170,11 +170,11 @@ When running with Docker, you can configure the application using environment va
 │   ├── api/              # API endpoints
 │   ├── config/           # Server configuration
 │   └── components/       # Server components
-├── .env.example          # Example environment variables
-├── .env.docker           # Docker environment variables
+├── .env.example          # Example environment variables - copy this for local development/deployment
+├── .env.docker.example   # Example Docker environment variables - copy this for Docker deployment
 ├── .eslintrc.js          # ESLint configuration
-├── compose.yml           # Docker Compose configuration
-└── Dockerfile            # Docker build configuration
+├── compose.yml           # Docker Compose configuration - copy this for Docker deployment
+└── Dockerfile            # Docker build configuration - copy this for Docker deployment
 ```
 
 ## License
