@@ -155,6 +155,23 @@ When running with Docker, you can configure the application using environment va
 - `PORT`: The port the application will listen on (default: 8080)
 - `TRANSIT_API_KEY`: Your Transit API key
 - `SESSION_SECRET`: Secret for session encryption
+- `ALLOWED_ORIGINS`: Comma-separated list of allowed CORS origins (default: `http://localhost:8080`)
+
+#### CORS Configuration
+
+The application implements CORS (Cross-Origin Resource Sharing) to control which domains can access the API from web browsers. By default, only `http://localhost:8080` is allowed.
+
+To allow additional domains:
+
+```bash
+# Single domain
+ALLOWED_ORIGINS=https://yourdomain.com
+
+# Multiple domains (comma-separated)
+ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,https://staging.yourdomain.com
+```
+
+**Important:** Always specify the full URL including protocol (`http://` or `https://`) and port if non-standard.
 
 ## Project structure
 
