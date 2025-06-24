@@ -12,7 +12,6 @@ A real-time transit display application that shows arrival times for nearby publ
 > [!WARNING]
 > Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
-
 ## Prerequisites
 
 - An API key from Transit - [keys can be requested here](https://transitapp.com/apis)
@@ -24,7 +23,7 @@ A real-time transit display application that shows arrival times for nearby publ
 ## Getting started
 1. Request API access
 
-Go the the [Transit API page](https://transitapp.com/apis) and request access to the an API key. Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough. When you have the API key, you can place it in your environment file. 
+Go the the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file. 
 
 > `.env` for local development using `pnpm`
 
@@ -73,6 +72,7 @@ If all looks good, you should be ready to deploy somewhere if you want to use it
 ## Deployment with Docker
 
 1. Follow the **getting started** steps
+
 This includes getting an API key from Transit and setting up the `.env.docker` file.
 
 2. Deploy in Docker
@@ -135,7 +135,7 @@ Using Docker Compose (recommended)
 
 The application will be available at http://localhost:8080
 
-Using Docker run:
+Using Docker Run:
 
 ```bash
 # Build the Docker image
@@ -156,7 +156,7 @@ When running with Docker, you can configure the application using environment va
 - `TRANSIT_API_KEY`: Your Transit API key
 - `SESSION_SECRET`: Secret for session encryption
 
-## Project Structure
+## Project structure
 
 ```
 .
@@ -176,18 +176,6 @@ When running with Docker, you can configure the application using environment va
 ├── compose.yml           # Docker Compose configuration
 └── Dockerfile            # Docker build configuration
 ```
-
-## Architecture
-
-- `client/`: Frontend code
-  - `app/`: Angular.js application
-  - `components/`: Reusable components
-  - `directives/`: Angular.js directives
-  - `services/`: Angular.js services
-- `server/`: Backend code
-  - `api/`: API endpoints
-  - `config/`: Server configuration
-  - `components/`: Server components
 
 ## License
 
