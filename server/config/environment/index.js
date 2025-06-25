@@ -49,6 +49,14 @@ var all = {
   // API request timeout in milliseconds
   requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 10000,
   
+  // Unattended setup configuration
+  unattendedSetup: {
+    enabled: process.env.UNATTENDED_SETUP === 'true',
+    location: process.env.UNATTENDED_LOCATION || '',
+    title: process.env.UNATTENDED_TITLE || '',
+    timeFormat: process.env.UNATTENDED_TIME_FORMAT || 'HH:mm'
+  },
+  
   // Security settings
   security: {
     // CORS settings
