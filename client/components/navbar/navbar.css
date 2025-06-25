@@ -1,6 +1,6 @@
 header {
- color: #ffffff;
- background-color: #30b566;
+ color: var(--primary-text-color);
+ background-color: var(--primary-color);
  position: relative;
 }
 header table {
@@ -8,8 +8,8 @@ header table {
  table-layout: fixed;
 }
 #logo-alt {
- width: 6%;
- min-width: 60px;
+ width: 15%;
+ min-width: 120px;
  padding-right: 8px;
  display: none; /* Hidden by default - enable with .show-secondary-logo */
 }
@@ -17,25 +17,28 @@ header table {
  display: block;
  height: 2em;
  width: 100%;
- color: #ffffff;
+ color: var(--primary-text-color);
  line-height: 1.1em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  font-weight: lighter;
- font-size: 2.0em;
+ font-size: var(--header-font-size);
  text-decoration: none;
  background-size: auto 2em;
- padding-left: 30px;
- min-width: 60px;
+ padding-left: var(--logo-padding-left);
+ min-width: var(--logo-min-width);
 }
 .show-secondary-logo #logo-alt {
  display: table-cell;
 }
 .show-secondary-logo #logo {
- width: 12%;
+ width: 15%;
  min-width: 120px;
 }
 .show-secondary-logo #title {
- width: 28%;
+ width: 40%;
+}
+.show-secondary-logo #utilities {
+ width: 30%;
 }
 #logo {
  width: 33%;
@@ -45,16 +48,16 @@ header table {
  display: block;
  height: 2em;
  width: 100%;
- color: #ffffff;
+ color: var(--primary-text-color);
  line-height: 1.1em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  font-weight: lighter;
- font-size: 2.0em;
+ font-size: var(--header-font-size);
  text-decoration: none;
- background: url('/assets/images/transit.svg') no-repeat center left;
+ background: var(--primary-logo-url) no-repeat center left;
  background-size: auto 2em;
- padding-left: 130px;
- min-width: 200px;
+ padding-left: var(--logo-padding-left);
+ min-width: var(--logo-min-width);
 }
 #title {
  width: 34%;
@@ -63,8 +66,8 @@ header table {
  border: none;
 }
 #title h1 {
- font-family: Helvetica, Arial, serif;
- font-size: 2em;
+ font-family: var(--primary-font-family);
+ font-size: var(--header-font-size);
  vertical-align: middle;
  display: inline-block;
  line-height: 1.4em;
@@ -101,7 +104,7 @@ header table {
 }
 .clock {
  font-size: 1.8em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  line-height: 2em;
  display: inline-block;
  margin-left: 3em;
