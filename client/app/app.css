@@ -6,15 +6,15 @@
   
   /* Logo and branding */
   --primary-logo-url: url('/assets/images/transit.svg'); /* Required by Transit API terms */
-  --secondary-logo-url: url('/assets/images/agency-logo.svg');
+  --secondary-logo-url: url('/assets/custom/agency-logo.svg');
   
   /* Typography */
   --primary-font-family: Helvetica, Arial, serif;
   --header-font-size: 2em;
   
   /* Layout */
-  --logo-padding-left: 80px;
-  --logo-min-width: 130px
+  --logo-padding-left: 10px;
+  --logo-min-width: 100px
 }
 
 * {
