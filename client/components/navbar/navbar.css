@@ -8,9 +8,9 @@ header table {
  table-layout: fixed;
 }
 #logo-alt {
- width: 15%;
- min-width: 120px;
- padding-right: 8px;
+ width: 12%;
+ min-width: 100px;
+ padding-right: 15px;
  display: none; /* Hidden by default - enable with .show-secondary-logo */
 }
 #logo-alt a {
@@ -23,9 +23,8 @@ header table {
  font-weight: lighter;
  font-size: var(--header-font-size);
  text-decoration: none;
+ background: var(--secondary-logo-url) no-repeat left center;
  background-size: auto 2em;
- padding-left: var(--logo-padding-left);
- min-width: var(--logo-min-width);
 }
 .show-secondary-logo #logo-alt {
  display: table-cell;
@@ -35,7 +34,7 @@ header table {
  min-width: 120px;
 }
 .show-secondary-logo #title {
- width: 40%;
+ width: 45%;
 }
 .show-secondary-logo #utilities {
  width: 30%;
@@ -47,7 +46,7 @@ header table {
 #logo a {
  display: block;
  height: 2em;
- width: 100%;
+ width: 180px;
  color: var(--primary-text-color);
  line-height: 1.1em;
  font-family: var(--primary-font-family);
@@ -56,8 +55,6 @@ header table {
  text-decoration: none;
  background: var(--primary-logo-url) no-repeat center left;
  background-size: auto 2em;
- padding-left: var(--logo-padding-left);
- min-width: var(--logo-min-width);
 }
 #title {
  width: 34%;
@@ -114,12 +111,17 @@ header table {
 /* iPad and smaller tablet screens */
 @media (max-width: 1024px) {
  #logo {
-  min-width: 180px;
+  min-width: 160px;
  }
  #logo a {
   font-size: 1.8em;
-  padding-left: 110px;
-  min-width: 180px;
+  max-width: 160px;
+ }
+ #logo-alt {
+  min-width: 120px;
+ }
+ #logo-alt a {
+  max-width: 120px;
  }
  #title h1 {
   font-size: 1.8em;
@@ -132,9 +134,15 @@ header table {
   margin-left: 2.5em;
  }
  .show-secondary-logo #logo {
-  min-width: 110px;
+  min-width: 120px;
  }
  .show-secondary-logo #logo a {
-  padding-left: 45px;
+  max-width: 120px;
+ }
+ .show-secondary-logo #logo-alt {
+  min-width: 100px;
+ }
+ .show-secondary-logo #logo-alt a {
+  max-width: 100px;
  }
 }
