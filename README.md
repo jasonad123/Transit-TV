@@ -1,10 +1,8 @@
 # Transit TV
 
-A real-time transit display application that shows arrival times for nearby public transportation.
+Use the Transit API to show next departure of a location in big for a TV context.
 
 ![Screenshot](screenshot.png)
-
-[![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
 
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind. 
