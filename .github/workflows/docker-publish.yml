@@ -4,6 +4,8 @@ on:
   push:
     branches: 
       - release
+    tags:
+      - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
 
 env:
   REGISTRY: ghcr.io
@@ -20,28 +22,59 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+        
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+          
+      - name: Extract version info
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            # Extract version from tag (e.g., v0.5.0 -> 0.5.0)
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            
+            # Check if it's a pre-release (contains alpha, beta, rc, dev)
+            if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Release branch build - use date and short SHA
+            DATE=$(date +%Y%m%d)
+            SHA=${GITHUB_SHA::8}
+            echo "version=release-$DATE-$SHA" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
+            # Tag with the extracted version
+            type=raw,value=${{ steps.version.outputs.version }}
+            
+            # For stable release tags, also tag as latest
+            type=raw,value=latest,enable=${{ steps.version.outputs.is_release == 'true' && steps.version.outputs.is_prerelease == 'false' }}
+            
+            # For pre-releases, tag as pre-release
+            type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
+            
+            # For release branch (non-tag), tag as release-candidate
+            type=raw,value=release-candidate,enable=${{ github.ref == 'refs/heads/release' && !startsWith(github.ref, 'refs/tags/') }}
+            
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -52,17 +85,60 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
+          
       - name: Generate summary
         run: |
           echo "## Docker Image Published Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Add version info
+          if [[ "${{ steps.version.outputs.is_release }}" == "true" ]]; then
+            if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+              echo "**Release Type:** 🧪 Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "**Release Type:** ✅ Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "**Release Type:** 🔧 Release Candidate" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
           echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
           echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          # Provide appropriate pull commands based on release type
+          if [[ "${{ steps.version.outputs.is_release }}" == "true" && "${{ steps.version.outputs.is_prerelease }}" == "false" ]]; then
+            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "# Latest stable release" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "# Specific version" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "# Pre-release version" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "# Latest pre-release" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "# Release candidate" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:release-candidate" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "# Specific build" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Built with semantic versioning strategy for Transit-TV*" >> $GITHUB_STEP_SUMMARY
