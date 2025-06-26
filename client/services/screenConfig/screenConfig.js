@@ -6,7 +6,7 @@ angular
 
 function ScreenConfig($rootScope, $state, $http, $q, $cookies) {
   var vm = this,
-    _deferred = null
+    _deferred = null;
 
   Object.defineProperty(vm, 'latLngStr', {
     get: function() { 
