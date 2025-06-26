@@ -173,6 +173,33 @@ ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,https://staging.you
 
 **Important:** Always specify the full URL including protocol (`http://` or `https://`) and port if non-standard.
 
+## Enhancements
+
+### Unattended Setup
+
+This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, and clock setting. You'll still be able to change the settings at any time.
+
+To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method (modify them in `.env` for local deployment, `.env.docker` for Docker deployments)
+
+The following variables are available:
+
+```
+# UNATTENDED_SETUP: Enable automatic setup without user interaction (true/false)
+UNATTENDED_SETUP=false
+
+# UNATTENDED_LOCATION: Latitude and longitude coordinates for transit data
+# Format: "latitude,longitude" (e.g., "40.7240,-74.0002" for New York City)
+UNATTENDED_LOCATION=
+
+# UNATTENDED_TITLE: Display title for the transit screen
+UNATTENDED_TITLE=Transit Display
+
+# UNATTENDED_TIME_FORMAT: Time display format
+# Options: "HH:mm" (24-hour format) or "hh:mm A" (12-hour format with AM/PM)
+UNATTENDED_TIME_FORMAT=HH:mm
+```
+
+
 ## Project structure
 
 ```
