@@ -56,19 +56,35 @@ function ScreenConfig($rootScope, $state, $http, $q, $cookies) {
     if (!_deferred) {
       _deferred = $q.defer();
 
-      var loadedConfig = $cookies.get('config');
-      if (loadedConfig) {
-        try {
-          var parsedConfig = JSON.parse(loadedConfig);
-          angular.extend(vm, parsedConfig);
-          vm.isEditing = false;
-        } catch (e) {
-          console.error('Error parsing saved config:', e);
-          // Continue with default config
-        }
-      }
-
-      _deferred.resolve(vm);
+      // Check for unattended setup first
+      $http.get('/api/config/unattended')
+        .then(function(response) {
+          // Unattended setup is enabled and valid
+          var unattendedConfig = response.data;
+          angular.extend(vm, {
+            latLng: unattendedConfig.latLng,
+            title: unattendedConfig.title,
+            timeFormat: unattendedConfig.timeFormat,
+            language: unattendedConfig.language,
+            isEditing: false // Skip modal for unattended setup
+          });
+          _deferred.resolve(vm);
+        })
+        .catch(function() {
+          // Unattended setup not available, check for saved config
+          var loadedConfig = $cookies.get('config');
+          if (loadedConfig) {
+            try {
+              var parsedConfig = JSON.parse(loadedConfig);
+              angular.extend(vm, parsedConfig);
+              vm.isEditing = false;
+            } catch (e) {
+              console.error('Error parsing saved config:', e);
+              // Continue with default config
+            }
+          }
+          _deferred.resolve(vm);
+        });
     }
 
     return _deferred.promise;
