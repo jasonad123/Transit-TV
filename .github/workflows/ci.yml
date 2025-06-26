@@ -28,7 +28,7 @@ jobs:
       run: pnpm install
       
     - name: Run linting
-      run: npx jshint client/app/**/*.js server/**/*.js --reporter unix
+      run: npx grunt jshint
       
     - name: Build project
       run: pnpm build
