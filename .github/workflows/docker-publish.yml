@@ -6,6 +6,7 @@ on:
       - release
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
+  workflow_dispatch:  # Allow manual triggering
 
 env:
   REGISTRY: ghcr.io
@@ -40,7 +41,7 @@ jobs:
             # Extract version from tag (e.g., v0.5.0 -> 0.5.0)
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "is_tag=true" >> $GITHUB_OUTPUT
             
             # Check if it's a pre-release (contains alpha, beta, rc, dev)
             if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
@@ -49,11 +50,9 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
-            # Release branch build - use date and short SHA
-            DATE=$(date +%Y%m%d)
-            SHA=${GITHUB_SHA::8}
-            echo "version=release-$DATE-$SHA" >> $GITHUB_OUTPUT
-            echo "is_release=false" >> $GITHUB_OUTPUT
+            # Release branch build - use latest
+            echo "version=latest" >> $GITHUB_OUTPUT
+            echo "is_tag=false" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
           
@@ -63,17 +62,17 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # Tag with the extracted version
-            type=raw,value=${{ steps.version.outputs.version }}
+            # For release branch, only tag as latest
+            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'false' }}
             
-            # For stable release tags, also tag as latest
-            type=raw,value=latest,enable=${{ steps.version.outputs.is_release == 'true' && steps.version.outputs.is_prerelease == 'false' }}
+            # For version tags, tag with version number
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' }}
+            
+            # For stable version tags, also tag as latest
+            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'false' }}
             
             # For pre-releases, tag as pre-release
             type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
-            
-            # For release branch (non-tag), tag as latest
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/release' && !startsWith(github.ref, 'refs/tags/') }}
             
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -92,14 +91,12 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Add version info
-          if [[ "${{ steps.version.outputs.is_release }}" == "true" ]]; then
-            if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-              echo "**Release Type:** 🧪 Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "**Release Type:** ✅ Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-            fi
+          if [[ "${{ steps.version.outputs.is_tag }}" == "false" ]]; then
+            echo "**Release Type:** 🚀 Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+            echo "**Release Type:** 🧪 Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Release Type:** 🚀 Latest Release" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type:** ✅ Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           
@@ -110,35 +107,44 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Provide appropriate pull commands based on release type
-          if [[ "${{ steps.version.outputs.is_release }}" == "true" && "${{ steps.version.outputs.is_prerelease }}" == "false" ]]; then
-            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-            echo "# Latest stable release" >> $GITHUB_STEP_SUMMARY
+          echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.version.outputs.is_tag }}" == "false" ]]; then
+            echo "# Latest from release branch" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "# Specific version" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
             echo "# Pre-release version" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "# Latest pre-release" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-            echo "# Latest release" >> $GITHUB_STEP_SUMMARY
+            echo "# Latest stable release" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "# Specific build" >> $GITHUB_STEP_SUMMARY
+            echo "# Specific version" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Built with semantic versioning strategy for Transit-TV*" >> $GITHUB_STEP_SUMMARY
+
+  cleanup-old-images:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: success()
+    
+    permissions:
+      packages: write
+      
+    steps:
+      - name: Delete old pre-release images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: transit-tv
+          package-type: container
+          min-versions-to-keep: 3
+          delete-only-untagged-versions: false
+        continue-on-error: true
