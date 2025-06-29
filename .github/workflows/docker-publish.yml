@@ -72,8 +72,8 @@ jobs:
             # For pre-releases, tag as pre-release
             type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
             
-            # For release branch (non-tag), tag as release-candidate
-            type=raw,value=release-candidate,enable=${{ github.ref == 'refs/heads/release' && !startsWith(github.ref, 'refs/tags/') }}
+            # For release branch (non-tag), tag as latest
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/release' && !startsWith(github.ref, 'refs/tags/') }}
             
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -99,7 +99,7 @@ jobs:
               echo "**Release Type:** ✅ Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "**Release Type:** 🔧 Release Candidate" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type:** 🚀 Latest Release" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           
@@ -131,8 +131,8 @@ jobs:
           else
             echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-            echo "# Release candidate" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:release-candidate" >> $GITHUB_STEP_SUMMARY
+            echo "# Latest release" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "# Specific build" >> $GITHUB_STEP_SUMMARY
             echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
