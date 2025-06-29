@@ -173,6 +173,7 @@ ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,https://staging.you
 
 **Important:** Always specify the full URL including protocol (`http://` or `https://`) and port if non-standard.
 
+
 ## Project structure
 
 ```
