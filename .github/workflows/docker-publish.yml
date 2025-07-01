@@ -10,7 +10,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Convert repository name to lowercase for GitHub Container Registry
+  IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
 
 jobs:
   build-and-push:
@@ -19,6 +20,11 @@ jobs:
     permissions:
       contents: read
       packages: write
+      
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_tag: ${{ steps.version.outputs.is_tag }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
       
     steps:
       - name: Checkout repository
@@ -50,40 +56,65 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
           else
-            # Release branch build - use latest
-            echo "version=latest" >> $GITHUB_OUTPUT
+            # Release branch build - use commit SHA for version
+            SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+            echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
             echo "is_tag=false" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
           
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            # For release branch, only tag as latest
-            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'false' }}
+      - name: Generate Docker tags
+        id: tags
+        run: |
+          TAGS=""
+          
+          if [[ "${{ steps.version.outputs.is_tag }}" == "true" ]]; then
+            # This is a version tag
+            VERSION="${{ steps.version.outputs.version }}"
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$VERSION"
             
-            # For version tags, tag with version number
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' }}
-            
-            # For stable version tags, also tag as latest
-            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'false' }}
-            
-            # For pre-releases, tag as pre-release
-            type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
-            
+            if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+              # Pre-release: tag as pre-release
+              TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release"
+            else
+              # Stable release: also tag as latest
+              TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+            fi
+          else
+            # This is a release branch build
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
+          fi
+          
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Generated tags: $TAGS"
+          
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.title=Transit-TV
+            org.opencontainers.image.description=Use the Transit API to show next departure of a location in big for a TV context
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.created=${{ env.GITHUB_REF_NAME }}
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          
+      - name: Verify image push
+        run: |
+          echo "Verifying pushed images..."
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
+          for tag in "${TAG_ARRAY[@]}"; do
+            echo "Checking: $tag"
+            docker manifest inspect "$tag" > /dev/null && echo "✅ $tag exists" || echo "❌ $tag not found"
+          done
           
       - name: Generate summary
         run: |
@@ -103,7 +134,10 @@ jobs:
           echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
+          for tag in "${TAG_ARRAY[@]}"; do
+            echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Provide appropriate pull commands based on release type
@@ -130,6 +164,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Built with semantic versioning strategy for Transit-TV*" >> $GITHUB_STEP_SUMMARY
+          echo "*Generated using agentic coding assistance*" >> $GITHUB_STEP_SUMMARY
 
   cleanup-old-images:
     runs-on: ubuntu-latest
@@ -143,7 +178,7 @@ jobs:
       - name: Delete old pre-release images
         uses: actions/delete-package-versions@v5
         with:
-          package-name: transit-tv
+          package-name: transit-tv  # Match the lowercase image name
           package-type: container
           min-versions-to-keep: 6
           delete-only-untagged-versions: false
