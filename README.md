@@ -89,35 +89,42 @@ This includes getting an API key from Transit and setting up the `.env.docker` f
 **Create/review the Docker Compose file at `compose.yml`**
 
    ```yaml
-    services:
-      transit-tv:
-        env_file:
-          - .env.docker
-        build:
-          context: .
-          dockerfile: Dockerfile
-        image: transit-tv
-        container_name: transit-tv
-        restart: unless-stopped
-        ports:
-          - "8080:8080" # Default port for the application is 8080, change the left side if needed
-      environment:
-        LOG_LEVEL: "info"  # Example of an additional environment variable
-      volumes:
-        # Persist any data that needs to be saved between container restarts
-        - ./logs:/app/logs # change this to your desired log directory
-      networks:
-        - transit-network
-      healthcheck:
-        test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
-        interval: 30s
-        timeout: 10s
-        retries: 3
-        start_period: 10s
+services:
+  transit-tv:
+    env_file:
+      - .env.docker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: transit-tv
+    container_name: transit-tv
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Default port for the application is 8080, change the left side if needed
+    environment:
+      NODE_ENV: "production"
+      # These environment variables will override those in .env.docker if set
+      # LOG_LEVEL: "info"
+    volumes:
+      # Persist any data that needs to be saved between container restarts
+      - ./logs:/app/logs # change this to your desired log directory
+    networks:
+      - transit-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
-  networks:
-    transit-network:
-      driver: bridge
+networks:
+  transit-network:
+    driver: bridge
    ```
 
 **Run with Docker Compose:**
