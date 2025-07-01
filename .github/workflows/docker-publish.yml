@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build and publish Docker image
 
 on:
   push:
@@ -25,6 +25,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       is_tag: ${{ steps.version.outputs.is_tag }}
       is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      image_digest: ${{ steps.build.outputs.digest }}
       
     steps:
       - name: Checkout repository
@@ -63,81 +64,86 @@ jobs:
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
           
-      - name: Generate Docker tags
-        id: tags
-        run: |
-          TAGS=""
-          
-          if [[ "${{ steps.version.outputs.is_tag }}" == "true" ]]; then
-            # This is a version tag
-            VERSION="${{ steps.version.outputs.version }}"
-            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$VERSION"
-            
-            if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-              # Pre-release: tag as pre-release
-              TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release"
-            else
-              # Stable release: also tag as latest
-              TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-            fi
-          else
-            # This is a release branch build
-            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
-          fi
-          
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
-          echo "Generated tags: $TAGS"
-          
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Extract metadata and generate tags
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.tags.outputs.tags }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # For release branch, tag as latest and with commit SHA
+            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'false' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
+            
+            # For version tags, tag with version number
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' }}
+            
+            # For stable version tags, also tag as latest
+            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'false' }}
+            
+            # For pre-releases, tag as pre-release
+            type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
           labels: |
             org.opencontainers.image.title=Transit-TV
             org.opencontainers.image.description=Use the Transit API to show next departure of a location in big for a TV context
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.created=${{ env.GITHUB_REF_NAME }}
+            org.opencontainers.image.created=${{ github.run_id }}
             org.opencontainers.image.revision=${{ github.sha }}
+            
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Disable provenance and SBOM to prevent manifest issues
+          provenance: false
+          sbom: false
           
-      - name: Verify image push
+      - name: Verify pushed images
         run: |
           echo "Verifying pushed images..."
-          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
-          for tag in "${TAG_ARRAY[@]}"; do
-            echo "Checking: $tag"
-            docker manifest inspect "$tag" > /dev/null && echo "✅ $tag exists" || echo "❌ $tag not found"
+          echo "Image digest: ${{ steps.build.outputs.digest }}"
+          echo "Tags:"
+          echo '${{ steps.meta.outputs.tags }}' | while read -r tag; do
+            if [[ -n "$tag" ]]; then
+              echo "Checking: $tag"
+              # Use docker manifest inspect to verify each tag exists
+              if docker manifest inspect "$tag" > /dev/null 2>&1; then
+                echo "✅ $tag exists and is accessible"
+              else
+                echo "❌ $tag verification failed"
+                exit 1
+              fi
+            fi
           done
           
       - name: Generate summary
         run: |
-          echo "## Docker Image Published Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "## Docker Image Published Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Add version info
           if [[ "${{ steps.version.outputs.is_tag }}" == "false" ]]; then
-            echo "**Release Type:** 🚀 Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type:** Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-            echo "**Release Type:** 🧪 Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type:** Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Release Type:** ✅ Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type:** Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
-          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
-          for tag in "${TAG_ARRAY[@]}"; do
-            echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
-          done
+          echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Provide appropriate pull commands based on release type
