@@ -2,18 +2,20 @@
 
 angular
   .module('transitScreenApp')
-  .controller('NearbyCtrl', ['$rootScope', '$interval', '$scope', 'ScreenConfig', 'Nearby', NearbyCtrl]);
+  .controller('NearbyCtrl', ['$rootScope', '$interval', '$scope', 'ScreenConfig', 'Nearby', 'AlertService', NearbyCtrl]);
 
-function NearbyCtrl($rootScope, $interval, $scope, ScreenConfig, Nearby) {
+function NearbyCtrl($rootScope, $interval, $scope, ScreenConfig, Nearby, AlertService) {
   var vm = this;
 
   angular.extend(vm, {
     config: ScreenConfig,
     routes: [],
     placemarks: [],
+    activeAlerts: [],
 
     isShown: isShown,
     hide: hide,
+    hasActiveAlerts: hasActiveAlerts,
 
     onChangeOrder: onChangeOrder
   });
@@ -66,9 +68,14 @@ function NearbyCtrl($rootScope, $interval, $scope, ScreenConfig, Nearby) {
       }
 
       vm.routes = routes;
+      vm.activeAlerts = AlertService.getAllActiveAlerts(routes);
     }).catch(function(error) {
       console.error('Error loading nearby routes:', error);
     });
+  }
+
+  function hasActiveAlerts() {
+    return vm.activeAlerts && vm.activeAlerts.length > 0;
   }
 
   function hide(route) {

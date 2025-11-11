@@ -44,6 +44,92 @@
   display: block;
 }
 
+.route h2 {
+  position: relative;
+}
+
+.route .alert-indicator-icon {
+  position: absolute;
+  top: 0.15em;
+  right: 0.15em;
+  font-size: 0.85em;
+  font-style: normal;
+  line-height: 1;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+.route .alert-indicator-icon.alert:before {
+  content: '\25B2';
+  font-size: 1em;
+}
+
+.route .alert-indicator-icon.info:before {
+  content: '\25CF';
+  font-size: 0.85em;
+}
+
+.route-alert-header {
+  font-size: 1.5em;
+  font-weight: bold;
+  line-height: 2;
+  padding: 0.5em;
+  margin-top: 0.5em;
+  border-radius: 0.2em 0.2em 0 0;
+  text-align: left;
+  height: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  border-bottom: 1px solid rgba(255, 255, 255, .2);
+}
+
+.route .white .route-alert-header {
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+}
+
+.route-alert-ticker {
+  font-size: 1.5em;
+  font-weight: medium;
+  line-height: 1.3;
+  padding: 0.4em 0.5em;
+  margin-top: 0;
+  border-radius: 0 0 0.2em 0.2em;
+  overflow: hidden;
+  position: relative;
+  height: 8em;
+}
+
+@keyframes scroll-alert-vertical {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.route-alert-ticker .alert-text {
+  display: block;
+  white-space: pre-line;
+  word-wrap: break-word;
+  animation: scroll-alert-vertical 240s linear infinite;
+}
+
+.route-alert-ticker .alert-text.single-alert {
+  animation: none;
+}
+
+.route-alert-ticker:hover .alert-text {
+  animation-play-state: paused;
+}
+
+.route-alert-ticker .separator {
+  margin: 0 0.8em;
+  opacity: 0.6;
+}
+
 .route h3 {
   font-size: 2em;
   padding: 0.4em 0.35em 0.3em 0.35em;
@@ -112,10 +198,7 @@
 
 .route .stop_name {
   position: relative;
-  background-repeat: no-repeat;
-  background-position: 0 0.05em;
-  background-size: auto 1em;
-  padding-left: 1em;
+  padding-left: 1.1em;
 
   font-size: 1.4em;
   margin-bottom: 0.4em;
@@ -124,6 +207,16 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.route .stop_name .pin-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
 

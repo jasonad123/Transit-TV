@@ -1,0 +1,9 @@
+<div class="alert-ticker">
+  <div class="ticker-content">
+    <span ng-repeat="alert in ctrl.alerts track by $index">
+      <i class="alert-icon" ng-class="alert.isAlert ? 'alert' : 'info'"></i>
+      {{ ctrl.formatAlert(alert) }}
+      <span class="separator" ng-if="!$last">•</span>
+    </span>
+  </div>
+</div>

@@ -32,12 +32,12 @@ exports.nearby = function (req, res) {
       console.error('Error fetching nearby routes:', error);
       return res.status(500).json({ error: 'Failed to fetch nearby routes' });
     }
-    
+
     if (response.statusCode !== 200) {
       console.error('Error response from transit API:', response.statusCode, body);
       return res.status(response.statusCode).json({ error: 'Transit API error' });
     }
-    
+
     res.status(200).send(body);
   });
 };

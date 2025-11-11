@@ -19,9 +19,12 @@ function RouteItem() {
   return directive;
 }
 
-RouteItemCtrl.$inject = ['Nearby'];
-function RouteItemCtrl(Nearby) {
+RouteItemCtrl.$inject = ['$scope', 'Nearby', 'AlertService'];
+function RouteItemCtrl($scope, Nearby, AlertService) {
   var vm = this;
+
+  // Make route available to controller
+  vm.route = $scope.route;
 
   angular.extend(vm, {
     useBlackText: useBlackText,
@@ -31,6 +34,12 @@ function RouteItemCtrl(Nearby) {
     getPinUrl: getPinUrl,
     getImageUrl: getImageUrl,
     getImageSize: getImageSize,
+    getAlertIconUrl: getAlertIconUrl,
+    getAlertText: getAlertText,
+    hasSingleAlert: hasSingleAlert,
+
+    hasAlerts: AlertService.hasAlerts,
+    getAlertClass: AlertService.getAlertIcon,
 
     hasShownDeparture: Nearby.hasShownDeparture,
     shouldShowDeparture: shouldShowDeparture
@@ -69,10 +78,31 @@ function RouteItemCtrl(Nearby) {
     return new Date(departure * 1000).toISOString();
   }
 
-  function getPinUrl(route) {
-    var hex = useBlackText(route) ? '' : (route.route_color + '/');
+  function getPinUrl() {
+    // No longer needed - using CSS pin instead
+    return null;
+  }
 
-    return 'https://widget.transitapp.com/images/28/' + hex + 'pin.png';
+  function getAlertIconUrl(route) {
+    var alertType = AlertService.getAlertIcon(route);
+    var iconFile = alertType === 'alert' ? 'alert-triangle.svg' : 'info-circle.svg';
+    return '/assets/images/alerts/' + iconFile;
+  }
+
+  function getAlertText(route) {
+    if (!route.alerts || route.alerts.length === 0) {
+      return '';
+    }
+
+    var titles = route.alerts.map(function(alert) {
+      return alert.title || alert.description || 'Service alert';
+    });
+
+    return titles.join('\n\n');
+  }
+
+  function hasSingleAlert(route) {
+    return route && route.alerts && route.alerts.length === 1;
   }
 
   function shouldShowDeparture(item) {
