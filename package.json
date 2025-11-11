@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "server/app.js",
   "dependencies": {
+    "@sveltejs/mcp": "^0.1.11",
     "angular": "^1.8.3",
     "angular-cookies": "^1.8.3",
     "angular-dragdrop": "^1.0.13",
