@@ -15,6 +15,7 @@ export interface Route {
 export interface Itinerary {
 	closest_stop?: {
 		stop_name: string;
+		global_stop_id?: string;
 	};
 	merged_headsign?: string;
 	schedule_items?: ScheduleItem[];
@@ -26,10 +27,19 @@ export interface ScheduleItem {
 	is_last?: boolean;
 }
 
+export interface InformedEntity {
+	global_route_id?: string;
+	global_stop_id?: string;
+	rt_trip_id?: string;
+}
+
 export interface Alert {
+	effect: string;
+	severity: string;
 	title?: string;
-	description?: string;
-	severity?: string;
+	description: string;
+	created_at: number;
+	informed_entities: InformedEntity[];
 }
 
 export interface LatLng {
@@ -95,4 +105,19 @@ export function hasShownDeparture(route: Route, itinerary?: Itinerary): boolean 
 export function shouldShowDeparture(departure: number): boolean {
 	const diff = departure * 1000 - Date.now();
 	return diff > 0 && diff <= 130 * 60000;
+}
+
+export function extractGlobalStopIds(routes: Route[]): Set<string> {
+	const stopIds = new Set<string>();
+
+	routes.forEach((route) => {
+		route.itineraries?.forEach((itinerary) => {
+			const stopId = itinerary.closest_stop?.global_stop_id;
+			if (stopId) {
+				stopIds.add(stopId);
+			}
+		});
+	});
+
+	return stopIds;
 }

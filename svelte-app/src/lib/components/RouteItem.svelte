@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { hasAlerts, getAlertIcon } from '$lib/services/alerts';
 	import type { Route, ScheduleItem } from '$lib/services/nearby';
 
 	export let route: Route;
@@ -28,17 +27,71 @@
 		return minutes >= 0 && minutes <= 120;
 	}
 
-	function hasShownDeparture(itinerary: any): boolean {
-		if (!itinerary?.schedule_items) return false;
-		return itinerary.schedule_items.some((item: ScheduleItem) => shouldShowDeparture(item));
+	function getLocalStopIds(): Set<string> {
+		const stopIds = new Set<string>();
+		route.itineraries?.forEach((itinerary) => {
+			const stopId = itinerary.closest_stop?.global_stop_id;
+			if (stopId) {
+				stopIds.add(stopId);
+			}
+		});
+		return stopIds;
+	}
+
+	function isAlertRelevantToRoute(alert: any): boolean {
+		if (!alert.informed_entities || alert.informed_entities.length === 0) {
+			return true;
+		}
+
+		const localStopIds = getLocalStopIds();
+
+		return alert.informed_entities.some((entity: any) => {
+			const hasRouteId = !!entity.global_route_id;
+			const hasStopId = !!entity.global_stop_id;
+
+			if (!hasRouteId && !hasStopId) {
+				return true;
+			}
+
+			const routeMatches = !hasRouteId || entity.global_route_id === route.global_route_id;
+			const stopMatches = !hasStopId || localStopIds.has(entity.global_stop_id);
+
+			return routeMatches && stopMatches;
+		});
+	}
+
+	function getRelevantAlerts() {
+		if (!route.alerts?.length) return [];
+		return route.alerts.filter(isAlertRelevantToRoute);
+	}
+
+	function hasRelevantAlerts(): boolean {
+		return getRelevantAlerts().length > 0;
 	}
 
 	function getAlertText(): string {
-		if (!route.alerts?.length) return '';
-		return route.alerts
-			.map((alert) => alert.title || alert.description || 'Service alert')
-			.join('\n\n');
+		const relevantAlerts = getRelevantAlerts();
+		if (!relevantAlerts.length) return '';
+
+		return relevantAlerts
+			.map((alert) => {
+				const hasTitle = alert.title && alert.title.trim().length > 0;
+				const hasDescription = alert.description && alert.description.trim().length > 0;
+
+				if (hasTitle && hasDescription) {
+					return `${alert.title}\n\n${alert.description}`;
+				} else if (hasTitle) {
+					return alert.title;
+				} else if (hasDescription) {
+					return alert.description;
+				} else {
+					return 'Service alert';
+				}
+			})
+			.join('\n\n---\n\n');
 	}
+
+	$: relevantAlertCount = getRelevantAlerts().length;
 
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
 		if (!element) return;
@@ -77,8 +130,6 @@
 			}
 		};
 	}
-
-	$: hasSingleAlert = route.alerts?.length === 1;
 </script>
 
 <div class="route" class:white={useBlackText} style="color: {useBlackText ? '#000000' : '#' + route.route_color}">
@@ -115,37 +166,38 @@
 								use:bindDestinationElement={index}
 							>{dir.merged_headsign || 'Unknown destination'}</span></h3>
 
-							{#if hasShownDeparture(dir)}
-								<div class="time">
-									{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
-										<h4>
-											<span>{getMinutesUntil(item.departure_time)}</span>
-											{#if item.is_real_time}
-												<i class="realtime"></i>
-											{/if}
-											<small class:last={item.is_last}
-												>{item.is_last ? 'last' : 'min'}</small
-											>
-										</h4>
-									{/each}
-									{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
-										<h4><span class="inactive">&nbsp;</span></h4>
-									{/each}
-								</div>
-							{/if}
+							<div class="time">
+								{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
+									<h4>
+										<span>{getMinutesUntil(item.departure_time)}</span>
+										{#if item.is_real_time}
+											<i class="realtime"></i>
+										{/if}
+										<small class:last={item.is_last}
+											>{item.is_last ? 'last' : 'min'}</small
+										>
+									</h4>
+								{/each}
+								{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
+									<h4>
+										<span class="inactive">&nbsp;</span>
+										<small>&nbsp;</small>
+									</h4>
+								{/each}
+							</div>
 						</div>
 					</div>
 				{/if}
 			{/each}
 		{/if}
 
-	{#if hasAlerts(route)}
+	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" style={cellStyle}>
-				<span>{route.route_short_name || route.route_long_name} Service Alerts</span>
+				<span>Service Alerts for {route.route_short_name || route.route_long_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
-				<div class="alert-text" class:single-alert={hasSingleAlert}>{getAlertText()}</div>
+				<div class="alert-text" class:single-alert={relevantAlertCount === 1}>{getAlertText()}</div>
 			</div>
 		</div>
 	{/if}
@@ -282,13 +334,15 @@
 	}
 
 	.route .img28 {
-		max-height: 0.7em;
-		vertical-align: baseline;
+		height: 1em;
+		vertical-align: middle;
+		display: inline-block;
 	}
 
 	.route .img34 {
-		max-height: 0.85em;
-		margin-bottom: -2px;
+		height: 1em;
+		vertical-align: middle;
+		display: inline-block;
 	}
 
 	.route i {
