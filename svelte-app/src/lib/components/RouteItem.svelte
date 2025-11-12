@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import type { Route, ScheduleItem } from '$lib/services/nearby';
 
 	export let route: Route;
@@ -85,7 +86,7 @@
 				} else if (hasDescription) {
 					return alert.description;
 				} else {
-					return 'Service alert';
+					return $_('alerts.default');
 				}
 			})
 			.join('\n\n---\n\n');
@@ -206,9 +207,7 @@
 <style>
 
 	.route {
-		display: inline-block;
-		width: 25%;
-		vertical-align: top;
+		width: 100%;
 		box-sizing: border-box;
 	}
 
