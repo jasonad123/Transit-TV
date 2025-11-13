@@ -1,5 +1,7 @@
 services:
   # Production service - Svelte migration
+  # To run production: docker compose -f compose.svelte.yml up
+  # To run development: docker compose -f compose.svelte.yml --profile dev up
   transit-tv-svelte:
     env_file:
       - .env.docker
@@ -23,6 +25,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    profiles:
+      - production
 
   # Frontend build service - builds Svelte app independently
   frontend-builder:
@@ -59,31 +63,57 @@ services:
       - build
 
   # Development service - Svelte with hot reload
+  # Note: For development, it's recommended to run locally:
+  #   Terminal 1: cd svelte-app && pnpm dev
+  #   Terminal 2: USE_SVELTE=true pnpm start
+  # This provides better performance and easier debugging than Docker.
   transit-tv-dev:
     image: node:20-alpine
     container_name: transit-tv-dev
-    working_dir: /app
-    restart: unless-stopped
+    working_dir: /app/svelte-app
+    restart: "no"
     ports:
       - "5173:5173"  # Vite dev server
-      - "8082:8080"  # App port (alternate)
     environment:
       NODE_ENV: "development"
-      VITE_HMR_HOST: "localhost"
-      VITE_HMR_PORT: "5173"
       CI: "true"
+    env_file:
+      - .env.docker
+    volumes:
+      - ./svelte-app:/app/svelte-app
+      - dev_svelte_modules:/app/svelte-app/node_modules
+    networks:
+      - transit-network
+    command: >
+      sh -c "npm install -g pnpm &&
+             pnpm install &&
+             pnpm run dev -- --host 0.0.0.0"
+    profiles:
+      - dev
+
+  # Backend service for development (pairs with transit-tv-dev)
+  transit-tv-backend:
+    image: node:20-alpine
+    container_name: transit-tv-backend
+    working_dir: /app
+    restart: "no"
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: "development"
+      USE_SVELTE: "false"
+      CI: "true"
+    env_file:
+      - .env.docker
     volumes:
       - .:/app
-      - dev_svelte_modules:/app/svelte-app/node_modules
       - dev_modules:/app/node_modules
     networks:
       - transit-network
     command: >
       sh -c "npm install -g pnpm &&
              pnpm install &&
-             cd svelte-app &&
-             pnpm install &&
-             pnpm run dev"
+             node server/app.js"
     profiles:
       - dev
 
