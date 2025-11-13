@@ -53,37 +53,58 @@ module.exports = function(app) {
   app.use(methodOverride());
   app.use(cookieParser());
 
-  if ('development' === env) {
+  // Check if we should use the SvelteKit app
+  var useSvelteApp = process.env.USE_SVELTE === 'true';
+
+  if (useSvelteApp) {
+    console.log('Using SvelteKit application');
+
+    // Serve SvelteKit static assets with optimal caching
+    app.use(express.static(path.join(config.root, 'svelte-app/build/client'), {
+      maxAge: env === 'production' ? '1d' : 0,
+      setHeaders: function(res, filepath) {
+        // Immutable cache for hashed assets
+        if (filepath.includes('/_app/immutable/')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      }
+    }));
+
+    app.use(morgan(env === 'production' ? 'combined' : 'dev'));
+
+    if (env !== 'production') {
+      app.use(errorHandler());
+    }
+  } else if ('development' === env) {
+    console.log('Using legacy AngularJS application (development)');
     app.use(require('connect-livereload')());
     app.use(express.static(path.join(config.root, '.tmp')));
     app.use(express.static(path.join(config.root, 'client')));
     app.use('/node_modules', express.static(path.join(config.root, 'node_modules')));
     app.set('appPath', path.join(config.root, 'client'));
     app.use(morgan('dev'));
-    app.use(errorHandler()); // Error handler - has to be last
+    app.use(errorHandler());
   } else {
+    console.log('Using legacy AngularJS application (production)');
     try {
       app.use(favicon(path.join(config.root, 'client', 'favicon.ico')));
     } catch(e) {
       console.warn('Favicon not found, continuing without it');
     }
-    
-    // Set cache headers for static assets in production
+
     app.use(express.static(path.join(config.root, 'client'), {
       maxAge: '1d',
       setHeaders: function(res, path) {
-        // Don't cache HTML files
         if (path.endsWith('.html')) {
           res.setHeader('Cache-Control', 'no-cache');
         }
       }
     }));
-    
+
     app.use('/node_modules', express.static(path.join(config.root, 'node_modules')));
     app.set('appPath', path.join(config.root, 'client'));
-    app.use(morgan('combined')); // More detailed logging in production
-    
-    // Add request timeout middleware
+    app.use(morgan('combined'));
+
     app.use(function(req, res, next) {
       res.setTimeout(config.requestTimeout, function() {
         console.error('Request timeout: ' + req.url);
@@ -91,8 +112,7 @@ module.exports = function(app) {
       });
       next();
     });
-    
-    // Add production error handler
+
     app.use(function(err, req, res, next) {
       console.error(err);
       res.status(err.status || 500).send({
