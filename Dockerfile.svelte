@@ -32,6 +32,7 @@ RUN cd svelte-app && pnpm install --prod
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV USE_SVELTE=true
 
 EXPOSE 8080
 

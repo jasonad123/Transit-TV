@@ -162,3 +162,4 @@ configs.json
 .mcp.json
 svelte-app/static/fonts/*
 .pnpm-store/*
+svelte-app/.pnpm-store/*
