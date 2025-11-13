@@ -255,5 +255,5 @@ See the [LICENSE](LICENSE) file for details.
 
 ## Disclaimers
 
-> [!INFO]
+> [!NOTE]
 > **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
