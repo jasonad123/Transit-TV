@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
@@ -315,7 +316,7 @@
 		{:else}
 			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4}>
 				{#each routes as route, index (route.global_route_id)}
-					<div class="route-wrapper">
+					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						<RouteItem {route} />
 						<div class="route-controls">
 							{#if index > 0}

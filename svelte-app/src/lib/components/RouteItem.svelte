@@ -101,56 +101,77 @@
 	let routeLongNameElement: HTMLElement | null = null;
 	let shouldHideLongName = $state(false); // Start visible, hide only if needed
 
+	let destinationCheckTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
+
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
 		if (!element) return;
 		const parent = element.parentElement;
 		if (!parent) return;
 
-		// Use requestAnimationFrame to ensure DOM has been painted
-		requestAnimationFrame(() => {
-			const isOverflowing = element.scrollWidth > parent.clientWidth;
-			const newSet = new Set(overflowingDestinations);
-			if (isOverflowing) {
-				newSet.add(index);
-			} else {
-				newSet.delete(index);
-			}
-			overflowingDestinations = newSet;
-		});
+		// Debounce resize checks
+		const existing = destinationCheckTimeouts.get(index);
+		if (existing) clearTimeout(existing);
+
+		const timeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				const isOverflowing = element.scrollWidth > parent.clientWidth;
+				const newSet = new Set(overflowingDestinations);
+				if (isOverflowing) {
+					newSet.add(index);
+				} else {
+					newSet.delete(index);
+				}
+				overflowingDestinations = newSet;
+			});
+		}, 150);
+
+		destinationCheckTimeouts.set(index, timeout);
 	}
+
+	let alertCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	function checkAlertOverflow(element: HTMLElement) {
 		if (!element) return;
 		const parent = element.parentElement;
 		if (!parent) return;
 
-		// Use requestAnimationFrame to ensure DOM has been painted
-		requestAnimationFrame(() => {
-			isAlertOverflowing = element.scrollHeight > parent.clientHeight;
-		});
+		// Debounce resize checks
+		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
+
+		alertCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				isAlertOverflowing = element.scrollHeight > parent.clientHeight;
+			});
+		}, 150);
 	}
+
+	let routeLongNameCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	function checkRouteLongNameOverflow(element: HTMLElement) {
 		if (!element) return;
 
-		// Use requestAnimationFrame to ensure DOM has been painted
-		requestAnimationFrame(() => {
-			const computedStyle = window.getComputedStyle(element);
-			const fontSize = parseFloat(computedStyle.fontSize);
-			const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 1.2;
-			const widthInEm = element.clientWidth / fontSize;
+		// Debounce resize checks
+		if (routeLongNameCheckTimeout) clearTimeout(routeLongNameCheckTimeout);
 
-			// Calculate approximate number of lines
-			const lines = element.clientHeight / lineHeight;
+		routeLongNameCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				const computedStyle = window.getComputedStyle(element);
+				const fontSize = parseFloat(computedStyle.fontSize);
+				const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 1.2;
+				const widthInEm = element.clientWidth / fontSize;
 
-			// Hide if:
-			// 1. Extremely narrow (< 2em) AND wrapping (> 1.5 lines) - causes vertical stacking like "DASHD"
-			// 2. Wrapping to 4+ lines - becomes unreadable like "Downtown LA Freeway Express"
-			const isVerticallyStacked = widthInEm < 2.0 && lines > 1.5;
-			const isTooManyLines = lines > 4;
+				// Calculate approximate number of lines
+				const lines = element.clientHeight / lineHeight;
 
-			shouldHideLongName = isVerticallyStacked || isTooManyLines;
-		});
+				// Hide if:
+				// 1. Extremely narrow (< 2em) AND wrapping (> 1.5 lines) - causes vertical stacking like "DASHD"
+				// 2. Wrapping to 4+ lines - becomes unreadable like "Downtown LA Freeway Express"
+				const isVerticallyStacked = widthInEm < 2.0 && lines > 1.5;
+				const isTooManyLines = lines > 4;
+
+				shouldHideLongName = isVerticallyStacked || isTooManyLines;
+			});
+		}, 150);
 	}
 
 	function bindDestinationElement(node: HTMLElement, index: number) {
