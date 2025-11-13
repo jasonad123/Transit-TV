@@ -50,13 +50,13 @@ cp .env.docker.example .env.docker
 ## Local testing/deployment
 
 > [!NOTE]
-> This project has been migrated to SvelteKit. The legacy AngularJS version is still available but the SvelteKit version is recommended for new deployments.
+> This project has been migrated to a new stack built on Svelte and SvelteKit. The legacy version (based on AngularJS) is still available but the SvelteKit version is recommended for most new deployments. The warnings above still apply either way.
 
 ### SvelteKit Version (Recommended)
 
 1. Follow the **getting started** steps
 
-This includes getting an API key from Transit and setting up the `.env` file.
+This includes getting an API key from Transit and setting up the `.env` file and cloning this repo locally.
 
 2. Build and run locally
 
@@ -252,3 +252,8 @@ UNATTENDED_TIME_FORMAT=HH:mm
 ## License
 
 See the [LICENSE](LICENSE) file for details.
+
+## Disclaimers
+
+> [!NOTE]
+> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
