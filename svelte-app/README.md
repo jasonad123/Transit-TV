@@ -48,14 +48,45 @@ pnpm preview
 
 ## Production Deployment
 
-The SvelteKit app integrates with the existing Express.js backend.
+The SvelteKit app can be deployed in two ways:
+
+### Option 1: Integrated with Express (Recommended)
+
+The Express backend serves the SvelteKit build when `USE_SVELTE=true`:
+
+```bash
+# Build SvelteKit
+cd svelte-app && pnpm build && cd ..
+
+# Start Express with SvelteKit
+USE_SVELTE=true pnpm start
+```
+
+Express configuration dynamically loads the SvelteKit handler and serves:
+- Static assets from `svelte-app/build/client`
+- SSR pages via `svelte-app/build/handler.js`
+- API routes from `server/api/*`
+
+### Option 2: Docker Deployment
+
+```bash
+# Build and run with Docker
+docker build -f Dockerfile.svelte -t transit-tv-svelte .
+docker run -p 8080:8080 --env-file .env.docker transit-tv-svelte
+
+# Or with Docker Compose
+docker compose -f compose.svelte.yml --profile production up
+```
+
+### API Integration
 
 Backend endpoints (served by Express on port 8080):
 - `/api/routes/nearby` - Get nearby transit routes
 - `/api/config/unattended` - Get unattended setup config
 - `/api/images/*` - Get route images
 
-SvelteKit proxies these via server routes in `src/routes/api/`.
+In development, SvelteKit proxies these via server routes in `src/routes/api/`.
+In production, Express serves both the SvelteKit app and API routes.
 
 ## Features Migrated
 
