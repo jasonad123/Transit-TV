@@ -226,7 +226,7 @@
 		padding-left: 0.26em;
 		margin-bottom: 0em;
 		padding-bottom: 0em;
-		padding-top: 0em;
+		padding-top: 0.25em;
 		display: flex;
 		align-items: flex-start;
 		flex-wrap: nowrap;
