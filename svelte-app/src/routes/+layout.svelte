@@ -11,6 +11,8 @@
 	// Register translation files
 	register('en', () => import('$lib/i18n/en.json'));
 	register('fr', () => import('$lib/i18n/fr.json'));
+	register('es', () => import('$lib/i18n/es.json'));
+	register('de', () => import('$lib/i18n/de.json'));	
 
 	init({
 		fallbackLocale: 'en',

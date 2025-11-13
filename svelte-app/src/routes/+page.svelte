@@ -180,6 +180,8 @@
 					<select bind:value={$config.language}>
 						<option value="en">{$_('config.languages.english')}</option>
 						<option value="fr">{$_('config.languages.french')}</option>
+						<option value="es">{$_('config.languages.spanish')}</option>
+						<option value="de">{$_('config.languages.german')}</option>
 					</select>
 				</label>
 

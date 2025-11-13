@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Televisión Transit",
+    "nearbyRoutes": "Líneas cercanas"
+  },
+  "config": {
+    "title": "Configurar Televisión Transit",
+    "fields": {
+      "title": "Título :",
+      "location": "Posición (lat, lng) :",
+      "timeFormat": "Formato de tiempo :",
+      "language": "Idioma :"
+    },
+    "timeFormats": {
+      "12hour": "12 horas",
+      "24hour": "24 horas"
+    },
+    "languages": {
+      "english": "English",
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
+    },
+    "hiddenRoutes": {
+      "title": "Rutas encubiertas",
+      "helpText": "Haz clic aquí para ocultar las rutas"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "save": "Ahorrar"
+    }
+  },
+  "routes": {
+    "loading": "Cargando las rutas...",
+    "noRoutes": "Hay no rutas encontradas cerca",
+    "controls": {
+      "moveToTop": "Subir al principio",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "hide": "Esconder la ruta"
+    }
+  },
+  "aria": {
+    "transitApp": "Application Transit",
+    "settings": "Configuración",
+    "moveRouteToTop": "Subir al principio",
+    "moveRouteUp": "Subir",
+    "moveRouteDown": "Bajar",
+    "hideRoute": "Esconder la ruta"
+  },
+  "alerts": {
+    "default": "Avisos de servicio"
+  },
+  "time": {
+    "min": "min",
+    "now": "ahora"
+  }
+}

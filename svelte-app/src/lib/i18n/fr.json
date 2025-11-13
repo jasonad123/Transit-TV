@@ -16,8 +16,10 @@
       "24hour": "24 heures"
     },
     "languages": {
-      "english": "Anglais",
-      "french": "Français"
+      "english": "English",
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
     },
     "hiddenRoutes": {
       "title": "Lignes masquées",

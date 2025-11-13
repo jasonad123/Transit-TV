@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Transit TV",
+    "nearbyRoutes": "Routen in der Nähe"
+  },
+  "config": {
+    "title": "Konfigurieren Transit TV",
+    "fields": {
+      "title": "Titel:",
+      "location": "Location (lat, lng):",
+      "timeFormat": "Zeitformat:",
+      "language": "Sprache:"
+    },
+    "timeFormats": {
+      "12hour": "12 Stunden",
+      "24hour": "24 Stunden"
+    },
+    "languages": {
+      "english": "English",
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
+    },
+    "hiddenRoutes": {
+      "title": "Versteckte Routen",
+      "helpText": "Zum Einblenden klicken"
+    },
+    "buttons": {
+      "cancel": "Stornieren",
+      "save": "Speichern"
+    }
+  },
+  "routes": {
+    "loading": "Routen werden geladen...",
+    "noRoutes": "Keine Routen gefunden in der Nähe",
+    "controls": {
+      "moveToTop": "Nach oben verschieben",
+      "moveUp": "Aufsteigen",
+      "moveDown": "Absteigen",
+      "hide": "Verstecken routen"
+    }
+  },
+  "aria": {
+    "transitApp": "Transit App",
+    "settings": "Einstellungen",
+    "moveRouteToTop": "Nach oben verschieben",
+    "moveRouteUp": "Aufsteigen",
+    "moveRouteDown": "Absteigen",
+    "hideRoute": "Verstecken routen"
+  },
+  "alerts": {
+    "default": "Störungsinformation"
+  },
+  "time": {
+    "min": "min",
+    "now": "jetzt"
+  }
+}

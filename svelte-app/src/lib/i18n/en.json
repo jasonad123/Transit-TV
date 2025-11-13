@@ -17,7 +17,9 @@
     },
     "languages": {
       "english": "English",
-      "french": "Français"
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
     },
     "hiddenRoutes": {
       "title": "Hidden Routes",
