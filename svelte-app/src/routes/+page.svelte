@@ -17,7 +17,7 @@
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
 
-			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, 1000);
+			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, 500);
 			allRoutes = fetchedRoutes;
 
 			routes = fetchedRoutes

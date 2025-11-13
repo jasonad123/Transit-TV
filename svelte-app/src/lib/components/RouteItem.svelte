@@ -143,12 +143,12 @@
 			const lines = element.clientHeight / lineHeight;
 
 			// Hide if:
-			// 1. Extremely narrow (< 2.5em) - causes vertical stacking like "DASHD"
-			// 2. Wrapping to 3+ lines - becomes unreadable like "Downtown LA Freeway Express"
-			const isExtremelyNarrow = widthInEm < 2.5;
+			// 1. Extremely narrow (< 2em) AND wrapping (> 1.5 lines) - causes vertical stacking like "DASHD"
+			// 2. Wrapping to 4+ lines - becomes unreadable like "Downtown LA Freeway Express"
+			const isVerticallyStacked = widthInEm < 2.0 && lines > 1.5;
 			const isTooManyLines = lines > 4;
 
-			shouldHideLongName = isExtremelyNarrow || isTooManyLines;
+			shouldHideLongName = isVerticallyStacked || isTooManyLines;
 		});
 	}
 
