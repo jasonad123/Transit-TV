@@ -185,6 +185,82 @@
 					</select>
 				</label>
 
+				<label>
+					{$_('config.fields.columns')}
+					<div class="button-group">
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 'auto'}
+							onclick={() => config.update(c => ({ ...c, columns: 'auto' }))}
+						>
+							{$_('config.columns.auto')}
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 1}
+							onclick={() => config.update(c => ({ ...c, columns: 1 }))}
+						>
+							1
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 2}
+							onclick={() => config.update(c => ({ ...c, columns: 2 }))}
+						>
+							2
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 3}
+							onclick={() => config.update(c => ({ ...c, columns: 3 }))}
+						>
+							3
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 4}
+							onclick={() => config.update(c => ({ ...c, columns: 4 }))}
+						>
+							4
+						</button>
+					</div>
+				</label>
+
+				<label>
+					{$_('config.fields.theme')}
+					<div class="button-group">
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.theme === 'light'}
+							onclick={() => config.update(c => ({ ...c, theme: 'light' }))}
+						>
+							{$_('config.theme.light')}
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.theme === 'auto'}
+							onclick={() => config.update(c => ({ ...c, theme: 'auto' }))}
+						>
+							{$_('config.theme.auto')}
+						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.theme === 'dark'}
+							onclick={() => config.update(c => ({ ...c, theme: 'dark' }))}
+						>
+							{$_('config.theme.dark')}
+						</button>
+					</div>
+				</label>
+
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
@@ -237,7 +313,7 @@
 		{:else if routes.length === 0}
 			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
-			<section id="routes">
+			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper">
 						<RouteItem {route} />
@@ -296,7 +372,7 @@
 	.container {
 		width: 100%;
 		height: 100%;
-		background: #fafafa;
+		background: var(--bg-primary);
 	}
 
 	.content {
@@ -312,8 +388,8 @@
 	}
 
 	header {
-		color: #ffffff;
-		background-color: #30b566;
+		color: var(--text-header);
+		background-color: var(--bg-header);
 		position: relative;
 	}
 
@@ -405,10 +481,11 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		background: white;
+		background: var(--bg-secondary);
+		color: var(--text-primary);
 		padding: 2em;
 		border-radius: 8px;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 4px 6px var(--shadow-color);
 		z-index: 1000;
 		min-width: 400px;
 		max-width: 90vw;
@@ -418,6 +495,7 @@
 
 	.config-modal h2 {
 		margin-top: 0;
+		color: var(--text-primary);
 	}
 
 	.config-modal form {
@@ -430,14 +508,17 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.3em;
+		color: var(--text-primary);
 	}
 
 	.config-modal input,
 	.config-modal select {
 		padding: 0.5em;
-		border: 1px solid #ddd;
+		border: 1px solid var(--border-color);
 		border-radius: 4px;
 		font-size: 1em;
+		background: var(--bg-primary);
+		color: var(--text-primary);
 	}
 
 	.modal-actions {
@@ -481,6 +562,23 @@
 		position: relative;
 	}
 
+	/* Column overrides */
+	#routes.cols-1 .route-wrapper {
+		width: 100%;
+	}
+
+	#routes.cols-2 .route-wrapper {
+		width: 50%;
+	}
+
+	#routes.cols-3 .route-wrapper {
+		width: 33.333%;
+	}
+
+	#routes.cols-4 .route-wrapper {
+		width: 25%;
+	}
+
 	.route-controls {
 		position: absolute;
 		top: 0.5em;
@@ -518,19 +616,20 @@
 	.route-management {
 		margin-top: 1.5em;
 		padding-top: 1em;
-		border-top: 1px solid #e0e0e0;
+		border-top: 1px solid var(--border-color);
 	}
 
 	.route-management h3 {
 		margin-top: 0;
 		margin-bottom: 0.5em;
 		font-size: 1.2em;
+		color: var(--text-primary);
 	}
 
 	.help-text {
 		margin: 0 0 1em 0;
 		font-size: 0.9em;
-		color: #666;
+		color: var(--text-secondary);
 	}
 
 	.hidden-routes-list {
@@ -540,7 +639,7 @@
 		max-height: 200px;
 		overflow-y: auto;
 		padding: 0.5em;
-		background: #f9f9f9;
+		background: var(--bg-primary);
 		border-radius: 4px;
 	}
 
@@ -549,8 +648,8 @@
 		align-items: center;
 		gap: 0.75em;
 		padding: 0.8em;
-		background: white;
-		border: 1px solid #ddd;
+		background: var(--bg-secondary);
+		border: 1px solid var(--border-color);
 		border-radius: 4px;
 		cursor: pointer;
 		transition: background 0.2s;
@@ -558,11 +657,11 @@
 	}
 
 	.hidden-route-item:hover {
-		background: #f5f5f5;
+		background: var(--bg-primary);
 	}
 
 	.hidden-route-item i {
-		color: #666;
+		color: var(--text-secondary);
 	}
 
 	.hidden-route-item span {
@@ -574,6 +673,37 @@
 		text-align: center;
 		padding: 3em;
 		font-size: 1.5em;
-		color: #666;
+		color: var(--text-secondary);
+	}
+
+	.button-group {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.btn-option {
+		flex: 1;
+		min-width: 60px;
+		padding: 0.6em 1em;
+		border: 2px solid var(--border-color);
+		border-radius: 4px;
+		background: var(--bg-secondary);
+		color: var(--text-primary);
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 0.95em;
+	}
+
+	.btn-option:hover {
+		border-color: #007bff;
+		background: var(--bg-primary);
+	}
+
+	.btn-option.active {
+		border-color: #007bff;
+		background: #007bff;
+		color: white;
+		font-weight: 600;
 	}
 </style>

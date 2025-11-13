@@ -9,7 +9,9 @@
       "title": "Title:",
       "location": "Location (lat, lng):",
       "timeFormat": "Time Format:",
-      "language": "Language:"
+      "language": "Language:",
+      "columns": "Grid Columns:",
+      "theme": "Theme:"
     },
     "timeFormats": {
       "12hour": "12 Hours",
@@ -20,6 +22,14 @@
       "french": "Français",
       "spanish": "Español",
       "german": "Deutsch"
+    },
+    "columns": {
+      "auto": "Auto"
+    },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
     },
     "hiddenRoutes": {
       "title": "Hidden Routes",

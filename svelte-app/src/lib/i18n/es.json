@@ -9,7 +9,9 @@
       "title": "Título :",
       "location": "Posición (lat, lng) :",
       "timeFormat": "Formato de tiempo :",
-      "language": "Idioma :"
+      "language": "Idioma :",
+      "columns": "Columnas de cuadrícula:",
+      "theme": "Tema:"
     },
     "timeFormats": {
       "12hour": "12 horas",
@@ -20,6 +22,14 @@
       "french": "Français",
       "spanish": "Español",
       "german": "Deutsch"
+    },
+    "columns": {
+      "auto": "Auto"
+    },
+    "theme": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "auto": "Auto"
     },
     "hiddenRoutes": {
       "title": "Rutas encubiertas",

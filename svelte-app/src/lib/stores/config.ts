@@ -15,6 +15,8 @@ export interface Config {
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
+	columns: 'auto' | 1 | 2 | 3 | 4;
+	theme: 'light' | 'dark' | 'auto';
 }
 
 const defaultConfig: Config = {
@@ -28,7 +30,9 @@ const defaultConfig: Config = {
 		longitude: -74.00022736495859
 	},
 	timeFormat: 'HH:mm',
-	language: 'en'
+	language: 'en',
+	columns: 'auto',
+	theme: 'auto'
 };
 
 function createConfigStore() {

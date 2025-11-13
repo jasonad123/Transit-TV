@@ -9,7 +9,9 @@
       "title": "Titel:",
       "location": "Location (lat, lng):",
       "timeFormat": "Zeitformat:",
-      "language": "Sprache:"
+      "language": "Sprache:",
+      "columns": "Rasterspalten:",
+      "theme": "Thema:"
     },
     "timeFormats": {
       "12hour": "12 Stunden",
@@ -20,6 +22,14 @@
       "french": "Français",
       "spanish": "Español",
       "german": "Deutsch"
+    },
+    "columns": {
+      "auto": "Auto"
+    },
+    "theme": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "auto": "Auto"
     },
     "hiddenRoutes": {
       "title": "Versteckte Routen",

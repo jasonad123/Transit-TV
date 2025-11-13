@@ -2,14 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import type { Route, ScheduleItem } from '$lib/services/nearby';
 
-	export let route: Route;
+	let { route }: { route: Route } = $props();
 
-	$: useBlackText = route.route_text_color === '000000';
-	$: cellStyle = `background: #${route.route_color}; color: #${route.route_text_color}`;
-	$: imageSize = (route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34;
+	let useBlackText = $derived(route.route_text_color === '000000');
+	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
+	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
 
 	let destinationElements: Map<number, HTMLElement> = new Map();
-	let overflowingDestinations: Set<number> = new Set();
+	let overflowingDestinations = $state<Set<number>>(new Set());
 
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
@@ -92,14 +92,14 @@
 			.join('\n\n---\n\n');
 	}
 
-	$: relevantAlertCount = getRelevantAlerts().length;
+	let relevantAlertCount = $derived(getRelevantAlerts().length);
 
 	let alertElement: HTMLElement | null = null;
-	let isAlertOverflowing: boolean = false;
-	$: shouldScrollAlert = relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing);
+	let isAlertOverflowing = $state(false);
+	let shouldScrollAlert = $derived(relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing));
 
 	let routeLongNameElement: HTMLElement | null = null;
-	let shouldHideLongName: boolean = false; // Start visible, hide only if needed
+	let shouldHideLongName = $state(false); // Start visible, hide only if needed
 
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
 		if (!element) return;
@@ -109,12 +109,13 @@
 		// Use requestAnimationFrame to ensure DOM has been painted
 		requestAnimationFrame(() => {
 			const isOverflowing = element.scrollWidth > parent.clientWidth;
+			const newSet = new Set(overflowingDestinations);
 			if (isOverflowing) {
-				overflowingDestinations = overflowingDestinations.add(index);
+				newSet.add(index);
 			} else {
-				overflowingDestinations.delete(index);
-				overflowingDestinations = overflowingDestinations;
+				newSet.delete(index);
 			}
+			overflowingDestinations = newSet;
 		});
 	}
 
