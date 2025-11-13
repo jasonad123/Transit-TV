@@ -161,3 +161,4 @@ configs.json
 .claude/*
 .mcp.json
 svelte-app/static/fonts/*
+.pnpm-store/*

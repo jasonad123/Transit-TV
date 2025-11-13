@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { config } from '$lib/stores/config';
 	import { onMount } from 'svelte';
-	import { init, locale, register } from 'svelte-i18n';
+	import { init, locale, register, waitLocale } from 'svelte-i18n';
 	import '../app.css';
 	import '@fortawesome/fontawesome-free/css/solid.min.css';
 	import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
@@ -17,15 +17,20 @@
 		initialLocale: 'en'
 	});
 
-	onMount(() => {
-		config.load();
-		// Sync i18n locale with config language
+	// Set initial locale immediately
+	locale.set('en');
+
+	onMount(async () => {
+		await config.load();
+		// Sync i18n locale with config language after loading config
 		locale.set($config.language);
 	});
 
 	// Watch for config language changes
 	$effect(() => {
-		locale.set($config.language);
+		if ($config.language) {
+			locale.set($config.language);
+		}
 	});
 </script>
 
