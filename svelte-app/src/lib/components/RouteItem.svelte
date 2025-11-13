@@ -94,6 +94,13 @@
 
 	$: relevantAlertCount = getRelevantAlerts().length;
 
+	let alertElement: HTMLElement | null = null;
+	let isAlertOverflowing: boolean = false;
+	$: shouldScrollAlert = relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing);
+
+	let routeLongNameElement: HTMLElement | null = null;
+	let shouldHideLongName: boolean = false; // Start visible, hide only if needed
+
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
 		if (!element) return;
 		const parent = element.parentElement;
@@ -108,6 +115,40 @@
 				overflowingDestinations.delete(index);
 				overflowingDestinations = overflowingDestinations;
 			}
+		});
+	}
+
+	function checkAlertOverflow(element: HTMLElement) {
+		if (!element) return;
+		const parent = element.parentElement;
+		if (!parent) return;
+
+		// Use requestAnimationFrame to ensure DOM has been painted
+		requestAnimationFrame(() => {
+			isAlertOverflowing = element.scrollHeight > parent.clientHeight;
+		});
+	}
+
+	function checkRouteLongNameOverflow(element: HTMLElement) {
+		if (!element) return;
+
+		// Use requestAnimationFrame to ensure DOM has been painted
+		requestAnimationFrame(() => {
+			const computedStyle = window.getComputedStyle(element);
+			const fontSize = parseFloat(computedStyle.fontSize);
+			const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 1.2;
+			const widthInEm = element.clientWidth / fontSize;
+
+			// Calculate approximate number of lines
+			const lines = element.clientHeight / lineHeight;
+
+			// Hide if:
+			// 1. Extremely narrow (< 2.5em) - causes vertical stacking like "DASHD"
+			// 2. Wrapping to 3+ lines - becomes unreadable like "Downtown LA Freeway Express"
+			const isExtremelyNarrow = widthInEm < 2.5;
+			const isTooManyLines = lines > 4;
+
+			shouldHideLongName = isExtremelyNarrow || isTooManyLines;
 		});
 	}
 
@@ -131,6 +172,42 @@
 			}
 		};
 	}
+
+	function bindAlertElement(node: HTMLElement) {
+		alertElement = node;
+
+		// Wait for layout to settle before checking overflow
+		setTimeout(() => {
+			checkAlertOverflow(node);
+		}, 100);
+
+		const resizeObserver = new ResizeObserver(() => {
+			checkAlertOverflow(node);
+		});
+		resizeObserver.observe(node);
+
+		return {
+			destroy() {
+				resizeObserver.disconnect();
+				alertElement = null;
+			}
+		};
+	}
+
+	function bindRouteLongNameElement(node: HTMLElement) {
+		routeLongNameElement = node;
+
+		// Check overflow once on mount
+		setTimeout(() => {
+			checkRouteLongNameOverflow(node);
+		}, 50);
+
+		return {
+			destroy() {
+				routeLongNameElement = null;
+			}
+		};
+	}
 </script>
 
 <div class="route" class:white={useBlackText} style="color: {useBlackText ? '#000000' : '#' + route.route_color}">
@@ -144,7 +221,7 @@
 				class="img{imageSize}"
 				src={getImageUrl(2)}
 				alt="Route icon"
-			/>{/if}{/if}</span>{#if route.route_long_name}<span class="route-long-name">{route.route_long_name}</span>{/if}</h2>
+			/>{/if}{/if}</span>{#if route.route_long_name}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
 
 		{#if route.itineraries}
 			{#each route.itineraries as dir, index}
@@ -195,10 +272,10 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" style={cellStyle}>
-				<span>Service Alerts for {route.route_short_name || route.route_long_name}</span>
+				<span><i class="fa-solid fa-triangle-exclamation"></i> Alerts for {route.route_short_name || route.route_long_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
-				<div class="alert-text" class:single-alert={relevantAlertCount === 1}>{getAlertText()}</div>
+				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>{getAlertText()}</div>
 			</div>
 		</div>
 	{/if}
@@ -249,6 +326,10 @@
 		min-width: 0;
 	}
 
+	.route h2 .route-long-name.hidden {
+		display: none;
+	}
+
 	.route-alert-header {
 		font-size: 1.5em;
 		font-weight: bold;
@@ -257,7 +338,9 @@
 		margin-top: 0.25em;
 		border-radius: 0.2em 0.2em 0 0;
 		text-align: left;
-		height: 1.3em;
+		height: 1.25em;
+		/* min-height: 1.3em;
+		max-height: 2.5em; */
 		display: flex;
 		align-items: center;
 		justify-content: left;
@@ -295,11 +378,10 @@
 		display: block;
 		white-space: pre-line;
 		word-wrap: break-word;
-		animation: scroll-alert-vertical 240s linear infinite;
 	}
 
-	.route-alert-ticker .alert-text.single-alert {
-		animation: none;
+	.route-alert-ticker .alert-text.scrolling {
+		animation: scroll-alert-vertical 240s linear infinite;
 	}
 
 	.route h3 {

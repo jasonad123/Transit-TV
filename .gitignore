@@ -163,3 +163,4 @@ configs.json
 svelte-app/static/fonts/*
 .pnpm-store/*
 svelte-app/.pnpm-store/*
+Screenshot*.png
