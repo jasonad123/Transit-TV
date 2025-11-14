@@ -4,8 +4,6 @@
 	import { browser } from '$app/environment';
 	import { init, locale, register } from 'svelte-i18n';
 	import '../app.css';
-	import '@fortawesome/fontawesome-free/css/solid.min.css';
-	import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 
 	let { children } = $props();
 

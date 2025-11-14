@@ -2,7 +2,7 @@
 
 A real-time transit display application that shows arrival times for nearby public transportation.
 
-![Screenshot](screenshot.png)
+![Screenshot](transit-tv-reloaded-3.png)
 
 [![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
 

@@ -320,14 +320,15 @@
 				{#if dir}
 					<div class="content">
 						<div class="stop_name">
-							<svg
+							<!-- <svg
 								class="pin-icon"
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 640 640"
 								><path
 									d="M128 252.6C128 148.4 214 64 320 64C426 64 512 148.4 512 252.6C512 371.9 391.8 514.9 341.6 569.4C329.8 582.2 310.1 582.2 298.3 569.4C248.1 514.9 127.9 371.9 127.9 252.6zM320 320C355.3 320 384 291.3 384 256C384 220.7 355.3 192 320 192C284.7 192 256 220.7 256 256C256 291.3 284.7 320 320 320z"
 								/></svg
-							>{dir.closest_stop?.stop_name || 'Unknown stop'}
+							> -->
+							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
 						</div>
 						<div class="direction" style={cellStyle}>
 							<h3><span
@@ -364,7 +365,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" style={cellStyle}>
-				<span><i class="fa-solid fa-triangle-exclamation"></i> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
+				<span><iconify-icon icon="ix:warning-filled"></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>{getAlertText()}</div>
@@ -439,6 +440,15 @@
 		word-wrap: break-word;
 		overflow: hidden;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.route-alert-header iconify-icon {
+		display: display-internal;
+		vertical-align: middle;
+		width: 1em;
+		height: auto;
+		flex-shrink: 0;
+		margin-right: 0.3em;
 	}
 
 	.route.white .route-alert-header {
@@ -585,7 +595,17 @@
 		overflow: hidden;
 	}
 
-	.route .stop_name .pin-icon {
+	/* .route .stop_name .pin-icon {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 1em;
+		height: 1em;
+		fill: currentColor;
+	} */
+
+	.route .stop_name iconify-icon {
 		position: absolute;
 		left: 0;
 		top: 50%;

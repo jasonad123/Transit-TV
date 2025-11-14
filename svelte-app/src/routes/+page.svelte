@@ -6,6 +6,7 @@
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import type { Route } from '$lib/services/nearby';
+	import "iconify-icon";
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
 	let intervalId: ReturnType<typeof setInterval>;
@@ -136,7 +137,7 @@
 					</td>
 					<td id="title">
 						<h1>{$config.title || $_('app.nearbyRoutes')}</h1>
-						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}></button>
+						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}><iconify-icon icon="ix:cogwheel-filled"></iconify-icon></button>
 					</td>
 					<td id="utilities">
 						<span class="clock">{currentTime.toLocaleTimeString($config.language, {
@@ -302,7 +303,7 @@
 									class="hidden-route-item"
 									onclick={() => toggleRouteHidden(route.global_route_id)}
 								>
-									<i class="fa-solid fa-eye-slash"></i>
+									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 									<span>{route.route_short_name || route.route_long_name}</span>
 								</button>
 							{/each}
@@ -356,7 +357,7 @@
 									aria-label={$_('aria.moveRouteToTop')}
 									title={$_('routes.controls.moveToTop')}
 								>
-									<i class="fa-solid fa-angles-up"></i>
+									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
 								</button>
 							{/if}
 							{#if index > 0}
@@ -367,7 +368,7 @@
 									aria-label={$_('aria.moveRouteUp')}
 									title={$_('routes.controls.moveUp')}
 								>
-									<i class="fa-solid fa-arrow-up"></i>
+									<iconify-icon icon="ix:arrow-up"></iconify-icon>
 								</button>
 							{/if}
 							{#if index < routes.length - 1}
@@ -378,7 +379,7 @@
 									aria-label={$_('aria.moveRouteDown')}
 									title={$_('routes.controls.moveDown')}
 								>
-									<i class="fa-solid fa-arrow-down"></i>
+									<iconify-icon icon="ix:arrow-down"></iconify-icon>
 								</button>
 							{/if}
 							<button
@@ -388,7 +389,7 @@
 								aria-label={$_('aria.hideRoute')}
 								title={$_('routes.controls.hide')}
 							>
-								<i class="fa-solid fa-eye-slash"></i>
+								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 							</button>
 						</div>
 					</div>
@@ -399,6 +400,13 @@
 </div>
 
 <style>
+
+    iconify-icon {
+    	display: inline-block;
+    	width: 1em;
+    	height: 1em;
+	}
+
 	.container {
 		width: 100%;
 		height: 100%;
@@ -472,17 +480,24 @@
 		padding: 0;
 		margin-top: 0.45em;
 		display: inline-block;
-		width: 1.6em;
-		height: 1.6em;
+		width: 2em;
+		height: 2em;
 		background: none;
-		background-image: url('/assets/images/settings@2x.png');
-		background-size: 1.6em auto;
+		/* background-image: url('/assets/images/settings@2x.png'); */
+		background-size: 2em auto;
 		outline: none;
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.3s ease-in-out;
-		vertical-align: top;
+		vertical-align: middle;
 		border: none;
+	}
+
+	#title button iconify-icon {
+		width: 2em;
+		height: 2em;
+		font-size: 2em;
+		color: #ffffff;
 	}
 
 	#title:hover button {
@@ -712,8 +727,11 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 	}
 
-	.btn-route-control i {
+	.btn-route-control iconify-icon {
 		display: block;
+		width: 2em;
+		height: auto;
+		font-size: 1.25em;
 	}
 
 	.route-management {
@@ -763,12 +781,13 @@
 		background: var(--bg-primary);
 	}
 
-	.hidden-route-item i {
+	.hidden-route-item iconify-icon {
 		color: var(--text-secondary);
 	}
 
 	.hidden-route-item span {
 		font-weight: 500;
+		color: var(--text-primary);
 	}
 
 	.loading,
