@@ -15,7 +15,7 @@ export interface Config {
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
-	columns: 'auto' | 1 | 2 | 3 | 4;
+	columns: 'auto' | 1 | 2 | 3 | 4 | 5;
 	theme: 'light' | 'dark' | 'auto';
 	headerColor: string;
 	showRouteLongName: boolean;

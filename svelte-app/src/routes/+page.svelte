@@ -230,6 +230,14 @@
 						>
 							4
 						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 5}
+							onclick={() => config.update(c => ({ ...c, columns: 5 }))}
+						>
+							5
+						</button>
 					</div>
 				</label>
 
@@ -344,7 +352,7 @@
 		{:else if routes.length === 0}
 			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
-			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4}>
+			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						<RouteItem {route} showLongName={$config.showRouteLongName} />
@@ -695,6 +703,10 @@
 
 	#routes.cols-4 .route-wrapper {
 		width: 25%;
+	}
+
+	#routes.cols-5 .route-wrapper {
+		width: 20%;
 	}
 
 	.route-controls {
