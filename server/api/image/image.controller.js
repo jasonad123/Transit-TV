@@ -1,23 +1,21 @@
 'use strict';
 
-var request = require('request');
-
 // Get one image
-exports.show = function (req, res) {
+exports.show = async function (req, res) {
   // Validate input parameters
   if (!req.params.id) {
     return res.status(400).json({ error: 'Image ID is required' });
   }
-  
+
   var imageName = req.params.id,
     primaryColor = req.query.primaryColor || '010101',
     secondaryColor = req.query.secondaryColor || 'EFEFEF';
-    
+
   // Validate color format (should be a valid hex color without the # prefix)
   var hexColorRegex = /^[0-9A-Fa-f]{6}$/;
   if (!hexColorRegex.test(primaryColor) || !hexColorRegex.test(secondaryColor)) {
-    return res.status(400).json({ 
-      error: 'Invalid color format. Colors must be 6-character hex values without the # prefix' 
+    return res.status(400).json({
+      error: 'Invalid color format. Colors must be 6-character hex values without the # prefix'
     });
   }
 
@@ -25,20 +23,18 @@ exports.show = function (req, res) {
     filename = imageName.replace('.svg', '') + suffix + '.svg',
     url = 'https://transitapp-data.com/images/svgx/' + filename;
 
-  request({
-    url: url,
-    timeout: 10000 // 10 second timeout
-  }, function (err, response, data) {
-    if (err) {
-      console.error('Error fetching image:', err);
-      return handleError(res, 'Failed to fetch image');
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    });
+
+    if (!response.ok) {
+      console.error('Error response from image API:', response.status);
+      return handleError(res, 'Image not found or unavailable', response.status);
     }
-    
-    if (!response || response.statusCode !== 200) {
-      console.error('Error response from image API:', response ? response.statusCode : 'No response');
-      return handleError(res, 'Image not found or unavailable', response ? response.statusCode : 404);
-    }
-    
+
+    let data = await response.text();
+
     if (!data) {
       return handleError(res, 'Empty response from image server');
     }
@@ -51,8 +47,15 @@ exports.show = function (req, res) {
       return handleError(res, 'Failed to process image data');
     }
 
-    res.status(200).set(response.headers).send(data);
-  });
+    // Set content type for SVG
+    res.status(200)
+      .set('Content-Type', 'image/svg+xml')
+      .set('Cache-Control', 'public, max-age=86400')
+      .send(data);
+  } catch (err) {
+    console.error('Error fetching image:', err);
+    return handleError(res, 'Failed to fetch image');
+  }
 };
 
 function handleError(res, err, statusCode) {

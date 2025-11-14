@@ -54,7 +54,11 @@ var all = {
     enabled: process.env.UNATTENDED_SETUP === 'true',
     location: process.env.UNATTENDED_LOCATION || '',
     title: process.env.UNATTENDED_TITLE || '',
-    timeFormat: process.env.UNATTENDED_TIME_FORMAT || 'HH:mm'
+    timeFormat: process.env.UNATTENDED_TIME_FORMAT || 'HH:mm',
+    theme: process.env.UNATTENDED_THEME || 'light',
+    headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
+    columns: process.env.UNATTENDED_COLUMNS || 'auto',
+    showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_LONG_NAME !== 'false'
   },
   
   // Security settings

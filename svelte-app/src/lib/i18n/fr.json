@@ -11,7 +11,9 @@
       "timeFormat": "Format de l'heure :",
       "language": "Langue :",
       "columns": "Colonnes de grille :",
-      "theme": "Thème :"
+      "theme": "Thème :",
+      "headerColor": "Couleur de l'en-tête :",
+      "showRouteLongName": "Afficher les noms longs d'itinéraire"
     },
     "timeFormats": {
       "12hour": "12 heures",
@@ -37,7 +39,9 @@
     },
     "buttons": {
       "cancel": "Annuler",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "reset": "Réinitialiser",
+      "resetToDefault": "Réinitialiser par défaut"
     }
   },
   "routes": {

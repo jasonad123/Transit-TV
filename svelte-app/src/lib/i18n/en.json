@@ -11,7 +11,9 @@
       "timeFormat": "Time Format:",
       "language": "Language:",
       "columns": "Grid Columns:",
-      "theme": "Theme:"
+      "theme": "Theme:",
+      "headerColor": "Header Color:",
+      "showRouteLongName": "Show Route Long Names"
     },
     "timeFormats": {
       "12hour": "12 Hours",
@@ -37,7 +39,9 @@
     },
     "buttons": {
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "reset": "Reset",
+      "resetToDefault": "Reset to default"
     }
   },
   "routes": {

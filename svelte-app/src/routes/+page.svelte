@@ -126,7 +126,7 @@
 	<title>{$config.title || $_('app.title')}</title>
 </svelte:head>
 
-<div class="container">
+<div class="container" style="--bg-header: {$config.headerColor}">
 	<header>
 		<table cellpadding="0" cellspacing="0" border="0">
 			<tbody>
@@ -262,6 +262,35 @@
 					</div>
 				</label>
 
+				<label>
+					{$_('config.fields.headerColor')}
+					<div style="display: flex; gap: 0.5em; align-items: center;">
+						<input
+							type="color"
+							bind:value={$config.headerColor}
+						/>
+						<button
+							type="button"
+							class="btn-reset"
+							onclick={() => config.update(c => ({ ...c, headerColor: '#30b566' }))}
+							title={$_('config.buttons.resetToDefault')}
+						>
+							{$_('config.buttons.reset')}
+						</button>
+					</div>
+				</label>
+
+				<label class="toggle-label">
+					<span>{$_('config.fields.showRouteLongName')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.showRouteLongName}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
+
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
@@ -317,7 +346,7 @@
 			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} />
+						<RouteItem {route} showLongName={$config.showRouteLongName} />
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -553,6 +582,76 @@
 
 	.btn-cancel:hover {
 		background: #c0c0c0;
+	}
+
+	.btn-reset {
+		padding: 0.4em 0.8em;
+		font-size: 0.9em;
+		background: #f0f0f0;
+		color: #333;
+		border-radius: 4px;
+		border: 1px solid #ccc;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+
+	.btn-reset:hover {
+		background: #e0e0e0;
+		border-color: #999;
+	}
+
+	.toggle-label {
+		display: flex;
+		flex-direction: row !important;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+	}
+
+	.toggle-switch {
+		position: relative;
+		display: inline-block;
+		width: 3em;
+		height: 1.6em;
+		flex-shrink: 0;
+	}
+
+	.toggle-switch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.toggle-slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #ccc;
+		transition: 0.3s;
+		border-radius: 1.6em;
+	}
+
+	.toggle-slider:before {
+		position: absolute;
+		content: "";
+		height: 1.2em;
+		width: 1.2em;
+		left: 0.2em;
+		bottom: 0.2em;
+		background-color: white;
+		transition: 0.3s;
+		border-radius: 50%;
+	}
+
+	.toggle-switch input:checked + .toggle-slider {
+		background-color: #007bff;
+	}
+
+	.toggle-switch input:checked + .toggle-slider:before {
+		transform: translateX(1.4em);
 	}
 
 	.route-wrapper {

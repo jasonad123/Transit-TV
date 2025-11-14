@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import type { Route, ScheduleItem } from '$lib/services/nearby';
+	import { browser } from '$app/environment';
+	import type { Route, ScheduleItem} from '$lib/services/nearby';
 
-	let { route }: { route: Route } = $props();
+	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
 
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
@@ -11,13 +12,82 @@
 	let destinationElements: Map<number, HTMLElement> = new Map();
 	let overflowingDestinations = $state<Set<number>>(new Set());
 
+	// Track dark mode state
+	let isDarkMode = $state(false);
+
+	if (browser) {
+		isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
+		// Watch for theme changes
+		const observer = new MutationObserver(() => {
+			isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+		});
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme']
+		});
+	}
+
+	// Calculate relative luminance (0-1) from hex color
+	function getRelativeLuminance(hex: string): number {
+		const rgb = parseInt(hex, 16);
+		const r = ((rgb >> 16) & 0xff) / 255;
+		const g = ((rgb >> 8) & 0xff) / 255;
+		const b = (rgb & 0xff) / 255;
+
+		// Convert to linear RGB
+		const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+		const rLinear = toLinear(r);
+		const gLinear = toLinear(g);
+		const bLinear = toLinear(b);
+
+		// Calculate luminance
+		return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+	}
+
+	// Check if we should invert in dark mode:
+	// Only invert if route_color is extremely dark (near black) AND route_text_color is light
+	// This catches cases like SamTrans 292 (luminance 0.022, dark navy with white text)
+	// But avoids medium-dark colors like #a81c22 (0.09), #005b95 (0.10), etc.
+	let shouldInvertInDarkMode = $derived(
+		getRelativeLuminance(route.route_color) < 0.05 &&
+		getRelativeLuminance(route.route_text_color) > 0.5
+	);
+
+	// Complex logos that should not be recolored (contain their own internal colors)
+	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
+
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
-			const hex = useBlackText ? '000000' : route.route_color;
-			return `/api/images/${route.route_display_short_name.elements[index]}.svg?primaryColor=${hex}`;
+			const iconName = route.route_display_short_name.elements[index];
+
+			// Complex logos should not have color applied - they have their own internal colors
+			if (COMPLEX_LOGOS.has(iconName)) {
+				return `/api/images/${iconName}.svg`;
+			}
+
+			// In dark mode:
+			//   - If route should be inverted (very dark bg + light text), use route_text_color
+			//   - Otherwise use route_color (for visibility on dark background)
+			// In light mode:
+			//   - Use black if useBlackText, otherwise route_color
+			let hex: string;
+			if (isDarkMode) {
+				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+			} else {
+				hex = useBlackText ? '000000' : route.route_color;
+			}
+			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
 		}
 		return null;
 	}
+
+	// Determine text color for route icon and name
+	let routeDisplayColor = $derived(
+		isDarkMode
+			? (shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`)
+			: (useBlackText ? '#000000' : `#${route.route_color}`)
+	);
 
 	function getMinutesUntil(departure: number): number {
 		return Math.round((departure * 1000 - Date.now()) / 60000);
@@ -232,7 +302,7 @@
 	}
 </script>
 
-<div class="route" class:white={useBlackText} style="color: {useBlackText ? '#000000' : '#' + route.route_color}">
+<div class="route" class:white={useBlackText && !isDarkMode} style="color: {routeDisplayColor}">
 	<h2><span class="route-icon">{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
 				class="img{imageSize}"
 				src={getImageUrl(0)}
@@ -243,7 +313,7 @@
 				class="img{imageSize}"
 				src={getImageUrl(2)}
 				alt="Route icon"
-			/>{/if}{/if}</span>{#if route.route_long_name}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
+			/>{/if}{/if}</span>{#if route.route_long_name && showLongName}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
 
 		{#if route.itineraries}
 			{#each route.itineraries as dir, index}

@@ -17,6 +17,8 @@ export interface Config {
 	language: string;
 	columns: 'auto' | 1 | 2 | 3 | 4;
 	theme: 'light' | 'dark' | 'auto';
+	headerColor: string;
+	showRouteLongName: boolean;
 }
 
 const defaultConfig: Config = {
@@ -32,7 +34,9 @@ const defaultConfig: Config = {
 	timeFormat: 'HH:mm',
 	language: 'en',
 	columns: 'auto',
-	theme: 'light'
+	theme: 'light',
+	headerColor: '#30b566',
+	showRouteLongName: true
 };
 
 function createConfigStore() {
