@@ -12,8 +12,8 @@
       "language": "Langue :",
       "columns": "Colonnes de grille :",
       "theme": "Thème :",
-      "headerColor": "Couleur de l'en-tête :",
-      "showRouteLongName": "Afficher les noms longs d'itinéraire"
+      "headerColor": "Couleur d'en-tête :",
+      "showRouteLongName": "Afficher les noms complet d'itinéraire"
     },
     "timeFormats": {
       "12hour": "12 heures",

@@ -2,6 +2,7 @@ export interface Route {
 	global_route_id: string;
 	route_short_name?: string;
 	route_long_name?: string;
+	mode_name?: string;
 	route_color: string;
 	route_text_color: string;
 	route_display_short_name?: {

@@ -20,10 +20,10 @@ function NearbyCtrl($rootScope, $interval, $scope, ScreenConfig, Nearby, AlertSe
     onChangeOrder: onChangeOrder
   });
 
-  // Refresh data every 20 seconds
+  // Refresh data every 30 seconds - upped from 20 seconds to reduce load on API
   var refreshInterval = $interval(function () {
     loadNearby();
-  }, 20000);
+  }, 30000);
   
   // Clean up interval when scope is destroyed to prevent memory leaks
   $scope.$on('$destroy', function() {

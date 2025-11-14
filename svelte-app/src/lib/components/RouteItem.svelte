@@ -364,7 +364,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" style={cellStyle}>
-				<span><i class="fa-solid fa-triangle-exclamation"></i> Alerts for {route.route_short_name || route.route_long_name}</span>
+				<span><i class="fa-solid fa-triangle-exclamation"></i> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>{getAlertText()}</div>

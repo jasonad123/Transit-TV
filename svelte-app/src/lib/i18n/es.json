@@ -1,10 +1,10 @@
 {
   "app": {
-    "title": "Transit TV",
+    "title": "Televisión de Transit",
     "nearbyRoutes": "Líneas cercanas"
   },
   "config": {
-    "title": "Configurar Transit TV",
+    "title": "Configurar Televisión de Transit",
     "fields": {
       "title": "Título :",
       "location": "Posición (lat, lng) :",
@@ -13,7 +13,7 @@
       "columns": "Columnas de cuadrícula:",
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
-      "showRouteLongName": "Mostrar nombres largos de rutas"
+      "showRouteLongName": "Mostrar nombres de rutas"
     },
     "timeFormats": {
       "12hour": "12 horas",

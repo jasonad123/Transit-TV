@@ -525,7 +525,9 @@
 
 	.config-modal h2 {
 		margin-top: 0;
+		margin-bottom: 0.5em;
 		color: var(--text-primary);
+		font-size: 2em;
 	}
 
 	.config-modal form {
@@ -567,12 +569,12 @@
 	}
 
 	.btn-save {
-		background: #007bff;
+		background: #30b566;
 		color: white;
 	}
 
 	.btn-save:hover {
-		background: #0056b3;
+		background: #1f7a42;
 	}
 
 	.btn-cancel {
@@ -647,7 +649,8 @@
 	}
 
 	.toggle-switch input:checked + .toggle-slider {
-		background-color: #007bff;
+		/* background-color: #30b566; */
+		background-color: var(--bg-header);
 	}
 
 	.toggle-switch input:checked + .toggle-slider:before {
@@ -796,13 +799,16 @@
 	}
 
 	.btn-option:hover {
-		border-color: #007bff;
+		/* border-color: #007bff; */
+		border-color: var(--bg-header); 
 		background: var(--bg-primary);
 	}
 
 	.btn-option.active {
-		border-color: #007bff;
-		background: #007bff;
+		/* border-color: #007bff; */
+		/* background: #007bff; */
+		border-color: var(--bg-header); 
+		background-color: var(--bg-header); 
 		color: white;
 		font-weight: 600;
 	}
