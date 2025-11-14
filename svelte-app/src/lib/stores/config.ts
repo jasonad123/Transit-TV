@@ -32,7 +32,7 @@ const defaultConfig: Config = {
 	timeFormat: 'HH:mm',
 	language: 'en',
 	columns: 'auto',
-	theme: 'auto'
+	theme: 'light'
 };
 
 function createConfigStore() {
