@@ -426,29 +426,34 @@
 	.route-alert-header {
 		font-size: 1.5em;
 		font-weight: bold;
-		line-height: 2;
+		line-height: 1.4;
 		padding: 0.5em;
 		margin-top: 0.25em;
 		border-radius: 0.2em 0.2em 0 0;
 		text-align: left;
-		height: 1.25em;
-		/* min-height: 1.3em;
-		max-height: 2.5em; */
+		min-height: 1.5em;
 		display: flex;
 		align-items: center;
-		justify-content: left;
-		word-wrap: break-word;
-		overflow: hidden;
+		justify-content: flex-start;
+		gap: 0.3em;
+		white-space: normal;
+		word-break: break-word;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
+	.route-alert-header span {
+		display: flex;
+		align-items: center;
+		gap: 0.3em;
+		flex-wrap: nowrap;
+	}
+
 	.route-alert-header iconify-icon {
-		display: display-internal;
+		display: block;
 		vertical-align: middle;
-		width: 1em;
-		height: auto;
+		width: 1.2em;
+		height: 1.2em;
 		flex-shrink: 0;
-		margin-right: 0.3em;
 	}
 
 	.route.white .route-alert-header {
