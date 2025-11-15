@@ -1,13 +1,22 @@
 # Transit TV
 
-A real-time transit display application that shows arrival times for nearby public transportation.
+A real-time transit display application that shows arrival times for nearby public transit.
 
 ![Screenshot](transit-tv-reloaded-3.png)
 
+<div style="text-align: center;">
+
 [![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
 
+</div>
+
+> [!IMPORTANT]
+> This is a *rewrite* of the original Transit TV application in a more up-to-date stack.
+> If you're looking for *my fork* of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
+> If you're looking for the original project, have a look over at [Transit App's account](https://github.com/TransitApp/Transit-TV)
+
 > [!WARNING]  
-> Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind. 
+> Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
 
 > [!WARNING]
 > Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
@@ -21,6 +30,7 @@ A real-time transit display application that shows arrival times for nearby publ
 - Docker (optional, for containerized deployment)
 
 ## Getting started
+
 1. Request API access
 
 Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file. 
@@ -52,8 +62,6 @@ cp .env.docker.example .env.docker
 > [!NOTE]
 > This project has been migrated to a new stack built on Svelte and SvelteKit. The legacy version (based on AngularJS) is still available but the SvelteKit version is recommended for most new deployments. The warnings above still apply either way.
 
-### SvelteKit Version (Recommended)
-
 1. Follow the **getting started** steps
 
 This includes getting an API key from Transit and setting up the `.env` file and cloning this repo locally.
@@ -70,7 +78,6 @@ cd svelte-app && pnpm build && cd ..
 # Start the server with SvelteKit
 USE_SVELTE=true pnpm start
 ```
-
 The application will be available at http://localhost:8080
 
 For development with hot reload:
@@ -84,23 +91,11 @@ pnpm start
 
 Then access the app at http://localhost:5173 (Vite dev server with hot reload)
 
-### Legacy AngularJS Version
-
-```bash
-# Install dependencies
-pnpm i
-pnpm build
-pnpm start
-```
-The application will be available at http://localhost:8080
-
 3. Deploy somewhere!
 
-If all looks good, you should be ready to deploy somewhere if you want to use it for a longer amount of time.
+If all looks good, you should be ready to deploy it.
 
 ## Deployment with Docker
-
-### SvelteKit Version (Recommended)
 
 1. **Configure environment variables:**
 
@@ -113,18 +108,19 @@ If all looks good, you should be ready to deploy somewhere if you want to use it
 
    ```bash
    # Production build
-   docker compose -f compose.svelte.yml --profile production up -d
+   docker compose up -d
 
    # View logs
-   docker compose -f compose.svelte.yml logs -f
+   docker compose logs
 
    # Stop
-   docker compose -f compose.svelte.yml down
+   docker compose down
    ```
 
    For development with hot reload:
+
    ```bash
-   docker compose -f compose.svelte.yml --profile dev up
+   docker compose --profile dev up
    ```
 
 3. **Using Docker build directly:**
@@ -136,36 +132,6 @@ If all looks good, you should be ready to deploy somewhere if you want to use it
    # Run the container
    docker run -p 8080:8080 --env-file .env.docker transit-tv-svelte
    ```
-
-The application will be available at http://localhost:8080
-
-### Legacy AngularJS Version
-
-**Using Docker Compose:**
-
-   ```bash
-   # Review and edit .env.docker file
-   nano .env.docker
-
-   # Start the application
-   docker compose up -d
-
-   # View logs
-   docker compose logs -f
-
-   # Stop the application
-   docker compose down
-   ```
-
-**Using Docker run:**
-
-```bash
-# Build the Docker image
-docker build -t transit-tv .
-
-# Run the container
-docker run -p 8080:8080 --env-file .env.docker transit-tv
-```
 
 The application will be available at http://localhost:8080
 
@@ -205,7 +171,7 @@ To use unattended setup, simply modify your relevant `.env` file or environment 
 
 The following variables are available:
 
-```
+```bash
 # UNATTENDED_SETUP: Enable automatic setup without user interaction (true/false)
 UNATTENDED_SETUP=false
 
@@ -219,12 +185,31 @@ UNATTENDED_TITLE=Transit Display
 # UNATTENDED_TIME_FORMAT: Time display format
 # Options: "HH:mm" (24-hour format) or "hh:mm A" (12-hour format with AM/PM)
 UNATTENDED_TIME_FORMAT=HH:mm
-```
 
+# UNATTENDED_TIME_FORMAT: Time display format
+# Options: "HH:mm" (24-hour format) or "hh:mm A" (12-hour format with AM/PM)
+UNATTENDED_TIME_FORMAT=HH:mm
+
+# UNATTENDED_THEME: Theme for background
+# Options: light, dark, auto
+UNATTENDED_THEME=auto
+
+# UNATTENDED_HEADER_COLOR: Hex color code for header background
+# Format: "#RRGGBB" (e.g., #FF5733)
+UNATTENDED_HEADER_COLOR=(#hex)
+
+# UNATTENDED_COLUMNS: Number of columns to display
+# Options: 
+UNATTENDED_COLUMNS=auto
+
+# UNATTENDED_SHOW_ROUTE_LONG_NAME: Show route long name next to route short name or logo
+# Options: true, false
+UNATTENDED_SHOW_ROUTE_LONG_NAME=true
+```
 
 ## Project structure
 
-```
+```bash
 .
 ├── svelte-app/           # SvelteKit application (recommended)
 │   ├── src/

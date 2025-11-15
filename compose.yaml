@@ -1,13 +1,12 @@
 services:
-  # Production service - Svelte migration
-  # To run production: docker compose -f compose.svelte.yml up
-  # To run development: docker compose -f compose.svelte.yml --profile dev up
+  # To run production: docker compose up
+  # To run development: docker compose --profile dev up
   transit-tv-svelte:
     env_file:
       - .env.docker
     build:
       context: .
-      dockerfile: Dockerfile.svelte
+      dockerfile: Dockerfile
     image: transit-tv-svelte
     container_name: transit-tv-svelte
     restart: unless-stopped

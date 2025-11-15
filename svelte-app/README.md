@@ -75,7 +75,7 @@ docker build -f Dockerfile.svelte -t transit-tv-svelte .
 docker run -p 8080:8080 --env-file .env.docker transit-tv-svelte
 
 # Or with Docker Compose
-docker compose -f compose.svelte.yml --profile production up
+docker compose up
 ```
 
 ### API Integration
