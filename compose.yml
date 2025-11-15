@@ -14,9 +14,20 @@ services:
       NODE_ENV: "production"
       # These environment variables will override those in .env.docker if set
       # LOG_LEVEL: "info"
+      
+      # Theme customization examples (uncomment and modify as needed)
+      # THEME_PRIMARY_COLOR: "#89CC04"  # brat green
+      # THEME_PRIMARY_TEXT_COLOR: "#ffffff"
+      # THEME_PRIMARY_LOGO: "/assets/custom/my-logo.svg"
+      # THEME_SECONDARY_LOGO: "/assets/custom/agency-logo.svg"
+      # THEME_SHOW_SECONDARY_LOGO: "true"
+      # THEME_AGENCY_NAME: "Metro Transit"
     volumes:
       # Persist any data that needs to be saved between container restarts
       - ./logs:/app/logs # change this to your desired log directory
+      
+      # Custom assets (logos, images, etc.) - place your files in ./custom-assets/
+      # - ./custom-assets:/app/client/assets/custom:ro
     networks:
       - transit-network
     healthcheck:

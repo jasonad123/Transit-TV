@@ -1,6 +1,6 @@
 header {
- color: #ffffff;
- background-color: #30b566;
+ color: var(--primary-text-color);
+ background-color: var(--primary-color);
  position: relative;
 }
 header table {
@@ -8,34 +8,36 @@ header table {
  table-layout: fixed;
 }
 #logo-alt {
- width: 6%;
- min-width: 60px;
- padding-right: 8px;
+ width: 12%;
+ min-width: 100px;
+ padding-right: 15px;
  display: none; /* Hidden by default - enable with .show-secondary-logo */
 }
 #logo-alt a {
  display: block;
  height: 2em;
  width: 100%;
- color: #ffffff;
+ color: var(--primary-text-color);
  line-height: 1.1em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  font-weight: lighter;
- font-size: 2.0em;
+ font-size: var(--header-font-size);
  text-decoration: none;
+ background: var(--secondary-logo-url) no-repeat left center;
  background-size: auto 2em;
- padding-left: 30px;
- min-width: 60px;
 }
 .show-secondary-logo #logo-alt {
  display: table-cell;
 }
 .show-secondary-logo #logo {
- width: 12%;
+ width: 15%;
  min-width: 120px;
 }
 .show-secondary-logo #title {
- width: 28%;
+ width: 45%;
+}
+.show-secondary-logo #utilities {
+ width: 30%;
 }
 #logo {
  width: 33%;
@@ -44,17 +46,15 @@ header table {
 #logo a {
  display: block;
  height: 2em;
- width: 100%;
- color: #ffffff;
+ width: 180px;
+ color: var(--primary-text-color);
  line-height: 1.1em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  font-weight: lighter;
- font-size: 2.0em;
+ font-size: var(--header-font-size);
  text-decoration: none;
- background: url('/assets/images/transit.svg') no-repeat center left;
+ background: var(--primary-logo-url) no-repeat center left;
  background-size: auto 2em;
- padding-left: 130px;
- min-width: 200px;
 }
 #title {
  width: 34%;
@@ -63,8 +63,8 @@ header table {
  border: none;
 }
 #title h1 {
- font-family: Helvetica, Arial, serif;
- font-size: 2em;
+ font-family: var(--primary-font-family);
+ font-size: var(--header-font-size);
  vertical-align: middle;
  display: inline-block;
  line-height: 1.4em;
@@ -101,7 +101,7 @@ header table {
 }
 .clock {
  font-size: 1.8em;
- font-family: Helvetica, Arial, serif;
+ font-family: var(--primary-font-family);
  line-height: 2em;
  display: inline-block;
  margin-left: 3em;
@@ -111,12 +111,17 @@ header table {
 /* iPad and smaller tablet screens */
 @media (max-width: 1024px) {
  #logo {
-  min-width: 180px;
+  min-width: 160px;
  }
  #logo a {
   font-size: 1.8em;
-  padding-left: 110px;
-  min-width: 180px;
+  max-width: 160px;
+ }
+ #logo-alt {
+  min-width: 120px;
+ }
+ #logo-alt a {
+  max-width: 120px;
  }
  #title h1 {
   font-size: 1.8em;
@@ -129,9 +134,15 @@ header table {
   margin-left: 2.5em;
  }
  .show-secondary-logo #logo {
-  min-width: 110px;
+  min-width: 120px;
  }
  .show-secondary-logo #logo a {
-  padding-left: 45px;
+  max-width: 120px;
+ }
+ .show-secondary-logo #logo-alt {
+  min-width: 100px;
+ }
+ .show-secondary-logo #logo-alt a {
+  max-width: 100px;
  }
 }

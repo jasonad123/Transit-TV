@@ -1,3 +1,22 @@
+/* Theme Variables - Override via environment variables */
+:root {
+  /* Primary branding */
+  --primary-color: #30b566;
+  --primary-text-color: #ffffff;
+  
+  /* Logo and branding */
+  --primary-logo-url: url('/assets/images/transit.svg'); /* Required by Transit API terms */
+  --secondary-logo-url: url('/assets/custom/agency-logo.svg');
+  
+  /* Typography */
+  --primary-font-family: Helvetica, Arial, serif;
+  --header-font-size: 2em;
+  
+  /* Layout */
+  --logo-padding-left: 10px;
+  --logo-min-width: 100px
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   font-smooth: antialiased;
