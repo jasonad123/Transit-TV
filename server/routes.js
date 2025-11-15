@@ -7,6 +7,7 @@ module.exports = function(app) {
   // Insert routes below
   app.use('/api/images', require('./api/image'));
   app.use('/api/routes', require('./api/routes'));
+  app.use('/api/config', require('./api/config'));
 
   // Theme CSS endpoint
   app.get('/api/theme.css', function(req, res) {

@@ -90,7 +90,7 @@ function configUrlSanitizer($compileProvider, $sceDelegateProvider) {
 // Debug function for state change errors
 debug.$inject = ['$rootScope'];
 function debug($rootScope) {
-  $rootScope.$on("$stateChangeError", console.log.bind(console));
+  $rootScope.$on('$stateChangeError', console.log.bind(console));
 }
 
 initMain.$inject = ['$state'];

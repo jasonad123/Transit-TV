@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: latest
+        
+    - name: Install dependencies
+      run: pnpm install
+      
+    - name: Run linting
+      run: npx grunt jshint
+      
+    - name: Build project
+      run: pnpm build
+      
+    - name: Check build output
+      run: |
+        if [ ! -d "dist" ]; then
+          echo "Build failed - dist directory not created"
+          exit 1
+        fi
+        echo "Build successful - dist directory created"
+
+  docker-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image (test only)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Test Docker image
+      run: |
+        docker build -t transit-tv-test .
+        docker run --rm -d -p 8080:8080 --name test-container transit-tv-test
+        sleep 10
+        curl -f http://localhost:8080 || exit 1
+        docker stop test-container

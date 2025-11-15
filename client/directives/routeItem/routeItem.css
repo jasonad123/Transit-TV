@@ -112,10 +112,7 @@
 
 .route .stop_name {
   position: relative;
-  background-repeat: no-repeat;
-  background-position: 0 0.05em;
-  background-size: auto 1em;
-  padding-left: 1em;
+  padding-left: 1.1em;
 
   font-size: 1.4em;
   margin-bottom: 0.4em;
@@ -124,6 +121,16 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.route .stop_name .pin-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
 
