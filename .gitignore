@@ -158,4 +158,9 @@ dist
 /server/config/local.env.js
 npm-debug.log
 configs.json
-.claude/
+.claude/*
+.mcp.json
+svelte-app/static/fonts/*
+.pnpm-store/*
+svelte-app/.pnpm-store/*
+Screenshot*.png
