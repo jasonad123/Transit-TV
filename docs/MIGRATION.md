@@ -27,12 +27,17 @@ All v0.x environment variables work in v1.x without modification:
 
 ```bash
 UNATTENDED_LOCATION=40.7240,-74.0002
-UNATTENDED_TITLE="My Transit Station"
-UNATTENDED_THEME=auto                    # light, dark, or auto
-UNATTENDED_HEADER_COLOR=#30b566
-UNATTENDED_COLUMNS=5                     # Now supports 1-5 (was 1-4)
-UNATTENDED_SHOW_ROUTE_LONG_NAME=true
+UNATTENDED_TITLE="Transit TV"
 UNATTENDED_TIME_FORMAT=HH:mm
+```
+
+A number of new environment variables have been introduced as part of feature expansion:
+
+```bash
+UNATTENDED_THEME=auto # Now supports light, dark, or auto modes
+UNATTENDED_HEADER_COLOR="#30b566" # Now supports custom header colors
+UNATTENDED_COLUMNS=5 # Now supports custom column widths; supported values are auto, 1-5
+UNATTENDED_SHOW_ROUTE_LONG_NAME=true # Now supports showing route long names
 ```
 
 ### Breaking Changes
@@ -41,9 +46,9 @@ UNATTENDED_TIME_FORMAT=HH:mm
 
 ### New Features in v1.0.0
 
-- **Responsive Grid Layout**: Now supports up to 5 columns (was 4 max)
-- **Improved Dark Mode**: Better contrast and color handling
-- **Enhanced Alerts**: More reliable scrolling and display for service alerts
+- **Responsive Grid Layout with Configuration**: Choose from 1-5 columns in your grid
+- **Dark Mode**
+- **Alerts**: Service alerts are now shown on screen
 - **Better Performance**: Smaller bundle size, faster load times
 - **Modern Stack**: SvelteKit + Svelte 5 with TypeScript
 
@@ -78,12 +83,14 @@ NODE_ENV=production pnpm start
 ### Codebase Structure
 
 **New in v1.0.0:**
+
 - `svelte-app/` - SvelteKit frontend application
 - `server/` - Express.js API and static file serving (shared with v0.x)
 
 **Archived:**
+
 - `legacy` branch - Complete AngularJS v0.5.2 source code (read-only reference)
-- `archive/angularjs/*` - Old feature branches (for reference only)
+- `archive/legacy/*` - Old feature branches (for reference only)
 
 ### Building Docker Images
 
@@ -145,6 +152,7 @@ All environment variables are still supported. If something isn't working:
 ## Questions?
 
 For issues or questions about migration:
+
 - Check the `legacy` branch if you need to reference AngularJS implementation
 - Review environment variables in `.env.example`
 - Check recent commits for implementation details
