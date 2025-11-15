@@ -584,7 +584,7 @@
 	}
 
 	.config-modal button {
-		padding: 0.7em 1.5em;
+		padding: 0.5em 1em;
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
@@ -817,7 +817,7 @@
 	}
 
 	.btn-option {
-		flex: 1;
+		flex: 2;
 		min-width: 60px;
 		padding: 0.6em 1em;
 		border: 2px solid var(--border-color);

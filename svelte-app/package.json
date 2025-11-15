@@ -24,6 +24,7 @@
 		"vite": "^5.4.21"
 	},
 	"dependencies": {
+		"qrcode": "^1.5.4",
 		"svelte-i18n": "^4.0.1"
 	}
 }
