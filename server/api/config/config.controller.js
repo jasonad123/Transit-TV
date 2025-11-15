@@ -62,6 +62,10 @@ exports.getUnattendedConfig = function(req, res) {
     latLng: coordinates,
     title: config.unattendedSetup.title,
     timeFormat: config.unattendedSetup.timeFormat,
-    language: 'en' // Default language for unattended setup
+    language: 'en', // Default language for unattended setup
+    theme: config.unattendedSetup.theme,
+    headerColor: config.unattendedSetup.headerColor,
+    columns: config.unattendedSetup.columns,
+    showRouteLongName: config.unattendedSetup.showRouteLongName
   });
 };

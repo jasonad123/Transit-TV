@@ -1,0 +1,703 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
+	import type { Route, ScheduleItem} from '$lib/services/nearby';
+
+	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
+
+	let useBlackText = $derived(route.route_text_color === '000000');
+	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
+	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
+
+	let destinationElements: Map<number, HTMLElement> = new Map();
+	let overflowingDestinations = $state<Set<number>>(new Set());
+
+	// Track dark mode state
+	let isDarkMode = $state(false);
+
+	if (browser) {
+		isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
+		// Watch for theme changes
+		const observer = new MutationObserver(() => {
+			isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+		});
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme']
+		});
+	}
+
+	// Calculate relative luminance (0-1) from hex color
+	function getRelativeLuminance(hex: string): number {
+		const rgb = parseInt(hex, 16);
+		const r = ((rgb >> 16) & 0xff) / 255;
+		const g = ((rgb >> 8) & 0xff) / 255;
+		const b = (rgb & 0xff) / 255;
+
+		// Convert to linear RGB
+		const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+		const rLinear = toLinear(r);
+		const gLinear = toLinear(g);
+		const bLinear = toLinear(b);
+
+		// Calculate luminance
+		return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+	}
+
+	// Check if we should invert in dark mode:
+	// Only invert if route_color is extremely dark (near black) AND route_text_color is light
+	// This catches cases like SamTrans 292 (luminance 0.022, dark navy with white text)
+	// But avoids medium-dark colors like #a81c22 (0.09), #005b95 (0.10), etc.
+	let shouldInvertInDarkMode = $derived(
+		getRelativeLuminance(route.route_color) < 0.05 &&
+		getRelativeLuminance(route.route_text_color) > 0.5
+	);
+
+	// Complex logos that should not be recolored (contain their own internal colors)
+	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
+
+	function getImageUrl(index: number): string | null {
+		if (route.route_display_short_name?.elements?.[index]) {
+			const iconName = route.route_display_short_name.elements[index];
+
+			// Complex logos should not have color applied - they have their own internal colors
+			if (COMPLEX_LOGOS.has(iconName)) {
+				return `/api/images/${iconName}.svg`;
+			}
+
+			// In dark mode:
+			//   - If route should be inverted (very dark bg + light text), use route_text_color
+			//   - Otherwise use route_color (for visibility on dark background)
+			// In light mode:
+			//   - Use black if useBlackText, otherwise route_color
+			let hex: string;
+			if (isDarkMode) {
+				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+			} else {
+				hex = useBlackText ? '000000' : route.route_color;
+			}
+			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
+		}
+		return null;
+	}
+
+	// Determine text color for route icon and name
+	let routeDisplayColor = $derived(
+		isDarkMode
+			? (shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`)
+			: (useBlackText ? '#000000' : `#${route.route_color}`)
+	);
+
+	function getMinutesUntil(departure: number): number {
+		return Math.round((departure * 1000 - Date.now()) / 60000);
+	}
+
+	function shouldShowDeparture(item: ScheduleItem): boolean {
+		const minutes = getMinutesUntil(item.departure_time);
+		return minutes >= 0 && minutes <= 120;
+	}
+
+	function getLocalStopIds(): Set<string> {
+		const stopIds = new Set<string>();
+		route.itineraries?.forEach((itinerary) => {
+			const stopId = itinerary.closest_stop?.global_stop_id;
+			if (stopId) {
+				stopIds.add(stopId);
+			}
+		});
+		return stopIds;
+	}
+
+	function isAlertRelevantToRoute(alert: any): boolean {
+		if (!alert.informed_entities || alert.informed_entities.length === 0) {
+			return true;
+		}
+
+		const localStopIds = getLocalStopIds();
+
+		return alert.informed_entities.some((entity: any) => {
+			const hasRouteId = !!entity.global_route_id;
+			const hasStopId = !!entity.global_stop_id;
+
+			if (!hasRouteId && !hasStopId) {
+				return true;
+			}
+
+			const routeMatches = !hasRouteId || entity.global_route_id === route.global_route_id;
+			const stopMatches = !hasStopId || localStopIds.has(entity.global_stop_id);
+
+			return routeMatches && stopMatches;
+		});
+	}
+
+	function getRelevantAlerts() {
+		if (!route.alerts?.length) return [];
+		return route.alerts.filter(isAlertRelevantToRoute);
+	}
+
+	function hasRelevantAlerts(): boolean {
+		return getRelevantAlerts().length > 0;
+	}
+
+	function getAlertText(): string {
+		const relevantAlerts = getRelevantAlerts();
+		if (!relevantAlerts.length) return '';
+
+		return relevantAlerts
+			.map((alert) => {
+				const hasTitle = alert.title && alert.title.trim().length > 0;
+				const hasDescription = alert.description && alert.description.trim().length > 0;
+
+				if (hasTitle && hasDescription) {
+					return `${alert.title}\n\n${alert.description}`;
+				} else if (hasTitle) {
+					return alert.title;
+				} else if (hasDescription) {
+					return alert.description;
+				} else {
+					return $_('alerts.default');
+				}
+			})
+			.join('\n\n---\n\n');
+	}
+
+	let relevantAlertCount = $derived(getRelevantAlerts().length);
+
+	let alertElement: HTMLElement | null = null;
+	let isAlertOverflowing = $state(false);
+	let shouldScrollAlert = $derived(relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing));
+
+	let routeLongNameElement: HTMLElement | null = null;
+	let shouldHideLongName = $state(false); // Start visible, hide only if needed
+
+	let destinationCheckTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
+
+	function checkDestinationOverflow(index: number, element: HTMLElement) {
+		if (!element) return;
+		const parent = element.parentElement;
+		if (!parent) return;
+
+		// Debounce resize checks
+		const existing = destinationCheckTimeouts.get(index);
+		if (existing) clearTimeout(existing);
+
+		const timeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				const isOverflowing = element.scrollWidth > parent.clientWidth;
+				const newSet = new Set(overflowingDestinations);
+				if (isOverflowing) {
+					newSet.add(index);
+				} else {
+					newSet.delete(index);
+				}
+				overflowingDestinations = newSet;
+			});
+		}, 150);
+
+		destinationCheckTimeouts.set(index, timeout);
+	}
+
+	let alertCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function checkAlertOverflow(element: HTMLElement) {
+		if (!element) return;
+		const parent = element.parentElement;
+		if (!parent) return;
+
+		// Debounce resize checks
+		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
+
+		alertCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				isAlertOverflowing = element.scrollHeight > parent.clientHeight;
+			});
+		}, 150);
+	}
+
+	let routeLongNameCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function checkRouteLongNameOverflow(element: HTMLElement) {
+		if (!element) return;
+
+		// Debounce resize checks
+		if (routeLongNameCheckTimeout) clearTimeout(routeLongNameCheckTimeout);
+
+		routeLongNameCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				const computedStyle = window.getComputedStyle(element);
+				const fontSize = parseFloat(computedStyle.fontSize);
+				const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 1.2;
+				const widthInEm = element.clientWidth / fontSize;
+
+				// Calculate approximate number of lines
+				const lines = element.clientHeight / lineHeight;
+
+				// Hide if:
+				// 1. Extremely narrow (< 2em) AND wrapping (> 1.5 lines) - causes vertical stacking like "DASHD"
+				// 2. Wrapping to 4+ lines - becomes unreadable like "Downtown LA Freeway Express"
+				const isVerticallyStacked = widthInEm < 2.0 && lines > 1.5;
+				const isTooManyLines = lines > 4;
+
+				shouldHideLongName = isVerticallyStacked || isTooManyLines;
+			});
+		}, 150);
+	}
+
+	function bindDestinationElement(node: HTMLElement, index: number) {
+		destinationElements.set(index, node);
+
+		// Wait for layout to settle before checking overflow
+		setTimeout(() => {
+			checkDestinationOverflow(index, node);
+		}, 100);
+
+		const resizeObserver = new ResizeObserver(() => {
+			checkDestinationOverflow(index, node);
+		});
+		resizeObserver.observe(node);
+
+		return {
+			destroy() {
+				resizeObserver.disconnect();
+				destinationElements.delete(index);
+			}
+		};
+	}
+
+	function bindAlertElement(node: HTMLElement) {
+		alertElement = node;
+
+		// Wait for layout to settle before checking overflow
+		setTimeout(() => {
+			checkAlertOverflow(node);
+		}, 100);
+
+		const resizeObserver = new ResizeObserver(() => {
+			checkAlertOverflow(node);
+		});
+		resizeObserver.observe(node);
+
+		return {
+			destroy() {
+				resizeObserver.disconnect();
+				alertElement = null;
+			}
+		};
+	}
+
+	function bindRouteLongNameElement(node: HTMLElement) {
+		routeLongNameElement = node;
+
+		// Check overflow once on mount
+		setTimeout(() => {
+			checkRouteLongNameOverflow(node);
+		}, 50);
+
+		return {
+			destroy() {
+				routeLongNameElement = null;
+			}
+		};
+	}
+</script>
+
+<div class="route" class:white={useBlackText && !isDarkMode} style="color: {routeDisplayColor}">
+	<h2><span class="route-icon">{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
+				class="img{imageSize}"
+				src={getImageUrl(0)}
+				alt="Route icon"
+			/>{/if}<span
+			>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
+		>{#if getImageUrl(2)}<img
+				class="img{imageSize}"
+				src={getImageUrl(2)}
+				alt="Route icon"
+			/>{/if}{/if}</span>{#if route.route_long_name && showLongName}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
+
+		{#if route.itineraries}
+			{#each route.itineraries as dir, index}
+				{#if dir}
+					<div class="content">
+						<div class="stop_name">
+							<!-- <svg
+								class="pin-icon"
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 640 640"
+								><path
+									d="M128 252.6C128 148.4 214 64 320 64C426 64 512 148.4 512 252.6C512 371.9 391.8 514.9 341.6 569.4C329.8 582.2 310.1 582.2 298.3 569.4C248.1 514.9 127.9 371.9 127.9 252.6zM320 320C355.3 320 384 291.3 384 256C384 220.7 355.3 192 320 192C284.7 192 256 220.7 256 256C256 291.3 284.7 320 320 320z"
+								/></svg
+							> -->
+							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
+						</div>
+						<div class="direction" style={cellStyle}>
+							<h3><span
+								class="destination-text"
+								class:scrolling={overflowingDestinations.has(index)}
+								use:bindDestinationElement={index}
+							>{dir.merged_headsign || 'Unknown destination'}</span></h3>
+
+							<div class="time">
+								{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
+									<h4>
+										<span>{getMinutesUntil(item.departure_time)}</span>
+										{#if item.is_real_time}
+											<i class="realtime"></i>
+										{/if}
+										<small class:last={item.is_last}
+											>{item.is_last ? 'last' : 'min'}</small
+										>
+									</h4>
+								{/each}
+								{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
+									<h4>
+										<span class="inactive">&nbsp;</span>
+										<small>&nbsp;</small>
+									</h4>
+								{/each}
+							</div>
+						</div>
+					</div>
+				{/if}
+			{/each}
+		{/if}
+
+	{#if hasRelevantAlerts()}
+		<div>
+			<div class="route-alert-header" style={cellStyle}>
+				<span><iconify-icon icon="ix:warning-filled"></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
+			</div>
+			<div class="route-alert-ticker" style={cellStyle}>
+				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>{getAlertText()}</div>
+			</div>
+		</div>
+	{/if}
+</div>
+
+<style>
+
+	.route {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.route > div {
+		padding: 1em;
+		border-radius: 4px;
+	}
+
+	.route > div:hover {
+		background: rgba(255, 255, 255, 0.6);
+		cursor: move;
+	}
+
+	.route h2 {
+		position: relative;
+		padding-left: 0.26em;
+		margin-bottom: 0em;
+		padding-bottom: 0em;
+		padding-top: 0.25em;
+		display: flex;
+		align-items: flex-start;
+		flex-wrap: nowrap;
+		gap: 0.5em;
+	}
+
+	.route h2 .route-icon {
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.route h2 .route-long-name {
+		font-size: 0.4em;
+		font-weight: semi-bold;
+		white-space: normal;
+		word-wrap: break-word;
+		align-self: center;
+		flex-grow: 0;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	.route h2 .route-long-name.hidden {
+		display: none;
+	}
+
+	.route-alert-header {
+		font-size: 1.5em;
+		font-weight: bold;
+		line-height: 1.4;
+		padding: 0.5em;
+		margin-top: 0.25em;
+		border-radius: 0.2em 0.2em 0 0;
+		text-align: left;
+		min-height: 1.5em;
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.3em;
+		white-space: normal;
+		word-break: break-word;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.route-alert-header span {
+		display: flex;
+		align-items: center;
+		gap: 0.3em;
+		flex-wrap: nowrap;
+	}
+
+	.route-alert-header iconify-icon {
+		display: block;
+		vertical-align: middle;
+		width: 1.2em;
+		height: 1.2em;
+		flex-shrink: 0;
+	}
+
+	.route.white .route-alert-header {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	}
+
+	.route-alert-ticker {
+		font-size: 1.25em;
+		font-weight: medium;
+		line-height: 1.3;
+		padding: 0.4em 0.4em;
+		margin-top: 0;
+		border-radius: 0 0 0.2em 0.2em;
+		overflow: hidden;
+		position: relative;
+		height: 6.5em;
+	}
+
+	@keyframes scroll-alert-vertical {
+		0% {
+			transform: translateY(0);
+		}
+		100% {
+			transform: translateY(-100%);
+		}
+	}
+
+	.route-alert-ticker .alert-text {
+		display: block;
+		white-space: pre-line;
+		word-wrap: break-word;
+	}
+
+	.route-alert-ticker .alert-text.scrolling {
+		animation: scroll-alert-vertical 240s linear infinite;
+	}
+
+	.route h3 {
+		font-size: 1.5em;
+		padding: 0.4em 0.35em 0.3em 0.35em;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+		overflow: hidden;
+		position: relative;
+	}
+
+	.route.white h3 {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	}
+
+	@keyframes scroll-destination-horizontal {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-100%);
+		}
+	}
+
+	.route h3 .destination-text {
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	.route h3 .destination-text.scrolling {
+		animation: scroll-destination-horizontal 150s linear infinite;
+	}
+
+	.route .img28 {
+		height: 1em;
+		vertical-align: middle;
+		display: inline-block;
+	}
+
+	.route .img34 {
+		height: 1em;
+		vertical-align: middle;
+		display: inline-block;
+	}
+
+	.route i {
+		font-size: 0.8em;
+		font-style: normal;
+	}
+
+	.route small {
+		color: inherit;
+		font-weight: lighter;
+		font-size: 0.4em;
+		line-height: 0.4em;
+		display: block;
+		margin-bottom: 0.4em;
+		margin-top: 0.2em;
+	}
+
+	.route .direction {
+		border-radius: 0.2em;
+		margin-bottom: 0.25em;
+	}
+
+	.route .time {
+		white-space: nowrap;
+		display: flex;
+		align-items: flex-start;
+	}
+
+	.route .time h4 {
+		flex: 1;
+		padding: 0.4em 0;
+		text-align: center;
+		box-sizing: border-box;
+	}
+
+	.route .time h4:nth-child(n+4) {
+		display: none;
+	}
+
+	.route .time h4:not(:first-of-type) {
+		position: relative;
+		border-left: none;
+	}
+
+	.route .time h4:not(:first-of-type)::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 12.5%;
+		height: 75%;
+		width: 1px;
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.route.white .time h4:not(:first-of-type)::before {
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.route .stop_name {
+		position: relative;
+		padding-left: 1.1em;
+		font-size: 1.3em;
+		margin-bottom: 0.4em;
+		display: block;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	/* .route .stop_name .pin-icon {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 1em;
+		height: 1em;
+		fill: currentColor;
+	} */
+
+	.route .stop_name iconify-icon {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 1em;
+		height: 1em;
+		fill: currentColor;
+	}
+
+	@keyframes realtimeAnim {
+		0% {
+			opacity: 0.5;
+		}
+		25% {
+			opacity: 0.5;
+		}
+		50% {
+			opacity: 0.5;
+		}
+		75% {
+			opacity: 0.6;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	.route h4 {
+		position: relative;
+	}
+
+	.route .realtime {
+		width: 0.28em;
+		height: 0.28em;
+		position: absolute;
+		margin-top: -4px;
+	}
+
+	.route .realtime::before,
+	.route .realtime::after {
+		content: '';
+		display: block;
+		width: 9px;
+		height: 9px;
+		position: absolute;
+		background-size: 100%;
+	}
+
+	.route .realtime::before {
+		background-image: url('/assets/images/real_time_wave_small-w@2x.png');
+		animation: realtimeAnim 1.4s linear 0s infinite alternate;
+	}
+
+	.route.white .realtime::before {
+		background-image: url('/assets/images/real_time_wave_small@2x.png');
+	}
+
+	.route .realtime::after {
+		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
+		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
+	}
+
+	.route.white .realtime::after {
+		background-image: url('/assets/images/real_time_wave_big@2x.png');
+	}
+
+	.route .inactive {
+		display: block;
+		background-image: url('/assets/images/inactive-w@2x.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: 16px auto;
+	}
+
+	.route.white .inactive {
+		background-image: url('/assets/images/inactive@2x.png');
+	}
+
+	@media (min-width: 2000px) {
+		.route {
+			width: 20%;
+		}
+	}
+
+	@media (min-width: 2800px) {
+		.route {
+			width: 16.666%;
+		}
+	}
+</style>

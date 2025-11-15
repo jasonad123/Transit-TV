@@ -1,0 +1,88 @@
+:root {
+	/* Light theme (default) */
+	--bg-primary: #fafafa;
+	--bg-secondary: #ffffff;
+	--bg-header: #30b566;
+	--text-primary: #000000;
+	--text-secondary: #666666;
+	--text-header: #ffffff;
+	--border-color: #ddd;
+	--shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+	--bg-primary: #1a1a1a;
+	--bg-secondary: #2a2a2a;
+	--bg-header: #1f7a42;
+	--text-primary: #ffffff;
+	--text-secondary: #999999;
+	--text-header: #ffffff;
+	--border-color: #444;
+	--shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+* {
+	-webkit-font-smoothing: antialiased;
+	font-smooth: antialiased;
+	border: none;
+}
+
+html,
+body {
+	height: 100%;
+	width: 100%;
+	font-family: Helvetica, Arial, serif;
+	font-size: 12px;
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: Helvetica, Arial, serif;
+	font-weight: bold;
+	margin: 0;
+	display: block;
+	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+h2 {
+	font-size: 3.8em;
+	margin-bottom: 0.05em;
+}
+
+h2 span {
+	margin-right: 0.1em;
+}
+
+h3 {
+	font-family: Helvetica, Arial, serif;
+	font-size: 2em;
+	clear: both;
+}
+
+h4 {
+	font-size: 2.66em;
+	clear: both;
+	margin-top: 0.06em;
+	margin-bottom: -0.09em;
+}
+
+button {
+	cursor: pointer;
+	outline: 0;
+}
+
+@media (min-width: 1300px) {
+	body {
+		font-size: 15px;
+	}
+}

@@ -1,0 +1,72 @@
+{
+  "app": {
+    "title": "Télé Transit",
+    "nearbyRoutes": "Lignes à proximité"
+  },
+  "config": {
+    "title": "Configurer Télé Transit",
+    "fields": {
+      "title": "Titre :",
+      "location": "Emplacement (lat, lng) :",
+      "timeFormat": "Format de l'heure :",
+      "language": "Langue :",
+      "columns": "Colonnes de grille :",
+      "theme": "Thème :",
+      "headerColor": "Couleur d'en-tête :",
+      "showRouteLongName": "Afficher les noms complet d'itinéraire"
+    },
+    "timeFormats": {
+      "12hour": "12 heures",
+      "24hour": "24 heures"
+    },
+    "languages": {
+      "english": "English",
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
+    },
+    "columns": {
+      "auto": "Auto"
+    },
+    "theme": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "auto": "Auto"
+    },
+    "hiddenRoutes": {
+      "title": "Lignes masquées",
+      "helpText": "Cliquez pour afficher les lignes"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "reset": "Réinitialiser",
+      "resetToDefault": "Réinitialiser par défaut"
+    }
+  },
+  "routes": {
+    "loading": "Chargement des lignes...",
+    "noRoutes": "Aucune ligne trouvée à proximité",
+    "controls": {
+      "moveToTop": "Déplacer en haut",
+      "moveUp": "Déplacer vers le haut",
+      "moveDown": "Déplacer vers le bas",
+      "hide": "Masquer la ligne"
+    }
+  },
+  "aria": {
+    "transitApp": "Application Transit",
+    "settings": "Paramètres",
+    "moveRouteToTop": "Déplacer la ligne en haut",
+    "moveRouteUp": "Déplacer la ligne vers le haut",
+    "moveRouteDown": "Déplacer la ligne vers le bas",
+    "hideRoute": "Masquer la ligne"
+  },
+  "alerts": {
+    "default": "Alerte de service"
+  },
+  "time": {
+    "min": "min",
+    "now": "maintenant"
+  }
+}

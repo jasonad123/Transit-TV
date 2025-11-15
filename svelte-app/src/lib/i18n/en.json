@@ -1,0 +1,72 @@
+{
+  "app": {
+    "title": "Transit TV",
+    "nearbyRoutes": "Nearby Routes"
+  },
+  "config": {
+    "title": "Configure Transit TV",
+    "fields": {
+      "title": "Title:",
+      "location": "Location (lat, lng):",
+      "timeFormat": "Time Format:",
+      "language": "Language:",
+      "columns": "Grid Columns:",
+      "theme": "Theme:",
+      "headerColor": "Header Color:",
+      "showRouteLongName": "Show Route Long Names"
+    },
+    "timeFormats": {
+      "12hour": "12 Hours",
+      "24hour": "24 Hours"
+    },
+    "languages": {
+      "english": "English",
+      "french": "Français",
+      "spanish": "Español",
+      "german": "Deutsch"
+    },
+    "columns": {
+      "auto": "Auto"
+    },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    },
+    "hiddenRoutes": {
+      "title": "Hidden Routes",
+      "helpText": "Click to unhide routes"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "reset": "Reset",
+      "resetToDefault": "Reset to default"
+    }
+  },
+  "routes": {
+    "loading": "Loading routes...",
+    "noRoutes": "No routes found nearby",
+    "controls": {
+      "moveToTop": "Move to top",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "hide": "Hide route"
+    }
+  },
+  "aria": {
+    "transitApp": "Transit App",
+    "settings": "Settings",
+    "moveRouteToTop": "Move route to top",
+    "moveRouteUp": "Move route up",
+    "moveRouteDown": "Move route down",
+    "hideRoute": "Hide route"
+  },
+  "alerts": {
+    "default": "Service alert"
+  },
+  "time": {
+    "min": "min",
+    "now": "now"
+  }
+}

@@ -2,7 +2,7 @@
 
 A real-time transit display application that shows arrival times for nearby public transportation.
 
-![Screenshot](screenshot.png)
+![Screenshot](transit-tv-reloaded-3.png)
 
 [![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
 
@@ -49,13 +49,42 @@ cp .env.docker.example .env.docker
 
 ## Local testing/deployment
 
+> [!NOTE]
+> This project has been migrated to a new stack built on Svelte and SvelteKit. The legacy version (based on AngularJS) is still available but the SvelteKit version is recommended for most new deployments. The warnings above still apply either way.
+
+### SvelteKit Version (Recommended)
+
 1. Follow the **getting started** steps
 
-This includes getting an API key from Transit and setting up the `.env` file.
+This includes getting an API key from Transit and setting up the `.env` file and cloning this repo locally.
 
-2. Test locally
+2. Build and run locally
 
-Assuming you have `node` and `pnpm` installed (we recommend using `nodenv` to follow the `.node-version` file):
+```bash
+# Install dependencies
+pnpm i
+
+# Build the SvelteKit app
+cd svelte-app && pnpm build && cd ..
+
+# Start the server with SvelteKit
+USE_SVELTE=true pnpm start
+```
+
+The application will be available at http://localhost:8080
+
+For development with hot reload:
+```bash
+# Terminal 1: Start SvelteKit dev server
+cd svelte-app && pnpm dev
+
+# Terminal 2: Start Express backend
+pnpm start
+```
+
+Then access the app at http://localhost:5173 (Vite dev server with hot reload)
+
+### Legacy AngularJS Version
 
 ```bash
 # Install dependencies
@@ -71,65 +100,53 @@ If all looks good, you should be ready to deploy somewhere if you want to use it
 
 ## Deployment with Docker
 
-1. Follow the **getting started** steps
+### SvelteKit Version (Recommended)
 
-This includes getting an API key from Transit and setting up the `.env.docker` file.
+1. **Configure environment variables:**
 
-2. Deploy in Docker
-
-### Using Docker Compose (recommended)
-
-**Configure your environment variables:**
-   
    ```bash
    # Review and edit .env.docker file with your API key
    nano .env.docker
    ```
 
-**Create/review the Docker Compose file at `compose.yml`**
-
-   ```yaml
-services:
-  transit-tv:
-    env_file:
-      - .env.docker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: transit-tv
-    container_name: transit-tv
-    restart: unless-stopped
-    ports:
-      - "8080:8080" # Default port for the application is 8080, change the left side if needed
-    environment:
-      NODE_ENV: "production"
-      # These environment variables will override those in .env.docker if set
-      # LOG_LEVEL: "info"
-    volumes:
-      # Persist any data that needs to be saved between container restarts
-      - ./logs:/app/logs # change this to your desired log directory
-    networks:
-      - transit-network
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-
-networks:
-  transit-network:
-    driver: bridge
-   ```
-
-**Run with Docker Compose:**
+2. **Using Docker Compose:**
 
    ```bash
+   # Production build
+   docker compose -f compose.svelte.yml --profile production up -d
+
+   # View logs
+   docker compose -f compose.svelte.yml logs -f
+
+   # Stop
+   docker compose -f compose.svelte.yml down
+   ```
+
+   For development with hot reload:
+   ```bash
+   docker compose -f compose.svelte.yml --profile dev up
+   ```
+
+3. **Using Docker build directly:**
+
+   ```bash
+   # Build the SvelteKit image
+   docker build -f Dockerfile.svelte -t transit-tv-svelte .
+
+   # Run the container
+   docker run -p 8080:8080 --env-file .env.docker transit-tv-svelte
+   ```
+
+The application will be available at http://localhost:8080
+
+### Legacy AngularJS Version
+
+**Using Docker Compose:**
+
+   ```bash
+   # Review and edit .env.docker file
+   nano .env.docker
+
    # Start the application
    docker compose up -d
 
@@ -140,16 +157,14 @@ networks:
    docker compose down
    ```
 
-The application will be available at http://localhost:8080
-
-### Using Docker run:
+**Using Docker run:**
 
 ```bash
 # Build the Docker image
 docker build -t transit-tv .
 
 # Run the container
-docker run -p 8080:8080 -e TRANSIT_API_KEY=your_api_key_here transit-tv
+docker run -p 8080:8080 --env-file .env.docker transit-tv
 ```
 
 The application will be available at http://localhost:8080
@@ -211,23 +226,34 @@ UNATTENDED_TIME_FORMAT=HH:mm
 
 ```
 .
-├── client/
+├── svelte-app/           # SvelteKit application (recommended)
+│   ├── src/
+│   │   ├── routes/       # SvelteKit routes and API endpoints
+│   │   ├── lib/          # Components, stores, utilities
+│   │   └── app.css       # Global styles
+│   └── package.json      # SvelteKit dependencies
+├── client/               # Legacy AngularJS application
 │   ├── app/              # Main application code
 │   ├── components/       # Reusable UI components
 │   ├── directives/       # Angular directives
-│   ├── services/         # Angular services
-│   └── assets/           # Static assets (images, i18n)
+│   └── services/         # Angular services
 ├── server/
 │   ├── api/              # API endpoints
 │   ├── config/           # Server configuration
-│   └── components/       # Server components
-├── .env.example          # Example environment variables - copy this for local development/deployment
-├── .env.docker.example   # Example Docker environment variables - copy this for Docker deployment
-├── .eslintrc.js          # ESLint configuration
-├── compose.yml           # Docker Compose configuration - copy this for Docker deployment
-└── Dockerfile            # Docker build configuration - copy this for Docker deployment
+│   └── routes.js         # Express routing (handles both apps)
+├── .env.example          # Example environment variables
+├── .env.docker           # Docker environment variables (not committed)
+├── Dockerfile            # Legacy AngularJS Docker build
+├── Dockerfile.svelte     # SvelteKit Docker build (recommended)
+├── compose.yml           # Legacy Docker Compose
+└── compose.svelte.yml    # SvelteKit Docker Compose (recommended)
 ```
 
 ## License
 
 See the [LICENSE](LICENSE) file for details.
+
+## Disclaimers
+
+> [!NOTE]
+> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
