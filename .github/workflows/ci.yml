@@ -26,20 +26,20 @@ jobs:
         
     - name: Install dependencies
       run: pnpm install
-      
-    - name: Run linting
-      run: npx grunt jshint
-      
-    - name: Build project
-      run: pnpm build
-      
+
+    - name: Build SvelteKit app
+      run: |
+        cd svelte-app
+        pnpm install --frozen-lockfile
+        pnpm build
+
     - name: Check build output
       run: |
-        if [ ! -d "dist" ]; then
-          echo "Build failed - dist directory not created"
+        if [ ! -d "svelte-app/build" ]; then
+          echo "Build failed - svelte-app/build directory not created"
           exit 1
         fi
-        echo "Build successful - dist directory created"
+        echo "Build successful - svelte-app/build directory created"
 
   docker-test:
     runs-on: ubuntu-latest
