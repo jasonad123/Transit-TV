@@ -13,7 +13,8 @@
       "columns": "Rasterspalten:",
       "theme": "Thema:",
       "headerColor": "Kopfzeilenfarbe:",
-      "showRouteLongName": "Routennamen anzeigen"
+      "showRouteLongName": "Routennamen anzeigen",
+      "showQRCode": "QR-Code anzeigen"
     },
     "timeFormats": {
       "12hour": "12 Stunden",
@@ -36,6 +37,11 @@
     "hiddenRoutes": {
       "title": "Versteckte Routen",
       "helpText": "Zum Einblenden klicken"
+    },
+    "qrCode": {
+      "title": "QR-Code",
+      "helpText": "Scannen Sie den Scanner, um diesen Standort zu öffnen in der Transit-App",
+      "scanPrompt": "Scannen Sie den Scanner, um diesen Standort zu öffnen in der Transit-App"
     },
     "buttons": {
       "cancel": "Stornieren",

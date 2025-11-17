@@ -5,6 +5,7 @@
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import "iconify-icon";
 	let routes = $state<Route[]>([]);
@@ -303,6 +304,27 @@
 					</label>
 				</label>
 
+				<label class="toggle-label">
+					<span>{$_('config.fields.showQRCode')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.showQRCode}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
+
+				{#if $config.showQRCode}
+					<div class="qr-section">
+						<h3>{$_('config.qrCode.title')}</h3>
+						<p class="help-text">{$_('config.qrCode.helpText')}</p>
+						<div class="qr-display">
+							<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={150} />
+						</div>
+					</div>
+				{/if}
+
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
@@ -408,6 +430,13 @@
 			</section>
 		{/if}
 	</div>
+
+	{#if $config.showQRCode && !$config.isEditing}
+		<div class="floating-qr">
+			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={100} />
+			<p class="qr-label">{$_('config.qrCode.scanPrompt')}</p>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -530,6 +559,7 @@
 		display: inline-block;
 		margin-left: 3em;
 		margin-right: 0.5em;
+		vertical-align: middle;
 	}
 
 	.config-modal {
@@ -841,9 +871,82 @@
 	.btn-option.active {
 		/* border-color: #007bff; */
 		/* background: #007bff; */
-		border-color: var(--bg-header); 
-		background-color: var(--bg-header); 
+		border-color: var(--bg-header);
+		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	/* QR Code Styles */
+	.floating-qr {
+		position: fixed;
+		bottom: 2em;
+		right: 2em;
+		z-index: 100;
+		background: var(--bg-header);
+		padding: 1.5em 1.2em;
+		border-radius: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		transition: transform 0.2s ease;
+	}
+
+	.floating-qr:hover {
+		transform: scale(1.05);
+	}
+
+	.floating-qr :global(svg) {
+		display: block;
+	}
+
+	.floating-qr :global(svg path),
+	.floating-qr :global(svg rect),
+	.floating-qr :global(svg circle),
+	.floating-qr :global(svg polygon) {
+		fill: white !important;
+	}
+
+	.qr-label {
+		margin: 0.75em 0 0 0;
+		color: white;
+		font-size: 1em;
+		font-weight: 700;
+		font-family: Helvetica, Arial, sans-serif;
+		text-align: left;
+		letter-spacing: 0.02em;
+		opacity: 0.95;
+		max-width: 150px;
+		word-wrap: break-word;
+		line-height: 1.3;
+	}
+
+	.qr-section {
+		margin-top: 1em;
+		padding: 1em;
+		background: var(--bg-secondary);
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	.qr-section h3 {
+		margin: 0 0 0.5em 0;
+		font-size: 1.1em;
+		color: var(--text-primary);
+	}
+
+	.qr-section .help-text {
+		margin: 0 0 1em 0;
+		font-size: 0.9em;
+		color: var(--text-secondary);
+	}
+
+	.qr-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: white;
+		padding: 1em;
+		border-radius: 8px;
+		width: fit-content;
+		margin: 0 auto;
 	}
 </style>

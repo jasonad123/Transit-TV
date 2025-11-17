@@ -19,6 +19,7 @@ export interface Config {
 	theme: 'light' | 'dark' | 'auto';
 	headerColor: string;
 	showRouteLongName: boolean;
+	showQRCode: boolean;
 }
 
 const defaultConfig: Config = {
@@ -36,7 +37,8 @@ const defaultConfig: Config = {
 	columns: 'auto',
 	theme: 'light',
 	headerColor: '#30b566',
-	showRouteLongName: true
+	showRouteLongName: true,
+	showQRCode: false
 };
 
 function createConfigStore() {

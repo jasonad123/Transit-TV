@@ -13,7 +13,8 @@
       "columns": "Grid Columns:",
       "theme": "Theme:",
       "headerColor": "Header Color:",
-      "showRouteLongName": "Show Route Long Names"
+      "showRouteLongName": "Show Route Long Names",
+      "showQRCode": "Show QR Code"
     },
     "timeFormats": {
       "12hour": "12 Hours",
@@ -36,6 +37,11 @@
     "hiddenRoutes": {
       "title": "Hidden Routes",
       "helpText": "Click to unhide routes"
+    },
+    "qrCode": {
+      "title": "QR Code",
+      "helpText": "Scan with your phone to open this location in Transit app",
+      "scanPrompt": "Scan to open in Transit app"
     },
     "buttons": {
       "cancel": "Cancel",

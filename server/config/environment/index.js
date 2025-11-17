@@ -58,7 +58,8 @@ var all = {
     theme: process.env.UNATTENDED_THEME || 'light',
     headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
     columns: process.env.UNATTENDED_COLUMNS || 'auto',
-    showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_LONG_NAME !== 'false'
+    showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_LONG_NAME !== 'false',
+    showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true'
   },
   
   // Security settings
