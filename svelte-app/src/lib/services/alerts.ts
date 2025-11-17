@@ -79,6 +79,56 @@ export function getAllActiveAlerts(routes: Route[]): AlertData[] {
 	return allAlerts;
 }
 
+export interface AlertContent {
+	type: 'text' | 'image';
+	value: string; // For images, this is the full image tag content; component extracts the ID
+}
+
+export function extractImageId(imageTagContent: string): string {
+	// Image tag format: <image|mta-subway-e|(E)|14|1|2850AD/587ED8>
+	// We only need the first part: mta-subway-e
+	const parts = imageTagContent.split('|');
+	return parts[0] || imageTagContent;
+}
+
+export function parseAlertContent(text?: string): AlertContent[] {
+	if (!text) return [];
+
+	const content: AlertContent[] = [];
+	const imageRegex = /<image\|([^>]+)>/g;
+	let lastIndex = 0;
+	let match;
+
+	while ((match = imageRegex.exec(text)) !== null) {
+		// Add text before image
+		if (match.index > lastIndex) {
+			const textBefore = text.substring(lastIndex, match.index).trim();
+			if (textBefore) {
+				content.push({ type: 'text', value: textBefore });
+			}
+		}
+
+		// Add image
+		content.push({ type: 'image', value: match[1] });
+		lastIndex = imageRegex.lastIndex;
+	}
+
+	// Add remaining text
+	if (lastIndex < text.length) {
+		const textAfter = text.substring(lastIndex).trim();
+		if (textAfter) {
+			content.push({ type: 'text', value: textAfter });
+		}
+	}
+
+	// If no images found, return the original text
+	if (content.length === 0 && text.trim()) {
+		content.push({ type: 'text', value: text.trim() });
+	}
+
+	return content;
+}
+
 export function formatAlertText(alertData: AlertData): string {
 	const { alert, route } = alertData;
 	const routeName = route.route_short_name || route.route_long_name || 'Route';

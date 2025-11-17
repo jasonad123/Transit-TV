@@ -11,7 +11,7 @@
 }
 
 [data-theme="dark"] {
-	--bg-primary: #1a1a1a;
+	--bg-primary: #1f1f1f;
 	--bg-secondary: #2a2a2a;
 	--bg-header: #1f7a42;
 	--text-primary: #ffffff;
@@ -23,7 +23,7 @@
 
 * {
 	-webkit-font-smoothing: antialiased;
-	font-smooth: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 	border: none;
 }
 

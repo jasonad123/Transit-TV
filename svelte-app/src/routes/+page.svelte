@@ -281,7 +281,10 @@
 						<button
 							type="button"
 							class="btn-reset"
-							onclick={() => config.update(c => ({ ...c, headerColor: '#30b566' }))}
+							onclick={() => {
+								const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
+								config.update(c => ({ ...c, headerColor: defaultColor }));
+							}}
 							title={$_('config.buttons.resetToDefault')}
 						>
 							{$_('config.buttons.reset')}

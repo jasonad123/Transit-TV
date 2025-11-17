@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import type { Route, ScheduleItem} from '$lib/services/nearby';
+	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 
 	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
 
@@ -320,14 +321,6 @@
 				{#if dir}
 					<div class="content">
 						<div class="stop_name">
-							<!-- <svg
-								class="pin-icon"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 640 640"
-								><path
-									d="M128 252.6C128 148.4 214 64 320 64C426 64 512 148.4 512 252.6C512 371.9 391.8 514.9 341.6 569.4C329.8 582.2 310.1 582.2 298.3 569.4C248.1 514.9 127.9 371.9 127.9 252.6zM320 320C355.3 320 384 291.3 384 256C384 220.7 355.3 192 320 192C284.7 192 256 220.7 256 256C256 291.3 284.7 320 320 320z"
-								/></svg
-							> -->
 							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
 						</div>
 						<div class="direction" style={cellStyle}>
@@ -364,11 +357,23 @@
 
 	{#if hasRelevantAlerts()}
 		<div>
-			<div class="route-alert-header" style={cellStyle}>
+			<div class="route-alert-header">
 				<span><iconify-icon icon="ix:warning-filled"></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
-				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>{getAlertText()}</div>
+				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
+					{#each parseAlertContent(getAlertText()) as content}
+						{#if content.type === 'text'}
+							{content.value}
+						{:else if content.type === 'image'}
+							<img
+								src="/api/images/{extractImageId(content.value)}"
+								alt="transit icon"
+								class="alert-image"
+							/>
+						{/if}
+					{/each}
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -428,6 +433,8 @@
 		font-weight: bold;
 		line-height: 1.4;
 		padding: 0.5em;
+		background-color: #FFA700;
+		color: #000000;
 		margin-top: 0.25em;
 		border-radius: 0.2em 0.2em 0 0;
 		text-align: left;
@@ -450,10 +457,11 @@
 
 	.route-alert-header iconify-icon {
 		display: block;
-		vertical-align: middle;
-		width: 1.2em;
-		height: 1.2em;
+		width: 1.25em;
+		height: auto;
 		flex-shrink: 0;
+		vertical-align: -0.25em;
+		line-height: 1;
 	}
 
 	.route.white .route-alert-header {
@@ -489,6 +497,13 @@
 
 	.route-alert-ticker .alert-text.scrolling {
 		animation: scroll-alert-vertical 240s linear infinite;
+	}
+
+	.route-alert-ticker .alert-image {
+		height: 1em;
+		display: inline-block;
+		margin: 0 0.2em;
+		vertical-align: middle;
 	}
 
 	.route h3 {

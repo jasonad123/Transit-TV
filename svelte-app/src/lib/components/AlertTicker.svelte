@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAllActiveAlerts, formatAlertText } from '$lib/services/alerts';
+	import { getAllActiveAlerts, formatAlertText, parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import type { Route } from '$lib/services/nearby';
 
 	export let routes: Route[] = [];
@@ -13,7 +13,17 @@
 			{#each alerts as alert, i}
 				<span class="alert-item">
 					<i class="alert-icon {alert.isAlert ? 'alert' : 'info'}"></i>
-					{formatAlertText(alert)}
+					{#each parseAlertContent(formatAlertText(alert)) as content}
+						{#if content.type === 'text'}
+							{content.value}
+						{:else if content.type === 'image'}
+							<img
+								src="/api/images/{extractImageId(content.value)}"
+								alt="transit icon"
+								class="alert-image"
+							/>
+						{/if}
+					{/each}
 					{#if i < alerts.length - 1}
 						<span class="separator">•</span>
 					{/if}
@@ -70,5 +80,12 @@
 	.separator {
 		margin: 0 2em;
 		opacity: 0.7;
+	}
+
+	.alert-image {
+		height: 1.2em;
+		display: inline-block;
+		margin: 0 0.2em;
+		vertical-align: middle;
 	}
 </style>
