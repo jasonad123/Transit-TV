@@ -501,7 +501,6 @@
 		width: 1.25em;
 		height: auto;
 		flex-shrink: 0;
-		vertical-align: -0.25em;
 		line-height: 1;
 	}
 
