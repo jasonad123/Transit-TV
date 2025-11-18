@@ -17,7 +17,7 @@
 		data={deepLink}
 		width={size}
 		height={size}
-		shape="circle"
+		shape="square"
 	/>
 </div>
 
@@ -25,5 +25,17 @@
 	.qr-container {
 		display: inline-block;
 		line-height: 0;
+	}
+
+	/* Ensure QR code is always black on white for maximum contrast */
+	.qr-container :global(svg) {
+		background: white;
+	}
+
+	.qr-container :global(svg path),
+	.qr-container :global(svg rect),
+	.qr-container :global(svg circle),
+	.qr-container :global(svg polygon) {
+		fill: black !important;
 	}
 </style>

@@ -433,7 +433,7 @@
 
 	{#if $config.showQRCode && !$config.isEditing}
 		<div class="floating-qr">
-			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={100} />
+			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={120} />
 			<p class="qr-label">{$_('config.qrCode.scanPrompt')}</p>
 		</div>
 	{/if}
@@ -463,6 +463,7 @@
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
+		padding-bottom: 12em;
 	}
 
 	header {
@@ -721,7 +722,20 @@
 		position: relative;
 	}
 
-	/* Column overrides */
+	/* Responsive auto-layout defaults */
+	@media (min-width: 2560px) {
+		.route-wrapper {
+			width: 20%; /* 5 columns at 2.5K+ */
+		}
+	}
+
+	@media (min-width: 3200px) {
+		.route-wrapper {
+			width: 16.666%; /* 6 columns at 3.2K+ */
+		}
+	}
+
+	/* Column overrides (take precedence over auto-layout) */
 	#routes.cols-1 .route-wrapper {
 		width: 100%;
 	}
@@ -888,6 +902,7 @@
 		border-radius: 12px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		transition: transform 0.2s ease;
+		border: 3px solid rgba(255, 255, 255, 0.3);
 	}
 
 	.floating-qr:hover {
@@ -896,13 +911,16 @@
 
 	.floating-qr :global(svg) {
 		display: block;
+		background: white;
+		padding: 0.5em;
+		border-radius: 6px;
 	}
 
 	.floating-qr :global(svg path),
 	.floating-qr :global(svg rect),
 	.floating-qr :global(svg circle),
 	.floating-qr :global(svg polygon) {
-		fill: white !important;
+		fill: black !important;
 	}
 
 	.qr-label {
@@ -914,7 +932,7 @@
 		text-align: left;
 		letter-spacing: 0.02em;
 		opacity: 0.95;
-		max-width: 150px;
+		max-width: 180px;
 		word-wrap: break-word;
 		line-height: 1.3;
 	}
@@ -944,9 +962,17 @@
 		justify-content: center;
 		align-items: center;
 		background: white;
-		padding: 1em;
+		padding: 1.5em;
 		border-radius: 8px;
 		width: fit-content;
 		margin: 0 auto;
+		border: 2px solid #ddd;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	[data-theme="dark"] .qr-display {
+		background: white;
+		border-color: #666;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 	}
 </style>

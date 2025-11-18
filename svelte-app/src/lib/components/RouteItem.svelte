@@ -55,6 +55,12 @@
 		getRelativeLuminance(route.route_text_color) > 0.5
 	);
 
+	// Check if route has light colors (for wave icon selection in dark mode)
+	// Light colored routes like Orange (#f9461c) or Silver (#a7a9ac) need dark waves in dark mode
+	let hasLightColor = $derived(
+		getRelativeLuminance(route.route_color) > 0.3
+	);
+
 	// Complex logos that should not be recolored (contain their own internal colors)
 	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
 
@@ -303,7 +309,7 @@
 	}
 </script>
 
-<div class="route" class:white={useBlackText && !isDarkMode} style="color: {routeDisplayColor}">
+<div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
 	<h2><span class="route-icon">{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
 				class="img{imageSize}"
 				src={getImageUrl(0)}
@@ -469,15 +475,15 @@
 	}
 
 	.route-alert-ticker {
-		font-size: 1.25em;
+		font-size: 1.5em;
 		font-weight: medium;
-		line-height: 1.3;
-		padding: 0.4em 0.4em;
+		line-height: 1.4;
+		padding: 0.5em;
 		margin-top: 0;
 		border-radius: 0 0 0.2em 0.2em;
 		overflow: hidden;
 		position: relative;
-		height: 6.5em;
+		height: 7em;
 	}
 
 	@keyframes scroll-alert-vertical {
@@ -496,7 +502,7 @@
 	}
 
 	.route-alert-ticker .alert-text.scrolling {
-		animation: scroll-alert-vertical 240s linear infinite;
+		animation: scroll-alert-vertical 180s linear infinite;
 	}
 
 	.route-alert-ticker .alert-image {
@@ -679,7 +685,13 @@
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
+	/* Light mode: dark waves on white routes */
 	.route.white .realtime::before {
+		background-image: url('/assets/images/real_time_wave_small@2x.png');
+	}
+
+	/* Dark mode: dark waves on light-colored routes */
+	.route.light-in-dark .realtime::before {
 		background-image: url('/assets/images/real_time_wave_small@2x.png');
 	}
 
@@ -688,7 +700,13 @@
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
+	/* Light mode: dark waves on white routes */
 	.route.white .realtime::after {
+		background-image: url('/assets/images/real_time_wave_big@2x.png');
+	}
+
+	/* Dark mode: dark waves on light-colored routes */
+	.route.light-in-dark .realtime::after {
 		background-image: url('/assets/images/real_time_wave_big@2x.png');
 	}
 
@@ -702,17 +720,5 @@
 
 	.route.white .inactive {
 		background-image: url('/assets/images/inactive@2x.png');
-	}
-
-	@media (min-width: 2000px) {
-		.route {
-			width: 20%;
-		}
-	}
-
-	@media (min-width: 2800px) {
-		.route {
-			width: 16.666%;
-		}
 	}
 </style>
