@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import type { Route, ScheduleItem} from '$lib/services/nearby';
-	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
+	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 
 	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
 
@@ -170,6 +170,29 @@
 	}
 
 	let relevantAlertCount = $derived(getRelevantAlerts().length);
+
+	// Get the most severe alert level for styling
+	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
+		const alerts = getRelevantAlerts();
+		if (!alerts.length) return 'info';
+
+		// Check for severe first, then warning, then info
+		if (alerts.some(a => (a.severity || 'Info').toLowerCase() === 'severe')) {
+			return 'severe';
+		}
+		if (alerts.some(a => (a.severity || 'Info').toLowerCase() === 'warning')) {
+			return 'warning';
+		}
+		return 'info';
+	}
+
+	// Get the icon for the most severe alert
+	function getMostSevereAlertIcon(): string {
+		const level = getMostSevereAlertLevel();
+		if (level === 'severe') return 'ix:warning-octagon-filled';
+		if (level === 'warning') return 'ix:warning-filled';
+		return 'ix:about-filled';
+	}
 
 	let alertElement: HTMLElement | null = null;
 	let isAlertOverflowing = $state(false);
@@ -363,8 +386,8 @@
 
 	{#if hasRelevantAlerts()}
 		<div>
-			<div class="route-alert-header">
-				<span><iconify-icon icon="ix:warning-filled"></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
+			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
+				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
@@ -439,8 +462,6 @@
 		font-weight: bold;
 		line-height: 1.4;
 		padding: 0.5em;
-		background-color: #FFA700;
-		color: #000000;
 		margin-top: 0.25em;
 		border-radius: 0.2em 0.2em 0 0;
 		text-align: left;
@@ -452,6 +473,20 @@
 		white-space: normal;
 		word-break: break-word;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.route-alert-header.severe {
+		background-color: #E30613;
+		color: #FFFFFF;
+	}
+
+	.route-alert-header.warning {
+		background-color: #FFA700;
+		color: #000000;
+	}
+
+	.route-alert-header.info {
+		/* Inherits from inline style (cellStyle) */
 	}
 
 	.route-alert-header span {

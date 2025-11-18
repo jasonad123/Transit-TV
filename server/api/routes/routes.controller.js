@@ -32,6 +32,23 @@ exports.nearby = async function (req, res) {
 
     if (!response.ok) {
       const body = await response.text();
+
+      // Handle rate limiting with more detail
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After');
+        console.error('Rate limited by Transit API:', {
+          status: 429,
+          retryAfter: retryAfter || 'not specified',
+          timestamp: new Date().toISOString()
+        });
+
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          retryAfter: retryAfter ? parseInt(retryAfter) : 60,
+          message: 'Too many requests. Please try again later.'
+        });
+      }
+
       console.error('Error response from transit API:', response.status, body);
       return res.status(response.status).json({ error: 'Transit API error' });
     }

@@ -20,15 +20,25 @@ export function isAlertType(route?: Route): boolean {
 	});
 }
 
-export function getAlertIcon(route?: Route): 'alert' | 'info' {
-	return isAlertType(route) ? 'alert' : 'info';
+export function getAlertIcon(alert: Alert): string {
+	const severity = (alert.severity || 'Info').toLowerCase();
+
+	if (severity === 'severe') {
+		return 'ix:warning-octagon-filled';
+	} else if (severity === 'warning') {
+		return 'ix:warning-filled';
+	} else {
+		return 'ix:about-filled';
+	}
 }
 
 function isAlertRelevant(
 	alert: Alert,
-	routeId: string,
+	routeId: string | undefined,
 	globalStopIds: Set<string>
 ): boolean {
+	if (!routeId) return false;
+
 	if (!alert.informed_entities || alert.informed_entities.length === 0) {
 		return true;
 	}

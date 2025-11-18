@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { config } from '$lib/stores/config';
-	import { findNearbyRoutes } from '$lib/services/nearby';
+	import { findNearbyRoutes, type RateLimitError } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -14,6 +14,8 @@
 	let clockIntervalId: ReturnType<typeof setInterval>;
 	let loading = $state(true);
 	let currentTime = $state(new Date());
+	let errorMessage = $state<string | null>(null);
+	let retryCountdown = $state<number | null>(null);
 
 	async function loadNearby() {
 		try {
@@ -35,9 +37,37 @@
 				});
 
 			loading = false;
+			errorMessage = null;
+			retryCountdown = null;
 		} catch (err) {
 			console.error('Error loading nearby routes:', err);
 			loading = false;
+
+			const error = err as RateLimitError;
+			if (error.isRateLimit) {
+				const retryAfter = error.retryAfter || 60;
+				errorMessage = `Rate limited. Retrying in ${retryAfter} seconds...`;
+				retryCountdown = retryAfter;
+
+				// Countdown timer
+				const countdownInterval = setInterval(() => {
+					if (retryCountdown !== null && retryCountdown > 0) {
+						retryCountdown--;
+						errorMessage = `Rate limited. Retrying in ${retryCountdown} seconds...`;
+					} else {
+						clearInterval(countdownInterval);
+						errorMessage = null;
+						retryCountdown = null;
+						loadNearby();
+					}
+				}, 1000);
+			} else {
+				errorMessage = 'Failed to load routes. Retrying in 30 seconds...';
+				setTimeout(() => {
+					errorMessage = null;
+					loadNearby();
+				}, 30000);
+			}
 		}
 	}
 
@@ -372,6 +402,13 @@
 	{/if}
 
 	<div class="content">
+		<!-- Error banner disabled for now - to be enabled with comprehensive error handling -->
+		<!-- {#if errorMessage}
+			<div class="error-banner">
+				<iconify-icon icon="ix:warning-filled"></iconify-icon>
+				{errorMessage}
+			</div>
+		{/if} -->
 		{#if loading}
 			<div class="loading">{$_('routes.loading')}</div>
 		{:else if routes.length === 0}
@@ -974,5 +1011,39 @@
 		background: white;
 		border-color: #666;
 		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+	}
+
+	.error-banner {
+		position: fixed;
+		top: 5.5em;
+		left: 50%;
+		transform: translateX(-50%);
+		background: #d32f2f;
+		color: white;
+		padding: 1em 2em;
+		border-radius: 8px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		z-index: 200;
+		font-size: 1.5em;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.error-banner iconify-icon {
+		font-size: 1.5em;
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
 	}
 </style>

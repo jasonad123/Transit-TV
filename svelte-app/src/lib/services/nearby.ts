@@ -48,6 +48,11 @@ export interface LatLng {
 	longitude: number;
 }
 
+export interface RateLimitError extends Error {
+	retryAfter?: number;
+	isRateLimit: true;
+}
+
 export async function findNearbyRoutes(location: LatLng, radius: number): Promise<Route[]> {
 	const params = new URLSearchParams({
 		lat: location.latitude.toString(),
@@ -57,6 +62,19 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 
 	const response = await fetch(`/api/routes/nearby?${params}`);
 	if (!response.ok) {
+		if (response.status === 429) {
+			const errorData = await response.json().catch(() => ({}));
+			const retryAfter = errorData.retryAfter || 60;
+
+			const error = new Error(
+				errorData.message || 'Rate limit exceeded. Please try again later.'
+			) as RateLimitError;
+			error.retryAfter = retryAfter;
+			error.isRateLimit = true;
+
+			throw error;
+		}
+
 		throw new Error('Failed to fetch nearby routes');
 	}
 
