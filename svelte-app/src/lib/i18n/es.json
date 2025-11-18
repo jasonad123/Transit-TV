@@ -13,7 +13,8 @@
       "columns": "Columnas de cuadrícula:",
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
-      "showRouteLongName": "Mostrar nombres de rutas"
+      "showRouteLongName": "Mostrar nombres de rutas",
+      "showQRCode": "Mostrar código QR"
     },
     "timeFormats": {
       "12hour": "12 horas",
@@ -36,6 +37,11 @@
     "hiddenRoutes": {
       "title": "Rutas encubiertas",
       "helpText": "Haz clic aquí para ocultar las rutas"
+    },
+    "qrCode": {
+      "title": "Código QR",
+      "helpText": "Escanea para abrir esta ubicación en la aplicación Transit",
+      "scanPrompt": "Escanea para abrir esta ubicación en la aplicación Transit"
     },
     "buttons": {
       "cancel": "Cancelar",

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAllActiveAlerts, formatAlertText, parseAlertContent, extractImageId } from '$lib/services/alerts';
+	import { getAllActiveAlerts, formatAlertText, parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import type { Route } from '$lib/services/nearby';
 
 	export let routes: Route[] = [];
@@ -12,7 +12,7 @@
 		<div class="ticker-content">
 			{#each alerts as alert, i}
 				<span class="alert-item">
-					<i class="alert-icon {alert.isAlert ? 'alert' : 'info'}"></i>
+					<iconify-icon icon={getAlertIcon(alert.alert)} class="alert-icon"></iconify-icon>
 					{#each parseAlertContent(formatAlertText(alert)) as content}
 						{#if content.type === 'text'}
 							{content.value}
@@ -67,14 +67,7 @@
 	.alert-icon {
 		margin: 0 0.3em;
 		font-style: normal;
-	}
-
-	.alert-icon.alert:before {
-		content: '\26A0';
-	}
-
-	.alert-icon.info:before {
-		content: '\24D8';
+		vertical-align: middle;
 	}
 
 	.separator {

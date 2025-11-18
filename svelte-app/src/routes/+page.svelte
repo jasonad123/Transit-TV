@@ -3,8 +3,9 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { config } from '$lib/stores/config';
-	import { findNearbyRoutes } from '$lib/services/nearby';
+	import { findNearbyRoutes, type RateLimitError } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import "iconify-icon";
 	let routes = $state<Route[]>([]);
@@ -13,6 +14,8 @@
 	let clockIntervalId: ReturnType<typeof setInterval>;
 	let loading = $state(true);
 	let currentTime = $state(new Date());
+	let errorMessage = $state<string | null>(null);
+	let retryCountdown = $state<number | null>(null);
 
 	async function loadNearby() {
 		try {
@@ -34,9 +37,37 @@
 				});
 
 			loading = false;
+			errorMessage = null;
+			retryCountdown = null;
 		} catch (err) {
 			console.error('Error loading nearby routes:', err);
 			loading = false;
+
+			const error = err as RateLimitError;
+			if (error.isRateLimit) {
+				const retryAfter = error.retryAfter || 60;
+				errorMessage = `Rate limited. Retrying in ${retryAfter} seconds...`;
+				retryCountdown = retryAfter;
+
+				// Countdown timer
+				const countdownInterval = setInterval(() => {
+					if (retryCountdown !== null && retryCountdown > 0) {
+						retryCountdown--;
+						errorMessage = `Rate limited. Retrying in ${retryCountdown} seconds...`;
+					} else {
+						clearInterval(countdownInterval);
+						errorMessage = null;
+						retryCountdown = null;
+						loadNearby();
+					}
+				}, 1000);
+			} else {
+				errorMessage = 'Failed to load routes. Retrying in 30 seconds...';
+				setTimeout(() => {
+					errorMessage = null;
+					loadNearby();
+				}, 30000);
+			}
 		}
 	}
 
@@ -303,6 +334,27 @@
 					</label>
 				</label>
 
+				<label class="toggle-label">
+					<span>{$_('config.fields.showQRCode')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.showQRCode}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
+
+				{#if $config.showQRCode}
+					<div class="qr-section">
+						<h3>{$_('config.qrCode.title')}</h3>
+						<p class="help-text">{$_('config.qrCode.helpText')}</p>
+						<div class="qr-display">
+							<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={150} />
+						</div>
+					</div>
+				{/if}
+
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
@@ -350,6 +402,13 @@
 	{/if}
 
 	<div class="content">
+		<!-- Error banner disabled for now - to be enabled with comprehensive error handling -->
+		<!-- {#if errorMessage}
+			<div class="error-banner">
+				<iconify-icon icon="ix:warning-filled"></iconify-icon>
+				{errorMessage}
+			</div>
+		{/if} -->
 		{#if loading}
 			<div class="loading">{$_('routes.loading')}</div>
 		{:else if routes.length === 0}
@@ -408,6 +467,13 @@
 			</section>
 		{/if}
 	</div>
+
+	{#if $config.showQRCode && !$config.isEditing}
+		<div class="floating-qr">
+			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={120} />
+			<p class="qr-label">{$_('config.qrCode.scanPrompt')}</p>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -434,6 +500,7 @@
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
+		padding-bottom: 12em;
 	}
 
 	header {
@@ -530,6 +597,7 @@
 		display: inline-block;
 		margin-left: 3em;
 		margin-right: 0.5em;
+		vertical-align: middle;
 	}
 
 	.config-modal {
@@ -691,7 +759,20 @@
 		position: relative;
 	}
 
-	/* Column overrides */
+	/* Responsive auto-layout defaults */
+	@media (min-width: 2560px) {
+		.route-wrapper {
+			width: 20%; /* 5 columns at 2.5K+ */
+		}
+	}
+
+	@media (min-width: 3200px) {
+		.route-wrapper {
+			width: 16.666%; /* 6 columns at 3.2K+ */
+		}
+	}
+
+	/* Column overrides (take precedence over auto-layout) */
 	#routes.cols-1 .route-wrapper {
 		width: 100%;
 	}
@@ -841,9 +922,128 @@
 	.btn-option.active {
 		/* border-color: #007bff; */
 		/* background: #007bff; */
-		border-color: var(--bg-header); 
-		background-color: var(--bg-header); 
+		border-color: var(--bg-header);
+		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	/* QR Code Styles */
+	.floating-qr {
+		position: fixed;
+		bottom: 2em;
+		right: 2em;
+		z-index: 100;
+		background: var(--bg-header);
+		padding: 1.5em 1.2em;
+		border-radius: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		transition: transform 0.2s ease;
+		border: 3px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.floating-qr:hover {
+		transform: scale(1.05);
+	}
+
+	.floating-qr :global(svg) {
+		display: block;
+		background: white;
+		padding: 0.5em;
+		border-radius: 6px;
+	}
+
+	.floating-qr :global(svg path),
+	.floating-qr :global(svg rect),
+	.floating-qr :global(svg circle),
+	.floating-qr :global(svg polygon) {
+		fill: black !important;
+	}
+
+	.qr-label {
+		margin: 0.75em 0 0 0;
+		color: white;
+		font-size: 1em;
+		font-weight: 700;
+		font-family: Helvetica, Arial, sans-serif;
+		text-align: left;
+		letter-spacing: 0.02em;
+		opacity: 0.95;
+		max-width: 180px;
+		word-wrap: break-word;
+		line-height: 1.3;
+	}
+
+	.qr-section {
+		margin-top: 1em;
+		padding: 1em;
+		background: var(--bg-secondary);
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	.qr-section h3 {
+		margin: 0 0 0.5em 0;
+		font-size: 1.1em;
+		color: var(--text-primary);
+	}
+
+	.qr-section .help-text {
+		margin: 0 0 1em 0;
+		font-size: 0.9em;
+		color: var(--text-secondary);
+	}
+
+	.qr-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: white;
+		padding: 1.5em;
+		border-radius: 8px;
+		width: fit-content;
+		margin: 0 auto;
+		border: 2px solid #ddd;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	[data-theme="dark"] .qr-display {
+		background: white;
+		border-color: #666;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+	}
+
+	.error-banner {
+		position: fixed;
+		top: 5.5em;
+		left: 50%;
+		transform: translateX(-50%);
+		background: #d32f2f;
+		color: white;
+		padding: 1em 2em;
+		border-radius: 8px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		z-index: 200;
+		font-size: 1.5em;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.error-banner iconify-icon {
+		font-size: 1.5em;
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
 	}
 </style>
