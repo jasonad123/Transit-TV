@@ -387,6 +387,14 @@
 						>
 							5
 						</button>
+						<button
+							type="button"
+							class="btn-option"
+							class:active={$config.columns === 6}
+							onclick={() => config.update(c => ({ ...c, columns: 6 }))}
+						>
+							6
+						</button>
 					</div>
 				</label>
 
@@ -463,6 +471,17 @@
 					</label>
 				</label>
 
+				<label class="toggle-label">
+					<span>{$_('config.fields.groupItinerariesByStop')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.groupItinerariesByStop}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
+
 				{#if $config.showQRCode}
 					<div class="qr-section">
 						<h3>{$_('config.qrCode.title')}</h3>
@@ -533,7 +552,7 @@
 		{:else if routes.length === 0}
 			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
-			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
+			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5} class:cols-6={$config.columns === 6}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						<RouteItem {route} showLongName={$config.showRouteLongName} />
@@ -911,7 +930,9 @@
 	#routes.cols-5 .route-wrapper {
 		width: 20%;
 	}
-
+	#routes.cols-6 .route-wrapper {
+		width: 16.666%;
+	}
 	.route-controls {
 		position: absolute;
 		top: 0.5em;

@@ -4,6 +4,7 @@
 	import { browser } from '$app/environment';
 	import type { Route, ScheduleItem} from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import { config } from '$lib/stores/config';
 
 	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
 
@@ -386,6 +387,47 @@
 			}
 		};
 	}
+
+	// Group itineraries by stop location
+	interface ItineraryGroup {
+		stopId: string;
+		stopName: string;
+		itineraries: Itinerary[];
+	}
+
+	function groupItinerariesByStop(): ItineraryGroup[] {
+		if (!route.itineraries) return [];
+
+		const groups = new Map<string, ItineraryGroup>();
+
+		route.itineraries.forEach((itinerary) => {
+			// Use parent_station_global_stop_id if available (same physical station, different platforms)
+			// Otherwise fall back to global_stop_id
+			const stopId = itinerary.closest_stop?.parent_station_global_stop_id
+				|| itinerary.closest_stop?.global_stop_id
+				|| 'unknown';
+			const stopName = itinerary.closest_stop?.stop_name || 'Unknown stop';
+
+			if (!groups.has(stopId)) {
+				groups.set(stopId, {
+					stopId,
+					stopName,
+					itineraries: []
+				});
+			}
+
+			groups.get(stopId)!.itineraries.push(itinerary);
+		});
+
+		return Array.from(groups.values());
+	}
+
+	let itineraryGroups = $derived($config.groupItinerariesByStop ? groupItinerariesByStop() :
+		route.itineraries?.map(itinerary => ({
+			stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
+			stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
+			itineraries: [itinerary]
+		})) || []);
 </script>
 
 <div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
@@ -401,14 +443,14 @@
 				alt="Route icon"
 			/>{/if}{/if}</span>{#if route.route_long_name && showLongName}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
 
-		{#if route.itineraries}
-			{#each route.itineraries as dir, index}
-				{#if dir}
-					<div class="content">
-						<div class="stop_name">
-							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
-						</div>
-						<div class="direction" style={cellStyle}>
+		{#if itineraryGroups.length > 0}
+			{#each itineraryGroups as group}
+				<div class="content">
+					<div class="stop_name">
+						<iconify-icon icon="ix:location-filled"></iconify-icon> {group.stopName}
+					</div>
+					{#each group.itineraries as dir, index}
+						<div class="direction" style={cellStyle} class:first-branch={index === 0} class:multi-branch={group.itineraries.length > 1}>
 							<h3><span
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
@@ -435,8 +477,8 @@
 								{/each}
 							</div>
 						</div>
-					</div>
-				{/if}
+					{/each}
+				</div>
 			{/each}
 		{/if}
 
@@ -678,6 +720,34 @@
 
 	.route .direction {
 		border-radius: 0.2em;
+		margin-bottom: 0.25em;
+	}
+
+	/* Styling for multi-branch routes */
+	.route .direction.multi-branch {
+		margin-bottom: 0.15em;
+	}
+
+	.route .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(255, 255, 255, 0.15);
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+	}
+
+	.route.white .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(0, 0, 0, 0.15);
+	}
+
+	.route .direction.multi-branch.first-branch {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.route .direction.multi-branch:not(:last-child) {
+		margin-bottom: 0;
+	}
+
+	.route .direction.multi-branch:last-child {
 		margin-bottom: 0.25em;
 	}
 

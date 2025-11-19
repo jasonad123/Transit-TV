@@ -16,11 +16,12 @@ export interface Config {
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
-	columns: 'auto' | 1 | 2 | 3 | 4 | 5;
+	columns: 'auto' | 1 | 2 | 3 | 4 | 5 | 6;
 	theme: 'light' | 'dark' | 'auto';
 	headerColor: string;
 	showRouteLongName: boolean;
 	showQRCode: boolean;
+	groupItinerariesByStop: boolean;
 }
 
 const defaultConfig: Config = {
@@ -39,7 +40,8 @@ const defaultConfig: Config = {
 	theme: 'light',
 	headerColor: '#30b566',
 	showRouteLongName: false,
-	showQRCode: false
+	showQRCode: false,
+	groupItinerariesByStop: true
 };
 
 function createConfigStore() {
