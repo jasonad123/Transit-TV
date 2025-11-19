@@ -14,7 +14,8 @@
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
       "showRouteLongName": "Mostrar nombres de rutas",
-      "showQRCode": "Mostrar código QR"
+      "showQRCode": "Mostrar código QR",
+      "groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?"
     },
     "timeFormats": {
       "12hour": "12 horas",

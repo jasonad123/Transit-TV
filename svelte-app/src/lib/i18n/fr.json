@@ -14,7 +14,8 @@
       "theme": "Thème :",
       "headerColor": "Couleur d'en-tête :",
       "showRouteLongName": "Afficher les noms complet d'itinéraire",
-      "showQRCode": "Afficher code QR"
+      "showQRCode": "Afficher code QR",
+      "groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?"
     },
     "timeFormats": {
       "12hour": "12 heures",
@@ -69,7 +70,7 @@
     "hideRoute": "Masquer la ligne"
   },
   "alerts": {
-    "default": "Alerte de service"
+    "default": "Alertes de service"
   },
   "time": {
     "min": "min",
