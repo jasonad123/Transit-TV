@@ -957,7 +957,7 @@
 		z-index: 100;
 		background: var(--bg-header);
 		padding: 1.5em 1.2em;
-		border-radius: 12px;
+		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		transition: transform 0.2s ease;
 		border: 3px solid rgba(255, 255, 255, 0.3);
@@ -971,18 +971,18 @@
 		display: block;
 		background: white;
 		padding: 0.5em;
-		border-radius: 6px;
+		border-radius: 4px;
 	}
 
 	.floating-qr :global(svg path),
 	.floating-qr :global(svg rect),
 	.floating-qr :global(svg circle),
 	.floating-qr :global(svg polygon) {
-		fill: black !important;
+		fill: var(--bg-header) !important;
 	}
 
 	.qr-label {
-		margin: 0.75em 0 0 0;
+		margin: 0.6em 0 0 0;
 		color: white;
 		font-size: 1em;
 		font-weight: 700;
@@ -990,7 +990,7 @@
 		text-align: left;
 		letter-spacing: 0.02em;
 		opacity: 0.95;
-		max-width: 180px;
+		max-width: 150px;
 		word-wrap: break-word;
 		line-height: 1.3;
 	}
@@ -1021,11 +1021,11 @@
 		align-items: center;
 		background: white;
 		padding: 1.5em;
-		border-radius: 8px;
+		border-radius: 4px;
 		width: fit-content;
 		margin: 0 auto;
 		border: 2px solid #ddd;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	[data-theme="dark"] .qr-display {
