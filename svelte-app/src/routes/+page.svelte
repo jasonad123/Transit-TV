@@ -1146,11 +1146,11 @@
 		align-items: center;
 		background: white;
 		padding: 1.5em;
-		border-radius: 8px;
+		border-radius: 4px;
 		width: fit-content;
 		margin: 0 auto;
 		border: 2px solid #ddd;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	[data-theme="dark"] .qr-display {
