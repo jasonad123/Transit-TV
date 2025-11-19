@@ -15,7 +15,7 @@
       "headerColor": "Header Color:",
       "showRouteLongName": "Show Route Long Names",
       "showQRCode": "Show QR Code",
-      "groupItinerariesByStop": "Group Branches by Stop"
+      "groupItinerariesByStop": "Group destinations with shared stop names?"
     },
     "timeFormats": {
       "12hour": "12 Hours",
