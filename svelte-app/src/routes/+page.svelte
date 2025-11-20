@@ -489,8 +489,8 @@
 
 	{#if $config.showQRCode && !$config.isEditing}
 		<div class="floating-qr">
-			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={120} />
 			<p class="qr-label">{$_('config.qrCode.scanPrompt')}</p>
+			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={90} />
 		</div>
 	{/if}
 </div>
@@ -953,25 +953,32 @@
 	.floating-qr {
 		position: fixed;
 		bottom: 2em;
-		right: 2em;
+		right: 1em;
 		z-index: 100;
 		background: var(--bg-header);
-		padding: 1.5em 1.2em;
+		padding: 1em;
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		transition: transform 0.2s ease;
-		border: 3px solid rgba(255, 255, 255, 0.3);
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 1.2em;
+		min-width: 20%;
+		max-width: 250px;
 	}
 
 	.floating-qr:hover {
-		transform: scale(1.05);
+		transform: scale(1.02);
 	}
 
 	.floating-qr :global(svg) {
 		display: block;
 		background: white;
-		padding: 0.5em;
+		padding: 0.4em;
 		border-radius: 4px;
+		flex-shrink: 0;
 	}
 
 	.floating-qr :global(svg path),
@@ -982,16 +989,15 @@
 	}
 
 	.qr-label {
-		margin: 0.6em 0 0 0;
+		margin: 0;
 		color: white;
-		font-size: 1em;
-		font-weight: 700;
-		font-family: Helvetica, Arial, sans-serif;
+		font-size: 1.1em;
+		font-weight: bold;
 		text-align: left;
 		letter-spacing: 0.02em;
 		opacity: 0.95;
-		max-width: 150px;
-		word-wrap: break-word;
+		flex: 1;
+		overflow-wrap: break-word;
 		line-height: 1.3;
 	}
 
@@ -1021,11 +1027,11 @@
 		align-items: center;
 		background: white;
 		padding: 1.5em;
-		border-radius: 4px;
+		border-radius: 8px;
 		width: fit-content;
 		margin: 0 auto;
 		border: 2px solid #ddd;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	[data-theme="dark"] .qr-display {
