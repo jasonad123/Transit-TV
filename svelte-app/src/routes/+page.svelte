@@ -944,7 +944,7 @@
 		flex-direction: row;
 		align-items: center;
 		gap: 1.2em;
-		min-width: 90px;
+		min-width: 20%;
 		max-width: 250px;
 	}
 
