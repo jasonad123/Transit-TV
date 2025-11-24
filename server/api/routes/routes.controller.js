@@ -54,9 +54,23 @@ exports.nearby = async function (req, res) {
     }
 
     const body = await response.text();
+
+    res.set({
+      'Cache-Control': 'public, max-age=15',
+      'Vary': 'Accept-Encoding'
+    });
+
     res.status(200).send(body);
   } catch (error) {
     console.error('Error fetching nearby routes:', error);
+
+    if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+      return res.status(504).json({
+        error: 'Request timeout',
+        message: 'Transit API did not respond in time. Please try again.'
+      });
+    }
+
     return res.status(500).json({ error: 'Failed to fetch nearby routes' });
   }
 };

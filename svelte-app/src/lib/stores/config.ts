@@ -44,7 +44,7 @@ const defaultConfig: Config = {
 function createConfigStore() {
 	const { subscribe, set, update } = writable<Config>(defaultConfig);
 
-	let initialized = false;
+	let loadPromise: Promise<void> | null = null;
 
 	return {
 		subscribe,
@@ -52,38 +52,44 @@ function createConfigStore() {
 		update,
 
 		async load() {
-			if (initialized || !browser) return;
+			if (!browser) return;
 
-			try {
-				const response = await fetch('/api/config/unattended');
-				if (response.ok) {
-					const unattendedConfig = await response.json();
-					set({
-						...defaultConfig,
-						...unattendedConfig,
-						isEditing: false
-					});
-					initialized = true;
-					return;
-				}
-			} catch (e) {
-				console.log('Unattended config not available');
+			if (loadPromise) {
+				return loadPromise;
 			}
 
-			const savedConfig = browser ? localStorage.getItem('config') : null;
-			if (savedConfig) {
+			loadPromise = (async () => {
 				try {
-					const parsed = JSON.parse(savedConfig);
-					set({
-						...defaultConfig,
-						...parsed,
-						isEditing: false
-					});
+					const response = await fetch('/api/config/unattended');
+					if (response.ok) {
+						const unattendedConfig = await response.json();
+						set({
+							...defaultConfig,
+							...unattendedConfig,
+							isEditing: false
+						});
+						return;
+					}
 				} catch (e) {
-					console.error('Error parsing saved config:', e);
+					console.log('Unattended config not available');
 				}
-			}
-			initialized = true;
+
+				const savedConfig = browser ? localStorage.getItem('config') : null;
+				if (savedConfig) {
+					try {
+						const parsed = JSON.parse(savedConfig);
+						set({
+							...defaultConfig,
+							...parsed,
+							isEditing: false
+						});
+					} catch (e) {
+						console.error('Error parsing saved config:', e);
+					}
+				}
+			})();
+
+			return loadPromise;
 		},
 
 		save() {
