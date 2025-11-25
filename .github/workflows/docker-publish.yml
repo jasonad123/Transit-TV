@@ -2,11 +2,23 @@ name: Build and publish Docker image
 
 on:
   push:
-    branches: 
-      - release
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
   workflow_dispatch:  # Allow manual triggering
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - beta
+          - latest
+          - branch-test
+        default: 'branch-test'
+      custom_tag:
+        description: 'Custom tag (optional, e.g., "my-feature")'
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -44,23 +56,62 @@ jobs:
       - name: Extract version info
         id: version
         run: |
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')
+
+          # Handle version tags (v1.0.0, etc.)
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             # Extract version from tag (e.g., v0.5.0 -> 0.5.0)
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "is_tag=true" >> $GITHUB_OUTPUT
-            
+            echo "release_type=tag" >> $GITHUB_OUTPUT
+
             # Check if it's a pre-release (contains alpha, beta, rc, dev)
             if [[ $VERSION =~ (alpha|beta|rc|dev) ]]; then
               echo "is_prerelease=true" >> $GITHUB_OUTPUT
             else
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
+
+          # Handle manual workflow dispatch
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            RELEASE_TYPE="${{ inputs.release_type }}"
+            echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+            echo "is_tag=false" >> $GITHUB_OUTPUT
+
+            if [[ "$RELEASE_TYPE" == "beta" ]]; then
+              # Beta release - use timestamp for unique versioning
+              TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+              if [[ -n "${{ inputs.custom_tag }}" ]]; then
+                CUSTOM=$(echo "${{ inputs.custom_tag }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+                echo "version=beta-${CUSTOM}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              else
+                echo "version=beta-${TIMESTAMP}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              fi
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+
+            elif [[ "$RELEASE_TYPE" == "latest" ]]; then
+              # Latest release from manual trigger
+              echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+
+            else
+              # Branch test - sanitized branch name + SHA
+              if [[ -n "${{ inputs.custom_tag }}" ]]; then
+                CUSTOM=$(echo "${{ inputs.custom_tag }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+                echo "version=${CUSTOM}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              else
+                echo "version=${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              fi
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+
+          # Handle release branch push
           else
-            # Release branch build - use commit SHA for version
-            SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
             echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
             echo "is_tag=false" >> $GITHUB_OUTPUT
+            echo "release_type=release-branch" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
           
@@ -70,21 +121,33 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # For release branch, tag as latest and with commit SHA
-            type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'false' }}
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
-            
-            # For version tags, tag with version number
+            # For release branch push, tag as latest and with commit SHA
+            type=raw,value=latest,enable=${{ steps.version.outputs.release_type == 'release-branch' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'release-branch' }}
+
+            # For version tags (v1.0.0), tag with version number
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' }}
-            
+
             # For stable version tags, also tag as latest
             type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'false' }}
-            
-            # For pre-releases, tag as pre-release
-            type=raw,value=pre-release,enable=${{ steps.version.outputs.is_prerelease == 'true' }}
+
+            # For beta releases (manual dispatch with beta selected)
+            type=raw,value=beta,enable=${{ steps.version.outputs.release_type == 'beta' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'beta' }}
+
+            # For manual "latest" releases
+            type=raw,value=latest,enable=${{ steps.version.outputs.release_type == 'latest' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'latest' }}
+
+            # For branch test builds
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'branch-test' }}
+
+            # For any pre-release version tags (alpha, beta, rc, dev in version string)
+            type=raw,value=pre-release,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'true' }}
           labels: |
             org.opencontainers.image.title=Transit-TV
-            org.opencontainers.image.description=Use the Transit API to show next departure of a location in big for a TV context
+            org.opencontainers.image.description=Use the Transit API to show real-time transit departures on your TV or digital display.
+            org.opencontainers.image.authors=Transit-TV Contributors
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
@@ -116,9 +179,9 @@ jobs:
               echo "Checking: $tag"
               # Use docker manifest inspect to verify each tag exists
               if docker manifest inspect "$tag" > /dev/null 2>&1; then
-                echo "✅ $tag exists and is accessible"
+                echo "$tag exists and is accessible"
               else
-                echo "❌ $tag verification failed"
+                echo "$tag verification failed"
                 exit 1
               fi
             fi
@@ -128,45 +191,90 @@ jobs:
         run: |
           echo "## Docker Image Published Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Add version info
-          if [[ "${{ steps.version.outputs.is_tag }}" == "false" ]]; then
-            echo "**Release Type:** Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
-          elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-            echo "**Release Type:** Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Release Type:** Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-          fi
+
+          # Add version info based on release type
+          RELEASE_TYPE="${{ steps.version.outputs.release_type }}"
+          case "$RELEASE_TYPE" in
+            "beta")
+              echo "**Release Type:** Beta Release" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "latest")
+              echo "**Release Type:** Manual Latest Release" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "branch-test")
+              echo "**Release Type:** Branch Test Build" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "tag")
+              if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+                echo "**Release Type:** Pre-release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "**Release Type:** Stable Release (v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+              fi
+              ;;
+            "release-branch")
+              echo "**Release Type:** Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
           echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- `/' | sed 's/$/`/' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Provide appropriate pull commands based on release type
           echo "**Pull Commands:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ steps.version.outputs.is_tag }}" == "false" ]]; then
-            echo "# Latest from release branch" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-          elif [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
-            echo "# Pre-release version" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "# Latest pre-release" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "# Latest stable release" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "# Specific version" >> $GITHUB_STEP_SUMMARY
-            echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          fi
+          case "$RELEASE_TYPE" in
+            "beta")
+              echo "# Beta release - latest beta" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:beta" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific beta version" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "latest")
+              echo "# Latest release" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific version" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "branch-test")
+              echo "# Branch test build" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "tag")
+              if [[ "${{ steps.version.outputs.is_prerelease }}" == "true" ]]; then
+                echo "# Pre-release version" >> $GITHUB_STEP_SUMMARY
+                echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "# Latest pre-release" >> $GITHUB_STEP_SUMMARY
+                echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:pre-release" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "# Latest stable release" >> $GITHUB_STEP_SUMMARY
+                echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "# Specific version" >> $GITHUB_STEP_SUMMARY
+                echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              fi
+              ;;
+            "release-branch")
+              echo "# Latest from release branch" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific version" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Built with semantic versioning strategy for Transit-TV*" >> $GITHUB_STEP_SUMMARY
@@ -186,6 +294,6 @@ jobs:
         with:
           package-name: transit-tv  # Match the lowercase image name
           package-type: container
-          min-versions-to-keep: 6
+          min-versions-to-keep: 10
           delete-only-untagged-versions: false
         continue-on-error: true

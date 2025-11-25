@@ -1,126 +1,44 @@
 services:
-  # To run production: docker compose up
-  # To run development: docker compose --profile dev up
-  transit-tv-svelte:
-    env_file:
-      - .env.docker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: transit-tv-svelte
-    container_name: transit-tv-svelte
+  # Usage: docker compose up -d
+  transit-tv:
+    image: ghcr.io/jasonad123/transit-tv:latest
+    container_name: transit-tv
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       NODE_ENV: "production"
       USE_SVELTE: "true"
+      PORT: "8080"
+
+    # Add your environment variables here or use an env_file
+    env_file:
+      - .env.docker
+
+    # Optional: Persist logs
     volumes:
       - ./logs:/app/logs
+
     networks:
       - transit-network
+
+    # Resource limits to prevent runaway container
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
-    profiles:
-      - production
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
-  # Frontend build service - builds Svelte app independently
-  frontend-builder:
-    image: node:20-alpine
-    container_name: frontend-builder
-    working_dir: /app/svelte-app
-    volumes:
-      - ./svelte-app:/app/svelte-app
-      - frontend_modules:/app/svelte-app/node_modules
-    networks:
-      - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             pnpm run build"
-    profiles:
-      - build
-
-  # Backend build service - builds server independently
-  backend-builder:
-    image: node:20-alpine
-    container_name: backend-builder
-    working_dir: /app
-    volumes:
-      - ./server:/app/server
-      - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - backend_modules:/app/node_modules
-    networks:
-      - transit-network
-    command: >
-      sh -c "npm install -g pnpm && pnpm install --prod"
-    profiles:
-      - build
-
-  # Development service - Svelte with hot reload
-  # Note: For development, it's recommended to run locally:
-  #   Terminal 1: cd svelte-app && pnpm dev
-  #   Terminal 2: USE_SVELTE=true pnpm start
-  # This provides better performance and easier debugging than Docker.
-  transit-tv-dev:
-    image: node:20-alpine
-    container_name: transit-tv-dev
-    working_dir: /app/svelte-app
-    restart: "no"
-    ports:
-      - "5173:5173"  # Vite dev server
-    environment:
-      NODE_ENV: "development"
-      CI: "true"
-    env_file:
-      - .env.docker
-    volumes:
-      - ./svelte-app:/app/svelte-app
-      - dev_svelte_modules:/app/svelte-app/node_modules
-    networks:
-      - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             pnpm run dev -- --host 0.0.0.0"
-    profiles:
-      - dev
-
-  # Backend service for development (pairs with transit-tv-dev)
-  transit-tv-backend:
-    image: node:20-alpine
-    container_name: transit-tv-backend
-    working_dir: /app
-    restart: "no"
-    ports:
-      - "8080:8080"
-    environment:
-      NODE_ENV: "development"
-      USE_SVELTE: "false"
-      CI: "true"
-    env_file:
-      - .env.docker
-    volumes:
-      - .:/app
-      - dev_modules:/app/node_modules
-    networks:
-      - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             node server/app.js"
-    profiles:
-      - dev
-
-volumes:
-  frontend_modules:
-  backend_modules:
-  dev_modules:
-  dev_svelte_modules:
+    # Health check to ensure service is running
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   transit-network:
