@@ -2,7 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import type { Route, ScheduleItem} from '$lib/services/nearby';
+	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
 
