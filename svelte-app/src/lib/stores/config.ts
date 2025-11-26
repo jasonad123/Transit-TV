@@ -38,7 +38,7 @@ const defaultConfig: Config = {
 	columns: 'auto',
 	theme: 'light',
 	headerColor: '#30b566',
-	showRouteLongName: true,
+	showRouteLongName: false,
 	showQRCode: false
 };
 
@@ -60,22 +60,7 @@ function createConfigStore() {
 			}
 
 			loadPromise = (async () => {
-				try {
-					const response = await fetch('/api/config/unattended');
-					if (response.ok) {
-						const unattendedConfig = await response.json();
-						set({
-							...defaultConfig,
-							...unattendedConfig,
-							isEditing: false
-						});
-						return;
-					}
-				} catch (e) {
-					console.log('Unattended config not available');
-				}
-
-				// Try cookies first (better kiosk persistence), fall back to localStorage
+				// Priority 1: Check for user-saved preferences (cookies first, then localStorage)
 				const savedConfig = browser ? getCookie('config') || localStorage.getItem('config') : null;
 				if (savedConfig) {
 					try {
@@ -92,9 +77,26 @@ function createConfigStore() {
 							localStorage.removeItem('config');
 							console.log('Migrated config from localStorage to cookies');
 						}
+						return;
 					} catch (e) {
 						console.error('Error parsing saved config:', e);
 					}
+				}
+
+				// Priority 2: If no user preferences, try unattended config (provides defaults)
+				try {
+					const response = await fetch('/api/config/unattended');
+					if (response.ok) {
+						const unattendedConfig = await response.json();
+						set({
+							...defaultConfig,
+							...unattendedConfig,
+							isEditing: false
+						});
+						return;
+					}
+				} catch (e) {
+					console.log('Unattended config not available, using defaults');
 				}
 			})();
 
