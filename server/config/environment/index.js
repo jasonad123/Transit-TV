@@ -64,11 +64,11 @@ var all = {
   
   // Security settings
   security: {
-    // CORS settings
+    // CORS settings (development only - disabled in production)
     cors: {
-      allowedOrigins: process.env.ALLOWED_ORIGINS ? 
-        process.env.ALLOWED_ORIGINS.split(',') : 
-        ['http://localhost:8080']
+      allowedOrigins: process.env.ALLOWED_ORIGINS ?
+        process.env.ALLOWED_ORIGINS.split(',') :
+        ['http://localhost:5173', 'http://localhost:8080']
     }
   }
 };
