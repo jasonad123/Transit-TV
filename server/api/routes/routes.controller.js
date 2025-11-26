@@ -56,7 +56,7 @@ exports.nearby = async function (req, res) {
     const body = await response.text();
 
     res.set({
-      'Cache-Control': 'public, max-age=15',
+      'Cache-Control': 'public, max-age=30',
       'Vary': 'Accept-Encoding'
     });
 

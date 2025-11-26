@@ -12,7 +12,7 @@ interface PendingRequest<T> {
 class ApiCache {
 	private cache = new Map<string, CacheEntry<any>>();
 	private pendingRequests = new Map<string, PendingRequest<any>>();
-	private defaultTTL = 15000; // 15 seconds default
+	private defaultTTL = 30000; // 30 seconds default (aligned with polling interval)
 
 	getCacheKey(endpoint: string, params: Record<string, any>): string {
 		const sortedParams = Object.keys(params)

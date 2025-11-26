@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { getCookie, setCookie } from '$lib/utils/cookies';
 
 export interface LatLng {
 	latitude: number;
@@ -74,7 +75,8 @@ function createConfigStore() {
 					console.log('Unattended config not available');
 				}
 
-				const savedConfig = browser ? localStorage.getItem('config') : null;
+				// Try cookies first (better kiosk persistence), fall back to localStorage
+				const savedConfig = browser ? getCookie('config') || localStorage.getItem('config') : null;
 				if (savedConfig) {
 					try {
 						const parsed = JSON.parse(savedConfig);
@@ -83,6 +85,13 @@ function createConfigStore() {
 							...parsed,
 							isEditing: false
 						});
+
+						// Migrate localStorage to cookies if found in localStorage
+						if (browser && localStorage.getItem('config')) {
+							setCookie('config', savedConfig);
+							localStorage.removeItem('config');
+							console.log('Migrated config from localStorage to cookies');
+						}
 					} catch (e) {
 						console.error('Error parsing saved config:', e);
 					}
@@ -98,7 +107,21 @@ function createConfigStore() {
 			update((current) => {
 				const toSave = { ...current };
 				delete (toSave as Partial<Config>).isEditing;
-				localStorage.setItem('config', JSON.stringify(toSave));
+
+				try {
+					// Use cookies for better kiosk mode persistence
+					setCookie('config', JSON.stringify(toSave));
+				} catch (e) {
+					console.error('Error saving config to cookies:', e);
+					// Fall back to localStorage
+					try {
+						localStorage.setItem('config', JSON.stringify(toSave));
+						console.log('Saved to localStorage as fallback');
+					} catch (localStorageError) {
+						console.error('Both cookie and localStorage save failed:', localStorageError);
+					}
+				}
+
 				return current;
 			});
 		},

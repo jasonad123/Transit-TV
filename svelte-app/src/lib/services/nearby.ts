@@ -89,7 +89,7 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			const data = await response.json();
 			return filterRoutes(data.routes || []);
 		},
-		15000 // 15 second cache
+		30000 // 30 second cache (aligned with polling interval)
 	);
 }
 
