@@ -38,7 +38,7 @@ const defaultConfig: Config = {
 	columns: 'auto',
 	theme: 'light',
 	headerColor: '#30b566',
-	showRouteLongName: true,
+	showRouteLongName: false,
 	showQRCode: false,
 	groupItinerariesByStop: true
 };
