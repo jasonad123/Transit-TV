@@ -1,3 +1,5 @@
+import { apiCache } from '$lib/utils/apiCache';
+
 export interface Route {
 	global_route_id: string;
 	route_short_name?: string;
@@ -54,45 +56,54 @@ export interface RateLimitError extends Error {
 }
 
 export async function findNearbyRoutes(location: LatLng, radius: number): Promise<Route[]> {
-	const params = new URLSearchParams({
+	const params = {
 		lat: location.latitude.toString(),
 		lon: location.longitude.toString(),
 		max_distance: radius.toString()
-	});
+	};
 
-	const response = await fetch(`/api/routes/nearby?${params}`);
-	if (!response.ok) {
-		if (response.status === 429) {
-			const errorData = await response.json().catch(() => ({}));
-			const retryAfter = errorData.retryAfter || 60;
+	return apiCache.fetch(
+		'/api/routes/nearby',
+		params,
+		async () => {
+			const urlParams = new URLSearchParams(params);
+			const response = await fetch(`/api/routes/nearby?${urlParams}`);
 
-			const error = new Error(
-				errorData.message || 'Rate limit exceeded. Please try again later.'
-			) as RateLimitError;
-			error.retryAfter = retryAfter;
-			error.isRateLimit = true;
+			if (!response.ok) {
+				if (response.status === 429) {
+					const errorData = await response.json().catch(() => ({}));
+					const retryAfter = errorData.retryAfter || 60;
 
-			throw error;
-		}
+					const error = new Error(
+						errorData.message || 'Rate limit exceeded. Please try again later.'
+					) as RateLimitError;
+					error.retryAfter = retryAfter;
+					error.isRateLimit = true;
 
-		throw new Error('Failed to fetch nearby routes');
-	}
+					throw error;
+				}
 
-	const data = await response.json();
-	return filterRoutes(data.routes || []);
+				throw new Error('Failed to fetch nearby routes');
+			}
+
+			const data = await response.json();
+			return filterRoutes(data.routes || []);
+		},
+		30000 // 30 second cache (aligned with polling interval)
+	);
 }
 
 function filterRoutes(routes: Route[]): Route[] {
+	const seen = new Set<string>();
 	const result: Route[] = [];
-	const ids: string[] = [];
 
-	routes.forEach((route) => {
+	for (const route of routes) {
 		const idStr = route.global_route_id.toString();
-		if (!ids.includes(idStr)) {
+		if (!seen.has(idStr)) {
+			seen.add(idStr);
 			result.push(route);
-			ids.push(idStr);
 		}
-	});
+	}
 
 	return result;
 }
@@ -126,17 +137,26 @@ export function shouldShowDeparture(departure: number): boolean {
 	return diff > 0 && diff <= 130 * 60000;
 }
 
+const stopIdCache = new WeakMap<Route[], Set<string>>();
+
 export function extractGlobalStopIds(routes: Route[]): Set<string> {
+	const cached = stopIdCache.get(routes);
+	if (cached) return cached;
+
 	const stopIds = new Set<string>();
 
-	routes.forEach((route) => {
-		route.itineraries?.forEach((itinerary) => {
+	for (const route of routes) {
+		const itineraries = route.itineraries;
+		if (!itineraries) continue;
+
+		for (const itinerary of itineraries) {
 			const stopId = itinerary.closest_stop?.global_stop_id;
 			if (stopId) {
 				stopIds.add(stopId);
 			}
-		});
-	});
+		}
+	}
 
+	stopIdCache.set(routes, stopIds);
 	return stopIds;
 }

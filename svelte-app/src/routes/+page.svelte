@@ -12,10 +12,50 @@
 	let allRoutes = $state<Route[]>([]);
 	let intervalId: ReturnType<typeof setInterval>;
 	let clockIntervalId: ReturnType<typeof setInterval>;
+	let countdownIntervalId: ReturnType<typeof setInterval> | null = null;
+	let errorRetryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 	let loading = $state(true);
 	let currentTime = $state(new Date());
 	let errorMessage = $state<string | null>(null);
 	let retryCountdown = $state<number | null>(null);
+
+	// Adaptive polling configuration
+	let consecutiveErrors = 0;
+	let currentPollingInterval = 30000; // Start at 30 seconds
+	const MIN_POLLING_INTERVAL = 30000; // 30 seconds minimum
+	const MAX_POLLING_INTERVAL = 120000; // 2 minutes maximum
+	const BACKOFF_MULTIPLIER = 1.5;
+
+	function resetPollingInterval() {
+		if (intervalId) {
+			clearInterval(intervalId);
+		}
+		if (!$config.isEditing) {
+			intervalId = setInterval(loadNearby, currentPollingInterval);
+		}
+	}
+
+	function increasePollingInterval() {
+		consecutiveErrors++;
+		const newInterval = Math.min(
+			currentPollingInterval * BACKOFF_MULTIPLIER,
+			MAX_POLLING_INTERVAL
+		);
+		if (newInterval !== currentPollingInterval) {
+			currentPollingInterval = newInterval;
+			console.log(`Increasing polling interval to ${currentPollingInterval}ms due to errors`);
+			resetPollingInterval();
+		}
+	}
+
+	function resetPollingToNormal() {
+		consecutiveErrors = 0;
+		if (currentPollingInterval !== MIN_POLLING_INTERVAL) {
+			currentPollingInterval = MIN_POLLING_INTERVAL;
+			console.log(`Resetting polling interval to ${currentPollingInterval}ms`);
+			resetPollingInterval();
+		}
+	}
 
 	async function loadNearby() {
 		try {
@@ -39,9 +79,21 @@
 			loading = false;
 			errorMessage = null;
 			retryCountdown = null;
+			// Success - reset polling to normal interval
+			resetPollingToNormal();
 		} catch (err) {
 			console.error('Error loading nearby routes:', err);
 			loading = false;
+
+			// Clear any existing retry timers
+			if (countdownIntervalId) {
+				clearInterval(countdownIntervalId);
+				countdownIntervalId = null;
+			}
+			if (errorRetryTimeoutId) {
+				clearTimeout(errorRetryTimeoutId);
+				errorRetryTimeoutId = null;
+			}
 
 			const error = err as RateLimitError;
 			if (error.isRateLimit) {
@@ -49,22 +101,32 @@
 				errorMessage = `Rate limited. Retrying in ${retryAfter} seconds...`;
 				retryCountdown = retryAfter;
 
+				// Increase polling interval on rate limit
+				increasePollingInterval();
+
 				// Countdown timer
-				const countdownInterval = setInterval(() => {
+				countdownIntervalId = setInterval(() => {
 					if (retryCountdown !== null && retryCountdown > 0) {
 						retryCountdown--;
 						errorMessage = `Rate limited. Retrying in ${retryCountdown} seconds...`;
 					} else {
-						clearInterval(countdownInterval);
+						if (countdownIntervalId) {
+							clearInterval(countdownIntervalId);
+							countdownIntervalId = null;
+						}
 						errorMessage = null;
 						retryCountdown = null;
 						loadNearby();
 					}
 				}, 1000);
 			} else {
+				// Increase polling interval on any error
+				increasePollingInterval();
+
 				errorMessage = 'Failed to load routes. Retrying in 30 seconds...';
-				setTimeout(() => {
+				errorRetryTimeoutId = setTimeout(() => {
 					errorMessage = null;
+					errorRetryTimeoutId = null;
 					loadNearby();
 				}, 30000);
 			}
@@ -131,7 +193,8 @@
 
 		if (!$config.isEditing) {
 			await loadNearby();
-			intervalId = setInterval(loadNearby, 20000);
+			// Use adaptive polling interval (starts at 30s)
+			intervalId = setInterval(loadNearby, currentPollingInterval);
 		}
 
 		// Update clock every second
@@ -146,6 +209,12 @@
 		}
 		if (clockIntervalId) {
 			clearInterval(clockIntervalId);
+		}
+		if (countdownIntervalId) {
+			clearInterval(countdownIntervalId);
+		}
+		if (errorRetryTimeoutId) {
+			clearTimeout(errorRetryTimeoutId);
 		}
 	});
 
@@ -391,7 +460,8 @@
 							config.save();
 							config.update((c) => ({ ...c, isEditing: false }));
 							loadNearby();
-							intervalId = setInterval(loadNearby, 20000);
+							// Reset to current polling interval
+							intervalId = setInterval(loadNearby, currentPollingInterval);
 						}}
 					>
 						{$_('config.buttons.save')}

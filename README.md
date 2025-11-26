@@ -143,23 +143,22 @@ When running with Docker, you can configure the application using environment va
 - `PORT`: The port the application will listen on (default: 8080)
 - `TRANSIT_API_KEY`: Your Transit API key
 - `SESSION_SECRET`: Secret for session encryption
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed CORS origins (default: `http://localhost:8080`)
+- `ALLOWED_ORIGINS`: (Development only) Comma-separated list of allowed CORS origins
 
-#### CORS Configuration
+#### CORS Configuration (advanced)
 
-The application implements CORS (Cross-Origin Resource Sharing) to control which domains can access the API from web browsers. By default, only `http://localhost:8080` is allowed.
+**Note:** CORS is automatically disabled in production deployments. In production, SvelteKit and Express run on the same origin (port 8080), so cross-origin requests don't occur and CORS headers are not needed.
 
-To allow additional domains:
+CORS is only enabled during local development when running SvelteKit dev server (port 5173) separately from the Express backend (port 8080).
+
+For development, the default allowed origin is `http://localhost:5173`. If you need to allow additional origins during development:
 
 ```bash
-# Single domain
-ALLOWED_ORIGINS=https://yourdomain.com
-
-# Multiple domains (comma-separated)
-ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,https://staging.yourdomain.com
+# Development only - allow SvelteKit dev server
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
 ```
 
-**Important:** Always specify the full URL including protocol (`http://` or `https://`) and port if non-standard.
+**Production deployments do not require ALLOWED_ORIGINS configuration.** Each deployment is self-contained and serves both frontend and backend on the same origin.
 
 ## Enhancements
 
@@ -217,21 +216,17 @@ UNATTENDED_SHOW_ROUTE_LONG_NAME=true
 │   │   ├── lib/          # Components, stores, utilities
 │   │   └── app.css       # Global styles
 │   └── package.json      # SvelteKit dependencies
-├── client/               # Legacy AngularJS application
-│   ├── app/              # Main application code
-│   ├── components/       # Reusable UI components
-│   ├── directives/       # Angular directives
-│   └── services/         # Angular services
 ├── server/
 │   ├── api/              # API endpoints
 │   ├── config/           # Server configuration
 │   └── routes.js         # Express routing (handles both apps)
 ├── .env.example          # Example environment variables
 ├── .env.docker           # Docker environment variables (not committed)
-├── Dockerfile            # Legacy AngularJS Docker build
-├── Dockerfile.svelte     # SvelteKit Docker build (recommended)
-├── compose.yml           # Legacy Docker Compose
-└── compose.svelte.yml    # SvelteKit Docker Compose (recommended)
+├── Dockerfile            # SvelteKit Docker build
+├── Dockerfile.svelte     # SvelteKit Docker build for Railway
+├── compose.yaml           # SvelteKit Docker Compose
+├── compose.dev.yaml       # SvelteKit Docker Compose (development)
+└── compose.legacy.yml    # SvelteKit Docker Compose (recommended)
 ```
 
 ## License

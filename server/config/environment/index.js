@@ -58,17 +58,17 @@ var all = {
     theme: process.env.UNATTENDED_THEME || 'light',
     headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
     columns: process.env.UNATTENDED_COLUMNS || 'auto',
-    showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_LONG_NAME !== 'false',
+    showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_LONG_NAME === 'true',
     showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true'
   },
   
   // Security settings
   security: {
-    // CORS settings
+    // CORS settings (development only - disabled in production)
     cors: {
-      allowedOrigins: process.env.ALLOWED_ORIGINS ? 
-        process.env.ALLOWED_ORIGINS.split(',') : 
-        ['http://localhost:8080']
+      allowedOrigins: process.env.ALLOWED_ORIGINS ?
+        process.env.ALLOWED_ORIGINS.split(',') :
+        ['http://localhost:5173', 'http://localhost:8080']
     }
   }
 };
