@@ -22,26 +22,31 @@ module.exports = function(app) {
   app.use(helmet({
     contentSecurityPolicy: false // We'll configure this manually if needed
   }));
-  
-  // Set up CORS
-  app.use(function(req, res, next) {
-    var allowedOrigins = config.security.cors.allowedOrigins;
-    var origin = req.headers.origin;
-    
-    if (allowedOrigins.indexOf(origin) > -1) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', true);
-    
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    
-    next();
-  });
+
+  // Set up CORS (development only)
+  // In production, SvelteKit and Express run on the same origin (port 8080),
+  // so CORS is not needed. CORS is only required during local development
+  // when SvelteKit dev server (port 5173) needs to call Express (port 8080).
+  if (env !== 'production') {
+    app.use(function(req, res, next) {
+      var allowedOrigins = config.security.cors.allowedOrigins;
+      var origin = req.headers.origin;
+
+      if (allowedOrigins.indexOf(origin) > -1) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Credentials', true);
+
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+
+      next();
+    });
+  }
 
   app.set('views', config.root + '/server/views');
   app.engine('html', require('ejs').renderFile);

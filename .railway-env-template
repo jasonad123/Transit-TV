@@ -18,8 +18,9 @@ SESSION_SECRET=generate_secure_random_string_here
 REQUEST_TIMEOUT=10000
 
 # CORS Settings
-# Set to your Railway deployment URL (e.g., https://your-app.railway.app)
-ALLOWED_ORIGINS=${{RAILWAY_PUBLIC_DOMAIN}}
+# Not needed for Railway production deployments - CORS is disabled in production
+# Railway serves both frontend and backend on the same origin, so no CORS required
+# ALLOWED_ORIGINS is only used in development mode
 
 # Logging
 LOG_LEVEL=info

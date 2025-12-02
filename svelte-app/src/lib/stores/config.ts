@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { getCookie, setCookie } from '$lib/utils/cookies';
 
 export interface LatLng {
 	latitude: number;
@@ -37,14 +38,14 @@ const defaultConfig: Config = {
 	columns: 'auto',
 	theme: 'light',
 	headerColor: '#30b566',
-	showRouteLongName: true,
+	showRouteLongName: false,
 	showQRCode: false
 };
 
 function createConfigStore() {
 	const { subscribe, set, update } = writable<Config>(defaultConfig);
 
-	let initialized = false;
+	let loadPromise: Promise<void> | null = null;
 
 	return {
 		subscribe,
@@ -52,38 +53,54 @@ function createConfigStore() {
 		update,
 
 		async load() {
-			if (initialized || !browser) return;
+			if (!browser) return;
 
-			try {
-				const response = await fetch('/api/config/unattended');
-				if (response.ok) {
-					const unattendedConfig = await response.json();
-					set({
-						...defaultConfig,
-						...unattendedConfig,
-						isEditing: false
-					});
-					initialized = true;
-					return;
-				}
-			} catch (e) {
-				console.log('Unattended config not available');
+			if (loadPromise) {
+				return loadPromise;
 			}
 
-			const savedConfig = browser ? localStorage.getItem('config') : null;
-			if (savedConfig) {
+			loadPromise = (async () => {
+				// Priority 1: Check for user-saved preferences (cookies first, then localStorage)
+				const savedConfig = browser ? getCookie('config') || localStorage.getItem('config') : null;
+				if (savedConfig) {
+					try {
+						const parsed = JSON.parse(savedConfig);
+						set({
+							...defaultConfig,
+							...parsed,
+							isEditing: false
+						});
+
+						// Migrate localStorage to cookies if found in localStorage
+						if (browser && localStorage.getItem('config')) {
+							setCookie('config', savedConfig);
+							localStorage.removeItem('config');
+							console.log('Migrated config from localStorage to cookies');
+						}
+						return;
+					} catch (e) {
+						console.error('Error parsing saved config:', e);
+					}
+				}
+
+				// Priority 2: If no user preferences, try unattended config (provides defaults)
 				try {
-					const parsed = JSON.parse(savedConfig);
-					set({
-						...defaultConfig,
-						...parsed,
-						isEditing: false
-					});
+					const response = await fetch('/api/config/unattended');
+					if (response.ok) {
+						const unattendedConfig = await response.json();
+						set({
+							...defaultConfig,
+							...unattendedConfig,
+							isEditing: false
+						});
+						return;
+					}
 				} catch (e) {
-					console.error('Error parsing saved config:', e);
+					console.log('Unattended config not available, using defaults');
 				}
-			}
-			initialized = true;
+			})();
+
+			return loadPromise;
 		},
 
 		save() {
@@ -92,7 +109,21 @@ function createConfigStore() {
 			update((current) => {
 				const toSave = { ...current };
 				delete (toSave as Partial<Config>).isEditing;
-				localStorage.setItem('config', JSON.stringify(toSave));
+
+				try {
+					// Use cookies for better kiosk mode persistence
+					setCookie('config', JSON.stringify(toSave));
+				} catch (e) {
+					console.error('Error saving config to cookies:', e);
+					// Fall back to localStorage
+					try {
+						localStorage.setItem('config', JSON.stringify(toSave));
+						console.log('Saved to localStorage as fallback');
+					} catch (localStorageError) {
+						console.error('Both cookie and localStorage save failed:', localStorageError);
+					}
+				}
+
 				return current;
 			});
 		},

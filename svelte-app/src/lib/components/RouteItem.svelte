@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import type { Route, ScheduleItem} from '$lib/services/nearby';
@@ -12,22 +13,68 @@
 
 	let destinationElements: Map<number, HTMLElement> = new Map();
 	let overflowingDestinations = $state<Set<number>>(new Set());
+	let sharedResizeObserver: ResizeObserver | null = null;
 
 	// Track dark mode state
 	let isDarkMode = $state(false);
+	let themeObserver: MutationObserver | null = null;
 
 	if (browser) {
 		isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
 		// Watch for theme changes
-		const observer = new MutationObserver(() => {
+		themeObserver = new MutationObserver(() => {
 			isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 		});
-		observer.observe(document.documentElement, {
+		themeObserver.observe(document.documentElement, {
 			attributes: true,
 			attributeFilter: ['data-theme']
 		});
 	}
+
+	// Initialize shared ResizeObserver on mount
+	if (browser) {
+		sharedResizeObserver = new ResizeObserver((entries) => {
+			entries.forEach((entry) => {
+				const element = entry.target as HTMLElement;
+
+				// Check if this is a destination element
+				const destIndex = Array.from(destinationElements.entries()).find(([_, el]) => el === element)?.[0];
+				if (destIndex !== undefined) {
+					checkDestinationOverflow(destIndex, element);
+					return;
+				}
+
+				// Check if this is the alert element
+				if (element === alertElement) {
+					checkAlertOverflow(element);
+					return;
+				}
+
+				// Check if this is the route long name element
+				if (element === routeLongNameElement) {
+					checkRouteLongNameOverflow(element);
+					return;
+				}
+			});
+		});
+	}
+
+	onDestroy(() => {
+		if (themeObserver) {
+			themeObserver.disconnect();
+			themeObserver = null;
+		}
+		if (sharedResizeObserver) {
+			sharedResizeObserver.disconnect();
+			sharedResizeObserver = null;
+		}
+		// Clear any pending timeouts
+		destinationCheckTimeouts.forEach(timeout => clearTimeout(timeout));
+		destinationCheckTimeouts.clear();
+		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
+		if (routeLongNameCheckTimeout) clearTimeout(routeLongNameCheckTimeout);
+	});
 
 	// Calculate relative luminance (0-1) from hex color
 	function getRelativeLuminance(hex: string): number {
@@ -282,14 +329,15 @@
 			checkDestinationOverflow(index, node);
 		}, 100);
 
-		const resizeObserver = new ResizeObserver(() => {
-			checkDestinationOverflow(index, node);
-		});
-		resizeObserver.observe(node);
+		if (sharedResizeObserver) {
+			sharedResizeObserver.observe(node);
+		}
 
 		return {
 			destroy() {
-				resizeObserver.disconnect();
+				if (sharedResizeObserver) {
+					sharedResizeObserver.unobserve(node);
+				}
 				destinationElements.delete(index);
 			}
 		};
@@ -303,14 +351,15 @@
 			checkAlertOverflow(node);
 		}, 100);
 
-		const resizeObserver = new ResizeObserver(() => {
-			checkAlertOverflow(node);
-		});
-		resizeObserver.observe(node);
+		if (sharedResizeObserver) {
+			sharedResizeObserver.observe(node);
+		}
 
 		return {
 			destroy() {
-				resizeObserver.disconnect();
+				if (sharedResizeObserver) {
+					sharedResizeObserver.unobserve(node);
+				}
 				alertElement = null;
 			}
 		};
@@ -324,8 +373,15 @@
 			checkRouteLongNameOverflow(node);
 		}, 50);
 
+		if (sharedResizeObserver) {
+			sharedResizeObserver.observe(node);
+		}
+
 		return {
 			destroy() {
+				if (sharedResizeObserver) {
+					sharedResizeObserver.unobserve(node);
+				}
 				routeLongNameElement = null;
 			}
 		};
@@ -413,6 +469,7 @@
 	.route {
 		width: 100%;
 		box-sizing: border-box;
+		contain: layout style;
 	}
 
 	.route > div {
@@ -537,6 +594,14 @@
 
 	.route-alert-ticker .alert-text.scrolling {
 		animation: scroll-alert-vertical 180s linear infinite;
+		will-change: transform;
+		transform: translateZ(0);
+		backface-visibility: hidden;
+		contain: layout paint;
+	}
+
+	.route-alert-ticker .alert-text:not(.scrolling) {
+		will-change: auto;
 	}
 
 	.route-alert-ticker .alert-image {
@@ -574,6 +639,14 @@
 
 	.route h3 .destination-text.scrolling {
 		animation: scroll-destination-horizontal 150s linear infinite;
+		will-change: transform;
+		transform: translateZ(0);
+		backface-visibility: hidden;
+		contain: layout paint;
+	}
+
+	.route h3 .destination-text:not(.scrolling) {
+		will-change: auto;
 	}
 
 	.route .img28 {
