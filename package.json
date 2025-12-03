@@ -1,24 +1,15 @@
 {
-  "name": "transit-screen",
-  "version": "0.1.0",
+  "name": "transit-tv-server",
+  "version": "1.0.0",
   "main": "server/app.js",
   "dependencies": {
-    "@sveltejs/mcp": "^0.1.11",
-    "body-parser": "~1.20.2",
-    "composable-middleware": "^0.3.1",
-    "compression": "^1.7.4",
+    "compression": "^1.8.1",
     "cookie-parser": "~1.4.7",
     "ejs": "~3.1.10",
     "errorhandler": "~1.5.1",
     "express": "^5.2.1",
-    "express-async-handler": "^1.2.0",
-    "express-session": "^1.18.2",
-    "helmet": "^7.1.0",
-    "lodash": ">=4.17.21",
-    "method-override": "~1.0.2",
-    "moment": "^2.30.1",
-    "morgan": "~1.10.0",
-    "serve-favicon": "~2.5.1"
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1"
   },
   "scripts": {
     "start": "node --env-file=.env server/app.js",
@@ -28,5 +19,8 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@sveltejs/mcp": "^0.1.11"
+  }
 }

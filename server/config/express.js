@@ -7,8 +7,6 @@
 var express = require('express');
 var morgan = require('morgan');
 var compression = require('compression');
-var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
 var cookieParser = require('cookie-parser');
 var errorHandler = require('errorhandler');
 var path = require('path');
@@ -52,9 +50,8 @@ module.exports = function(app) {
   app.engine('html', require('ejs').renderFile);
   app.set('view engine', 'html');
   app.use(compression());
-  app.use(bodyParser.urlencoded({ extended: false, limit: '1mb' }));
-  app.use(bodyParser.json({ limit: '1mb' }));
-  app.use(methodOverride());
+  app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+  app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
   // Serve SvelteKit static assets with optimal caching
