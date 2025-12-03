@@ -13,7 +13,7 @@ COPY svelte-app ./svelte-app
 COPY server ./server
 COPY package.json pnpm-lock.yaml ./
 
-RUN cd svelte-app && rm -rf node_modules/.pnpm/esbuild* && pnpm install --force && pnpm run build
+RUN cd svelte-app && pnpm run build
 
 FROM node:24-alpine
 

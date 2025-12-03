@@ -4,6 +4,7 @@
 
 # Node.js
 node_modules
+svelte-app/node_modules
 npm-debug.log
 .npm
 
