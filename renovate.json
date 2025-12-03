@@ -2,5 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "prHourlyLimit": 4,
+  "ignorePaths": [
+    "compose.yaml",
+    "railway.json"
   ]
 }
