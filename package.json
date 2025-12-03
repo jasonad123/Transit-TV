@@ -8,7 +8,6 @@
     "composable-middleware": "^0.3.1",
     "compression": "^1.7.4",
     "cookie-parser": "~1.4.7",
-    "dotenv": "^16.5.0",
     "ejs": "~3.1.10",
     "errorhandler": "~1.5.1",
     "express": "^4.19.2",
@@ -21,11 +20,8 @@
     "morgan": "~1.10.0",
     "serve-favicon": "~2.5.1"
   },
-  "devDependencies": {
-    "dotenv-cli": "^8.0.0"
-  },
   "scripts": {
-    "start": "dotenv -e .env -o -- node server/app.js",
+    "start": "node --env-file=.env server/app.js",
     "build": "cd svelte-app && pnpm install && pnpm build",
     "clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit"
   },

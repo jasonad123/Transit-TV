@@ -36,4 +36,4 @@ ENV USE_SVELTE=true
 
 EXPOSE 8080
 
-CMD ["node", "-r", "dotenv/config", "server/app.js"]
+CMD ["node", "server/app.js"]

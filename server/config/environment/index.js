@@ -1,25 +1,9 @@
 'use strict';
 
 var path = require('path');
-var _ = require('lodash');
-var fs = require('fs');
 
-function requiredProcessEnv(name) {
-  if(!process.env[name]) {
-    throw new Error('You must set the ' + name + ' environment variable');
-  }
-  return process.env[name];
-}
-
-// Load environment variables from .env file if present
-try {
-  if (fs.existsSync(path.join(__dirname, '../../../.env'))) {
-    console.log('Loading environment variables from .env file');
-    require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
-  }
-} catch (err) {
-  console.error('Error loading .env file:', err);
-}
+// Note: Environment variables are loaded via --env-file flag (Node 24+)
+// or injected by the deployment platform (Railway, Docker, etc.)
 
 // Check for Transit API key in production
 if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
