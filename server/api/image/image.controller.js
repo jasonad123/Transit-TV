@@ -11,6 +11,15 @@ exports.show = async function (req, res) {
     primaryColor = req.query.primaryColor || '010101',
     secondaryColor = req.query.secondaryColor || 'EFEFEF';
 
+  // Validate imageName to prevent SSRF and path traversal
+  // Only allow alphanumeric, underscore, hyphen, must start with a letter/number, no path traversal, max length 64.
+  var imageNameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}(\.svg)?$/;
+  if (!imageNameRegex.test(imageName)) {
+    return res.status(400).json({
+      error: 'Invalid image name. Image name must only contain letters, numbers, underscores, hyphens, optionally end with .svg, and be up to 64 characters.'
+    });
+  }
+
   // Validate color format (should be a valid hex color without the # prefix)
   var hexColorRegex = /^[0-9A-Fa-f]{6}$/;
   if (!hexColorRegex.test(primaryColor) || !hexColorRegex.test(secondaryColor)) {
