@@ -29,5 +29,8 @@
     "build": "cd svelte-app && pnpm install && pnpm build",
     "clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "private": true
 }

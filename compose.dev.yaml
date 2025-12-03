@@ -29,7 +29,7 @@ services:
 
   # Frontend build service - builds Svelte app independently
   frontend-builder:
-    image: node:20-alpine
+    image: node:24-alpine
     container_name: frontend-builder
     working_dir: /app/svelte-app
     volumes:
@@ -46,7 +46,7 @@ services:
 
   # Backend build service - builds server independently
   backend-builder:
-    image: node:20-alpine
+    image: node:24-alpine
     container_name: backend-builder
     working_dir: /app
     volumes:
@@ -67,7 +67,7 @@ services:
   #   Terminal 2: USE_SVELTE=true pnpm start
   # This provides better performance and easier debugging than Docker.
   transit-tv-dev:
-    image: node:20-alpine
+    image: node:24-alpine
     container_name: transit-tv-dev
     working_dir: /app/svelte-app
     restart: "no"
@@ -92,7 +92,7 @@ services:
 
   # Backend service for development (pairs with transit-tv-dev)
   transit-tv-backend:
-    image: node:20-alpine
+    image: node:24-alpine
     container_name: transit-tv-backend
     working_dir: /app
     restart: "no"

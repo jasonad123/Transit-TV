@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -13,9 +13,9 @@ COPY svelte-app ./svelte-app
 COPY server ./server
 COPY package.json pnpm-lock.yaml ./
 
-RUN cd svelte-app && pnpm run build
+RUN cd svelte-app && rm -rf node_modules/.pnpm/esbuild* && pnpm install --force && pnpm run build
 
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
