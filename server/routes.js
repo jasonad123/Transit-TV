@@ -11,7 +11,13 @@ module.exports = function(app) {
   app.use('/api/config', require('./api/config'));
 
   // All undefined asset or api routes should return a 404
-  app.route('/:url(api|auth|components|app|bower_components|assets)/*').get(errors[404]);
+  app.get([
+    '/api/*splat',
+    '/auth/*splat',
+    '/components/*splat',
+    '/app/*splat',
+    '/assets/*splat'
+  ], errors[404]);
 
   // Determine which handler to use for all other routes
   var useSvelteApp = process.env.USE_SVELTE === 'true';
@@ -61,7 +67,7 @@ module.exports = function(app) {
     });
   } else {
     // All other routes should redirect to the index.html (legacy AngularJS)
-    app.route('/*').get(function(req, res) {
+    app.get('/*splat', function(req, res) {
       res.sendFile(path.resolve(app.get('appPath') + '/index.html'));
     });
   }
