@@ -12,11 +12,11 @@ exports.show = async function (req, res) {
     secondaryColor = req.query.secondaryColor || 'EFEFEF';
 
   // Validate imageName to prevent SSRF and path traversal
-  // Only allow alphanumeric, underscore, hyphen, must start with a letter/number, no path traversal, max length 64.
+  // Only allow alphanumeric, underscore, hyphen, must start with a letter/number, no path traversal, max length 68.
   var imageNameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}(\.svg)?$/;
   if (!imageNameRegex.test(imageName)) {
     return res.status(400).json({
-      error: 'Invalid image name. Image name must only contain letters, numbers, underscores, hyphens, optionally end with .svg, and be up to 64 characters.'
+      error: 'Invalid image name. Image name must only contain letters, numbers, underscores, hyphens, optionally end with .svg, and be up to 68 characters.'
     });
   }
 
