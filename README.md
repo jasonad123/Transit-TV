@@ -210,30 +210,30 @@ UNATTENDED_SHOW_ROUTE_LONG_NAME=true
 
 ```bash
 .
-├── svelte-app/           # SvelteKit application (recommended)
+├── svelte-app/           # SvelteKit application
 │   ├── src/
 │   │   ├── routes/       # SvelteKit routes and API endpoints
 │   │   ├── lib/          # Components, stores, utilities
 │   │   └── app.css       # Global styles
+│   ├── static/           # Static assets like images and fonts
 │   └── package.json      # SvelteKit dependencies
 ├── server/
 │   ├── api/              # API endpoints
 │   ├── config/           # Server configuration
-│   └── routes.js         # Express routing (handles both apps)
+│   ├── components/       # Custom server components
+│   └── routes.js         # Express routing
 ├── .env.example          # Example environment variables
-├── .env.docker           # Docker environment variables (not committed)
-├── Dockerfile            # SvelteKit Docker build
-├── Dockerfile.svelte     # SvelteKit Docker build for Railway
-├── compose.yaml           # SvelteKit Docker Compose
-├── compose.dev.yaml       # SvelteKit Docker Compose (development)
-└── compose.legacy.yml    # SvelteKit Docker Compose (recommended)
+├── .railway-env-template # Example environment variables for Railway deployments
+├── Dockerfile            # Docker build file
+├── compose.yaml          # Docker Compose file (production)
+└── compose.dev.yaml      # Docker Compose (development)
 ```
 
 ## License
 
 See the [LICENSE](LICENSE) file for details.
 
-## Disclaimers
+## Additional Disclaimers
 
 > [!NOTE]
 > **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
