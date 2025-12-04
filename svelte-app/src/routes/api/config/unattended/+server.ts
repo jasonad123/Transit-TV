@@ -6,16 +6,16 @@ export const GET: RequestHandler = async () => {
 	try {
 		const response = await fetch(`${BACKEND_URL}/api/config/unattended`);
 
-		if (!response.ok) {
-			return new Response(JSON.stringify({ error: 'Unattended config not available' }), {
-				status: response.status,
-				headers: { 'Content-Type': 'application/json' }
-			});
-		}
+		// Forward status code and headers from backend
+		const headers: HeadersInit = {
+			'Content-Type': 'application/json'
+		};
 
 		const data = await response.json();
+
 		return new Response(JSON.stringify(data), {
-			headers: { 'Content-Type': 'application/json' }
+			status: response.status,
+			headers
 		});
 	} catch (error) {
 		console.error('Error proxying to backend:', error);
