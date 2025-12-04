@@ -13,7 +13,6 @@
       "columns": "Columnas de cuadrícula:",
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
-      "showRouteLongName": "Mostrar nombres de rutas",
       "showQRCode": "Mostrar código QR"
     },
     "timeFormats": {
@@ -74,5 +73,18 @@
   "time": {
     "min": "min",
     "now": "ahora"
+  },
+  "screenWidth": {
+    "title": "Pantalla demasiado estrecha",
+    "message": "Esta aplicación está diseñada para pantallas grandes como televisores. Para ver las salidas de transporte público en su teléfono, descargue la aplicación Transit.",
+    "minimumWidth": "Ancho minimo: 640 pixeles",
+    "developerMessage": "Programadores: usen toggleWidthCheck() en la consola para desactivar este mensaje."
+  },
+  "errors": {
+    "rateLimit": "Buscando actualizaciones. Reintentando en {seconds} segundos...",
+    "auth": "No se puede conectar al servicio de datos de Transit",
+    "timeout": "Buscando actualizaciones...",
+    "backend": "Transit TV está fuera de servicio. Reintentando...",
+    "generic": "Transit TV tuvo un problema. Reintentando..."
   }
 }

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { config } from '$lib/stores/config';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { init, locale, register } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import '../app.css';
+	import "iconify-icon";
 
 	let { children } = $props();
 
@@ -22,6 +24,11 @@
 	locale.set('en');
 
 	let systemPrefersDark = $state(false);
+	let windowWidth = $state(0);
+	let widthCheckDisabled = $state(false);
+	let isScreenTooNarrow = $derived(windowWidth > 0 && windowWidth < 640 && !widthCheckDisabled);
+	let mediaQueryCleanup: (() => void) | null = null;
+	let resizeCleanup: (() => void) | null = null;
 
 	onMount(async () => {
 		await config.load();
@@ -33,9 +40,57 @@
 			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 			systemPrefersDark = mediaQuery.matches;
 
-			mediaQuery.addEventListener('change', (e) => {
+			const handleChange = (e: MediaQueryListEvent) => {
 				systemPrefersDark = e.matches;
-			});
+			};
+
+			mediaQuery.addEventListener('change', handleChange);
+
+			// Store cleanup function
+			mediaQueryCleanup = () => {
+				mediaQuery.removeEventListener('change', handleChange);
+			};
+		}
+
+		// Track window width for screen size check
+		if (browser) {
+			windowWidth = window.innerWidth;
+
+			const handleResize = () => {
+				windowWidth = window.innerWidth;
+			};
+
+			window.addEventListener('resize', handleResize);
+
+			// Store cleanup function
+			resizeCleanup = () => {
+				window.removeEventListener('resize', handleResize);
+			};
+
+			// Check localStorage for width check override (dev/testing purposes)
+			widthCheckDisabled = localStorage.getItem('disableWidthCheck') === 'true';
+
+			// Add toggle function to window for console access
+			(window as any).toggleWidthCheck = () => {
+				widthCheckDisabled = !widthCheckDisabled;
+				if (widthCheckDisabled) {
+					localStorage.setItem('disableWidthCheck', 'true');
+					console.log('✓ Width check DISABLED - page will reload');
+				} else {
+					localStorage.removeItem('disableWidthCheck');
+					console.log('✓ Width check ENABLED - page will reload');
+				}
+				window.location.reload();
+			};
+		}
+	});
+
+	onDestroy(() => {
+		if (mediaQueryCleanup) {
+			mediaQueryCleanup();
+		}
+		if (resizeCleanup) {
+			resizeCleanup();
 		}
 	});
 
@@ -58,4 +113,73 @@
 	});
 </script>
 
+{#if isScreenTooNarrow}
+	<div class="screen-width-warning">
+		<div class="warning-content">
+			<iconify-icon icon="ix:application-screen-alarm-classes"></iconify-icon>
+			<h2>{$_('screenWidth.title')}</h2>
+			<p class="min-width-message">{$_('screenWidth.message')}</p>
+			<p class="min-width-note">{$_('screenWidth.minimumWidth')}</p>
+			<p class="min-width-dev">{$_('screenWidth.developerMessage')}</p>
+		</div>
+	</div>
+{/if}
+
 {@render children()}
+
+<style>
+	.screen-width-warning {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.95);
+		z-index: 10000;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: white;
+	}
+
+	.warning-content {
+		text-align: center;
+		max-width: 90%;
+		padding: 2em;
+	}
+
+	.warning-content iconify-icon {
+		font-size: 5em;
+		color: #ffa700;
+		display: block;
+		margin: 0 auto 0.5em;
+	}
+
+	.warning-content h2 {
+		font-size: 2em;
+		margin: 0 0 0.5em 0;
+		font-weight: 600;
+	}
+
+	.warning-content p {
+		margin: 0.5em 0;
+		line-height: 1.5;
+	}
+
+	.min-width-message {
+		font-size: 1.4em;
+		margin-top: 1em;
+	}
+
+	.min-width-note {
+		font-size: 1.25em;
+		color: #cccccc;
+		margin-top: 1em;
+	}
+
+	.min-width-dev {
+		font-size: 1em;
+		color: #7b7a7a;
+		margin-top: 2em;
+	}
+</style>

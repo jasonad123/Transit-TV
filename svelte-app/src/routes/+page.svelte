@@ -2,8 +2,9 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
-	import { findNearbyRoutes, type RateLimitError } from '$lib/services/nearby';
+	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -18,6 +19,13 @@
 	let currentTime = $state(new Date());
 	let errorMessage = $state<string | null>(null);
 	let retryCountdown = $state<number | null>(null);
+	let errorType = $state<'rate-limit' | 'auth' | 'timeout' | 'backend' | 'generic' | null>(null);
+
+	// Screen width check
+	let windowWidth = $state(0);
+	let isScreenTooNarrow = $derived(windowWidth > 0 && windowWidth < 640);
+	let resizeCleanup: (() => void) | null = null;
+	let isMounted = $state(false);
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -79,6 +87,7 @@
 			loading = false;
 			errorMessage = null;
 			retryCountdown = null;
+			errorType = null;
 			// Success - reset polling to normal interval
 			resetPollingToNormal();
 		} catch (err) {
@@ -95,10 +104,13 @@
 				errorRetryTimeoutId = null;
 			}
 
-			const error = err as RateLimitError;
+			const error = err as any;
+
+			// Handle rate limiting
 			if (error.isRateLimit) {
+				errorType = 'rate-limit';
 				const retryAfter = error.retryAfter || 60;
-				errorMessage = `Rate limited. Retrying in ${retryAfter} seconds...`;
+				errorMessage = $_('errors.rateLimit', { values: { seconds: retryAfter } });
 				retryCountdown = retryAfter;
 
 				// Increase polling interval on rate limit
@@ -108,24 +120,61 @@
 				countdownIntervalId = setInterval(() => {
 					if (retryCountdown !== null && retryCountdown > 0) {
 						retryCountdown--;
-						errorMessage = `Rate limited. Retrying in ${retryCountdown} seconds...`;
+						errorMessage = $_('errors.rateLimit', { values: { seconds: retryCountdown } });
 					} else {
 						if (countdownIntervalId) {
 							clearInterval(countdownIntervalId);
 							countdownIntervalId = null;
 						}
 						errorMessage = null;
+						errorType = null;
 						retryCountdown = null;
 						loadNearby();
 					}
 				}, 1000);
-			} else {
-				// Increase polling interval on any error
+			}
+			// Handle authentication errors - don't retry automatically
+			else if (error.isAuthError) {
+				errorType = 'auth';
+				errorMessage = $_('errors.auth');
+				// Don't increase polling interval or auto-retry for auth errors
+				// Manual intervention required
+			}
+			// Handle timeout errors
+			else if (error.isTimeout) {
+				errorType = 'timeout';
+				errorMessage = $_('errors.timeout');
 				increasePollingInterval();
 
-				errorMessage = 'Failed to load routes. Retrying in 30 seconds...';
 				errorRetryTimeoutId = setTimeout(() => {
 					errorMessage = null;
+					errorType = null;
+					errorRetryTimeoutId = null;
+					loadNearby();
+				}, 10000); // Retry after 10 seconds for timeouts
+			}
+			// Handle backend unavailable
+			else if (error.isBackendError) {
+				errorType = 'backend';
+				errorMessage = $_('errors.backend');
+				increasePollingInterval();
+
+				errorRetryTimeoutId = setTimeout(() => {
+					errorMessage = null;
+					errorType = null;
+					errorRetryTimeoutId = null;
+					loadNearby();
+				}, 30000);
+			}
+			// Generic error handling
+			else {
+				errorType = 'generic';
+				errorMessage = $_('errors.generic');
+				increasePollingInterval();
+
+				errorRetryTimeoutId = setTimeout(() => {
+					errorMessage = null;
+					errorType = null;
 					errorRetryTimeoutId = null;
 					loadNearby();
 				}, 30000);
@@ -191,7 +240,24 @@
 	onMount(async () => {
 		await config.load();
 
-		if (!$config.isEditing) {
+		// Track window width for screen size check
+		if (browser) {
+			windowWidth = window.innerWidth;
+
+			const handleResize = () => {
+				windowWidth = window.innerWidth;
+			};
+
+			window.addEventListener('resize', handleResize);
+
+			// Store cleanup function
+			resizeCleanup = () => {
+				window.removeEventListener('resize', handleResize);
+			};
+		}
+
+		// Only load routes if screen is wide enough
+		if (!$config.isEditing && !isScreenTooNarrow) {
 			await loadNearby();
 			// Use adaptive polling interval (starts at 30s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -201,6 +267,28 @@
 		clockIntervalId = setInterval(() => {
 			currentTime = new Date();
 		}, 1000);
+
+		// Mark as mounted to enable reactive width effects
+		isMounted = true;
+	});
+
+	// React to screen width changes (only after mount to avoid double loading)
+	$effect(() => {
+		if (!isMounted) return;
+
+		if (isScreenTooNarrow) {
+			// Screen too narrow - stop polling
+			if (intervalId) {
+				clearInterval(intervalId);
+				intervalId = undefined!;
+			}
+		} else if (!$config.isEditing) {
+			// Screen wide enough - start/resume polling if not already running
+			if (!intervalId) {
+				loadNearby();
+				intervalId = setInterval(loadNearby, currentPollingInterval);
+			}
+		}
 	});
 
 	onDestroy(() => {
@@ -215,6 +303,9 @@
 		}
 		if (errorRetryTimeoutId) {
 			clearTimeout(errorRetryTimeoutId);
+		}
+		if (resizeCleanup) {
+			resizeCleanup();
 		}
 	});
 
@@ -393,17 +484,6 @@
 				</label>
 
 				<label class="toggle-label">
-					<span>{$_('config.fields.showRouteLongName')}</span>
-					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.showRouteLongName}
-						/>
-						<span class="toggle-slider"></span>
-					</label>
-				</label>
-
-				<label class="toggle-label">
 					<span>{$_('config.fields.showQRCode')}</span>
 					<label class="toggle-switch">
 						<input
@@ -414,7 +494,7 @@
 					</label>
 				</label>
 
-				{#if $config.showQRCode}
+				<!-- {#if $config.showQRCode}
 					<div class="qr-section">
 						<h3>{$_('config.qrCode.title')}</h3>
 						<p class="help-text">{$_('config.qrCode.helpText')}</p>
@@ -422,7 +502,7 @@
 							<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={150} />
 						</div>
 					</div>
-				{/if}
+				{/if} -->
 
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
@@ -472,13 +552,12 @@
 	{/if}
 
 	<div class="content">
-		<!-- Error banner disabled for now - to be enabled with comprehensive error handling -->
-		<!-- {#if errorMessage}
-			<div class="error-banner">
-				<iconify-icon icon="ix:warning-filled"></iconify-icon>
+		{#if errorMessage}
+			<div class="error-banner" class:error-auth={errorType === 'auth'} class:error-timeout={errorType === 'timeout'} class:error-backend={errorType === 'backend'}>
+				<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}></iconify-icon>
 				{errorMessage}
 			</div>
-		{/if} -->
+		{/if}
 		{#if loading}
 			<div class="loading">{$_('routes.loading')}</div>
 		{:else if routes.length === 0}
@@ -487,7 +566,7 @@
 			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						<RouteItem {route} />
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -570,7 +649,7 @@
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
-		padding-bottom: 12em;
+		padding-bottom: 3em; /* TODO: make conditional based on QR code visibility */
 	}
 
 	header {
@@ -1094,7 +1173,7 @@
 		top: 5.5em;
 		left: 50%;
 		transform: translateX(-50%);
-		background: #d32f2f;
+		background: #e30022;
 		color: white;
 		padding: 1em 2em;
 		border-radius: 8px;
@@ -1110,6 +1189,18 @@
 
 	.error-banner iconify-icon {
 		font-size: 1.5em;
+	}
+
+	.error-banner.error-auth {
+		background: #ff6b00;
+	}
+
+	.error-banner.error-timeout {
+		background: #f59e0b;
+	}
+
+	.error-banner.error-backend {
+		background: #8b5cf6;
 	}
 
 	@keyframes slideDown {

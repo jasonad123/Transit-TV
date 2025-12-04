@@ -66,7 +66,6 @@ exports.getUnattendedConfig = function(req, res) {
     theme: config.unattendedSetup.theme,
     headerColor: config.unattendedSetup.headerColor,
     columns: config.unattendedSetup.columns,
-    showRouteLongName: config.unattendedSetup.showRouteLongName,
     showQRCode: config.unattendedSetup.showQRCode
   });
 };

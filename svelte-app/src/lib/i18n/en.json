@@ -13,7 +13,6 @@
       "columns": "Grid Columns:",
       "theme": "Theme:",
       "headerColor": "Header Color:",
-      "showRouteLongName": "Show Route Long Names",
       "showQRCode": "Show QR Code"
     },
     "timeFormats": {
@@ -41,7 +40,7 @@
     "qrCode": {
       "title": "QR Code",
       "helpText": "Scan with your phone to open this location in Transit app",
-      "scanPrompt": "Scan to open in Transit app"
+      "scanPrompt": "Scan to open departures in Transit app"
     },
     "buttons": {
       "cancel": "Cancel",
@@ -74,5 +73,18 @@
   "time": {
     "min": "min",
     "now": "now"
+  },
+  "screenWidth": {
+    "title": "Screen too narrow",
+    "message": "This application is designed for large displays such as monitors and televisions. To view transit departures on your phone, please download the Transit app.",
+    "minimumWidth": "Minimum width: 640 pixels",
+    "developerMessage": "Developers: use toggleWidthCheck() in the console to disable this message"
+  },
+  "errors": {
+    "rateLimit": "Checking for updates. Retrying in {seconds} seconds...",
+    "auth": "Can't connect to the Transit data service.",
+    "timeout": "Checking for updates..",
+    "backend": "Transit TV is out of service. Retrying...",
+    "generic": "Transit TV ran into a problem. Retrying..."
   }
 }

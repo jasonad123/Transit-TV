@@ -5,7 +5,7 @@
 	import type { Route, ScheduleItem} from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 
-	let { route, showLongName = true }: { route: Route; showLongName?: boolean } = $props();
+	let { route }: { route: Route } = $props();
 
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
@@ -50,12 +50,6 @@
 					checkAlertOverflow(element);
 					return;
 				}
-
-				// Check if this is the route long name element
-				if (element === routeLongNameElement) {
-					checkRouteLongNameOverflow(element);
-					return;
-				}
 			});
 		});
 	}
@@ -73,7 +67,6 @@
 		destinationCheckTimeouts.forEach(timeout => clearTimeout(timeout));
 		destinationCheckTimeouts.clear();
 		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
-		if (routeLongNameCheckTimeout) clearTimeout(routeLongNameCheckTimeout);
 	});
 
 	// Calculate relative luminance (0-1) from hex color
@@ -245,9 +238,6 @@
 	let isAlertOverflowing = $state(false);
 	let shouldScrollAlert = $derived(relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing));
 
-	let routeLongNameElement: HTMLElement | null = null;
-	let shouldHideLongName = $state(false); // Start visible, hide only if needed
-
 	let destinationCheckTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
 
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
@@ -288,35 +278,6 @@
 		alertCheckTimeout = setTimeout(() => {
 			requestAnimationFrame(() => {
 				isAlertOverflowing = element.scrollHeight > parent.clientHeight;
-			});
-		}, 150);
-	}
-
-	let routeLongNameCheckTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	function checkRouteLongNameOverflow(element: HTMLElement) {
-		if (!element) return;
-
-		// Debounce resize checks
-		if (routeLongNameCheckTimeout) clearTimeout(routeLongNameCheckTimeout);
-
-		routeLongNameCheckTimeout = setTimeout(() => {
-			requestAnimationFrame(() => {
-				const computedStyle = window.getComputedStyle(element);
-				const fontSize = parseFloat(computedStyle.fontSize);
-				const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 1.2;
-				const widthInEm = element.clientWidth / fontSize;
-
-				// Calculate approximate number of lines
-				const lines = element.clientHeight / lineHeight;
-
-				// Hide if:
-				// 1. Extremely narrow (< 2em) AND wrapping (> 1.5 lines) - causes vertical stacking like "DASHD"
-				// 2. Wrapping to 4+ lines - becomes unreadable like "Downtown LA Freeway Express"
-				const isVerticallyStacked = widthInEm < 2.0 && lines > 1.5;
-				const isTooManyLines = lines > 4;
-
-				shouldHideLongName = isVerticallyStacked || isTooManyLines;
 			});
 		}, 150);
 	}
@@ -364,28 +325,6 @@
 			}
 		};
 	}
-
-	function bindRouteLongNameElement(node: HTMLElement) {
-		routeLongNameElement = node;
-
-		// Check overflow once on mount
-		setTimeout(() => {
-			checkRouteLongNameOverflow(node);
-		}, 50);
-
-		if (sharedResizeObserver) {
-			sharedResizeObserver.observe(node);
-		}
-
-		return {
-			destroy() {
-				if (sharedResizeObserver) {
-					sharedResizeObserver.unobserve(node);
-				}
-				routeLongNameElement = null;
-			}
-		};
-	}
 </script>
 
 <div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
@@ -399,7 +338,7 @@
 				class="img{imageSize}"
 				src={getImageUrl(2)}
 				alt="Route icon"
-			/>{/if}{/if}</span>{#if route.route_long_name && showLongName}<span class="route-long-name" class:hidden={shouldHideLongName} use:bindRouteLongNameElement>{route.route_long_name}</span>{/if}</h2>
+			/>{/if}{/if}</span></h2>
 
 		{#if route.itineraries}
 			{#each route.itineraries as dir, index}
@@ -497,21 +436,6 @@
 	.route h2 .route-icon {
 		white-space: nowrap;
 		flex-shrink: 0;
-	}
-
-	.route h2 .route-long-name {
-		font-size: 0.4em;
-		font-weight: semi-bold;
-		white-space: normal;
-		word-wrap: break-word;
-		align-self: center;
-		flex-grow: 0;
-		flex-shrink: 1;
-		min-width: 0;
-	}
-
-	.route h2 .route-long-name.hidden {
-		display: none;
 	}
 
 	.route-alert-header {
