@@ -13,7 +13,6 @@
       "columns": "Columnas de cuadrícula:",
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
-      "showRouteLongName": "Mostrar nombres de rutas",
       "showQRCode": "Mostrar código QR"
     },
     "timeFormats": {

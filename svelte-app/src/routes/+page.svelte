@@ -442,17 +442,6 @@
 				</label>
 
 				<label class="toggle-label">
-					<span>{$_('config.fields.showRouteLongName')}</span>
-					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.showRouteLongName}
-						/>
-						<span class="toggle-slider"></span>
-					</label>
-				</label>
-
-				<label class="toggle-label">
 					<span>{$_('config.fields.showQRCode')}</span>
 					<label class="toggle-switch">
 						<input
@@ -536,7 +525,7 @@
 			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						<RouteItem {route} />
 						<div class="route-controls">
 							{#if index > 0}
 								<button

@@ -13,7 +13,6 @@
       "columns": "Colonnes de grille :",
       "theme": "Thème :",
       "headerColor": "Couleur d'en-tête :",
-      "showRouteLongName": "Afficher les noms complet d'itinéraire",
       "showQRCode": "Afficher code QR"
     },
     "timeFormats": {

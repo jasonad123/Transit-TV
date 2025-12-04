@@ -13,7 +13,6 @@
       "columns": "Grid Columns:",
       "theme": "Theme:",
       "headerColor": "Header Color:",
-      "showRouteLongName": "Show Route Long Names",
       "showQRCode": "Show QR Code"
     },
     "timeFormats": {
