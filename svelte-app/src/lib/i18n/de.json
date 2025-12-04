@@ -76,7 +76,15 @@
   },
   "screenWidth": {
     "title": "Bildschirm zu schmal",
-    "message": "Transit-TV ist fur grosse Bildschirme wie Monitore und Fernseher konzipiert.",
-    "minimumWidth": "Mindestbreite: 640 Pixel"
+    "message": "Diese Anwendung ist für grosse Bildschirme und Fernseher konzipiert. Um die Abfahrten des Öffis auf Ihrem Handy einzusehen, laden Sie bitte die Transit-App herunter.",
+    "minimumWidth": "Mindestbreite: 640 Pixel",
+    "developerMessage": "Webentwickler*innen: Verwenden Sie toggleWidthCheck() in der Konsole, um diese Meldung zu deaktivieren."
+  },
+  "errors": {
+    "rateLimit": "Überprüfung auf Updates. Erneuter Versuch in {seconds} Sekunden...",
+    "auth": "Verbindung zum Transit-datendienst nicht möglich.",
+    "timeout": "Überprüfung auf Updates...",
+    "backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
+    "generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."
   }
 }

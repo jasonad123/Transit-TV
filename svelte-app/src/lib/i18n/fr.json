@@ -75,8 +75,16 @@
     "now": "maintenant"
   },
   "screenWidth": {
-    "title": "Ecran trop etroit",
-    "message": "Tele Transit est concu pour les grands ecrans comme les moniteurs et les televiseurs.",
-    "minimumWidth": "Largeur minimale : 640 pixels"
+    "title": "Écran trop étroit",
+    "message": "Cette application est concu pour les grands ecrans comm les televiseurs. Pour consulter les horaires de départ du transport collectif sur votre téléphone, veuillez télécharger l'application Transit.",
+    "minimumWidth": "Largeur minimale : 640 pixels",
+    "developerMessage": "Développeurs web : utilisez toggleWidthCheck() dans la console pour désactiver ce message."
+  },
+  "errors": {
+    "rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
+    "auth": "Impossible de se connecter au service de données de Transit.",
+    "timeout": "Vérification des mises à jour...",
+    "backend": "Transit TV est hors service. J'essaie encore...",
+    "generic": "Transit TV a rencontré un problème. J'essaie encore..."
   }
 }

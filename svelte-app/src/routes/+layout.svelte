@@ -116,10 +116,11 @@
 {#if isScreenTooNarrow}
 	<div class="screen-width-warning">
 		<div class="warning-content">
-			<iconify-icon icon="ix:warning-filled"></iconify-icon>
+			<iconify-icon icon="ix:application-screen-alarm-classes"></iconify-icon>
 			<h2>{$_('screenWidth.title')}</h2>
-			<p>{$_('screenWidth.message')}</p>
+			<p class="min-width-message">{$_('screenWidth.message')}</p>
 			<p class="min-width-note">{$_('screenWidth.minimumWidth')}</p>
+			<p class="min-width-dev">{$_('screenWidth.developerMessage')}</p>
 		</div>
 	</div>
 {/if}
@@ -149,7 +150,7 @@
 
 	.warning-content iconify-icon {
 		font-size: 5em;
-		color: #ffd700;
+		color: #ffa700;
 		display: block;
 		margin: 0 auto 0.5em;
 	}
@@ -161,14 +162,24 @@
 	}
 
 	.warning-content p {
-		font-size: 1.3em;
 		margin: 0.5em 0;
 		line-height: 1.5;
 	}
 
+	.min-width-message {
+		font-size: 1.4em;
+		margin-top: 1em;
+	}
+
 	.min-width-note {
-		font-size: 1.1em;
+		font-size: 1.25em;
 		color: #cccccc;
 		margin-top: 1em;
+	}
+
+	.min-width-dev {
+		font-size: 1em;
+		color: #7b7a7a;
+		margin-top: 2em;
 	}
 </style>

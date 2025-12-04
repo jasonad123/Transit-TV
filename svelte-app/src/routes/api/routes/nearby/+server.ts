@@ -8,9 +8,23 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		const response = await fetch(backendUrl);
+
+		// Forward status code and headers from backend
+		const headers: HeadersInit = {
+			'Content-Type': 'application/json'
+		};
+
+		// Forward Cache-Control header if present
+		const cacheControl = response.headers.get('Cache-Control');
+		if (cacheControl) {
+			headers['Cache-Control'] = cacheControl;
+		}
+
 		const data = await response.json();
+
 		return new Response(JSON.stringify(data), {
-			headers: { 'Content-Type': 'application/json' }
+			status: response.status,
+			headers
 		});
 	} catch (error) {
 		console.error('Error proxying to backend:', error);
