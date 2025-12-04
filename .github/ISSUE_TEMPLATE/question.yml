@@ -1,0 +1,78 @@
+name: Question / Support
+description: Ask a question or get help with Transit-TV
+title: "[question]: "
+labels: ["question", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question or need help? Please provide details below.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Installation / Setup
+        - Configuration
+        - Transit API Integration
+        - Docker Deployment
+        - Customization
+        - Troubleshooting
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Please describe your question or issue in detail
+      placeholder: I'm trying to understand how to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+      description: What steps have you already taken to solve this?
+      placeholder: |
+        I've tried:
+        1. ...
+        2. ...
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment details
+      description: If this is related to a technical issue, please provide environment details
+      placeholder: |
+        - OS: 
+        - Deployment method: 
+        - Version: 
+      value: |
+        - OS: 
+        - Deployment method: 
+        - Version: 
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Any other information that might be helpful
+      placeholder: Any additional information...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have checked the README and documentation
+          required: true
+        - label: I have searched existing issues for similar questions
+          required: true
