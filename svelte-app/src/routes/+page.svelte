@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes, type RateLimitError } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
@@ -18,6 +19,12 @@
 	let currentTime = $state(new Date());
 	let errorMessage = $state<string | null>(null);
 	let retryCountdown = $state<number | null>(null);
+
+	// Screen width check
+	let windowWidth = $state(0);
+	let isScreenTooNarrow = $derived(windowWidth > 0 && windowWidth < 640);
+	let resizeCleanup: (() => void) | null = null;
+	let isMounted = $state(false);
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -191,7 +198,24 @@
 	onMount(async () => {
 		await config.load();
 
-		if (!$config.isEditing) {
+		// Track window width for screen size check
+		if (browser) {
+			windowWidth = window.innerWidth;
+
+			const handleResize = () => {
+				windowWidth = window.innerWidth;
+			};
+
+			window.addEventListener('resize', handleResize);
+
+			// Store cleanup function
+			resizeCleanup = () => {
+				window.removeEventListener('resize', handleResize);
+			};
+		}
+
+		// Only load routes if screen is wide enough
+		if (!$config.isEditing && !isScreenTooNarrow) {
 			await loadNearby();
 			// Use adaptive polling interval (starts at 30s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -201,6 +225,28 @@
 		clockIntervalId = setInterval(() => {
 			currentTime = new Date();
 		}, 1000);
+
+		// Mark as mounted to enable reactive width effects
+		isMounted = true;
+	});
+
+	// React to screen width changes (only after mount to avoid double loading)
+	$effect(() => {
+		if (!isMounted) return;
+
+		if (isScreenTooNarrow) {
+			// Screen too narrow - stop polling
+			if (intervalId) {
+				clearInterval(intervalId);
+				intervalId = undefined!;
+			}
+		} else if (!$config.isEditing) {
+			// Screen wide enough - start/resume polling if not already running
+			if (!intervalId) {
+				loadNearby();
+				intervalId = setInterval(loadNearby, currentPollingInterval);
+			}
+		}
 	});
 
 	onDestroy(() => {
@@ -215,6 +261,9 @@
 		}
 		if (errorRetryTimeoutId) {
 			clearTimeout(errorRetryTimeoutId);
+		}
+		if (resizeCleanup) {
+			resizeCleanup();
 		}
 	});
 

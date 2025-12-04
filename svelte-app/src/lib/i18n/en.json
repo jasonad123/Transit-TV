@@ -74,5 +74,10 @@
   "time": {
     "min": "min",
     "now": "now"
+  },
+  "screenWidth": {
+    "title": "Screen Too Narrow",
+    "message": "Transit TV is designed for large displays such as monitors and televisions.",
+    "minimumWidth": "Minimum width: 640 pixels"
   }
 }

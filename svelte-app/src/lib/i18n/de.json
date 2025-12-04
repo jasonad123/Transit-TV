@@ -74,5 +74,10 @@
   "time": {
     "min": "min",
     "now": "jetzt"
+  },
+  "screenWidth": {
+    "title": "Bildschirm zu schmal",
+    "message": "Transit-TV ist fur grosse Bildschirme wie Monitore und Fernseher konzipiert.",
+    "minimumWidth": "Mindestbreite: 640 Pixel"
   }
 }

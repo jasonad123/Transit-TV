@@ -74,5 +74,10 @@
   "time": {
     "min": "min",
     "now": "maintenant"
+  },
+  "screenWidth": {
+    "title": "Ecran trop etroit",
+    "message": "Tele Transit est concu pour les grands ecrans comme les moniteurs et les televiseurs.",
+    "minimumWidth": "Largeur minimale : 640 pixels"
   }
 }

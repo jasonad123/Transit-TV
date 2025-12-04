@@ -74,5 +74,10 @@
   "time": {
     "min": "min",
     "now": "ahora"
+  },
+  "screenWidth": {
+    "title": "Pantalla demasiado estrecha",
+    "message": "Television de Transit esta disenada para pantallas grandes como monitores y televisores.",
+    "minimumWidth": "Ancho minimo: 640 pixeles"
   }
 }
