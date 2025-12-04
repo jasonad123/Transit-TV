@@ -25,7 +25,8 @@
 
 	let systemPrefersDark = $state(false);
 	let windowWidth = $state(0);
-	let isScreenTooNarrow = $derived(windowWidth > 0 && windowWidth < 640);
+	let widthCheckDisabled = $state(false);
+	let isScreenTooNarrow = $derived(windowWidth > 0 && windowWidth < 640 && !widthCheckDisabled);
 	let mediaQueryCleanup: (() => void) | null = null;
 	let resizeCleanup: (() => void) | null = null;
 
@@ -64,6 +65,22 @@
 			// Store cleanup function
 			resizeCleanup = () => {
 				window.removeEventListener('resize', handleResize);
+			};
+
+			// Check localStorage for width check override (dev/testing purposes)
+			widthCheckDisabled = localStorage.getItem('disableWidthCheck') === 'true';
+
+			// Add toggle function to window for console access
+			(window as any).toggleWidthCheck = () => {
+				widthCheckDisabled = !widthCheckDisabled;
+				if (widthCheckDisabled) {
+					localStorage.setItem('disableWidthCheck', 'true');
+					console.log('✓ Width check DISABLED - page will reload');
+				} else {
+					localStorage.removeItem('disableWidthCheck');
+					console.log('✓ Width check ENABLED - page will reload');
+				}
+				window.location.reload();
 			};
 		}
 	});
