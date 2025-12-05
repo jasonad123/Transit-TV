@@ -8,29 +8,14 @@ services:
       - "8080:8080"
     environment:
       NODE_ENV: "production"
-      USE_SVELTE: "true"
       PORT: "8080"
 
     # Add your environment variables here or use an env_file
     env_file:
-      - .env.docker
-
-    # Optional: Persist logs
-    volumes:
-      - ./logs:/app/logs
+      - .env
 
     networks:
       - transit-network
-
-    # Resource limits to prevent runaway container
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
 
     # Health check to ensure service is running
     healthcheck:

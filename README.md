@@ -18,13 +18,12 @@ A real-time transit display application that shows arrival times for nearby publ
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
 
-> [!WARNING]
+> [!INFO]
 > Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
 
 - An API key from Transit - [keys can be requested here](https://transitapp.com/apis)
-  - Keep in mind that to have a Transit-TV running 24/7 you'll need a paid API key as the free plan won't be enough.
 - Node.js (version specified in .node-version)
 - pnpm (preferred package manager)
 - Docker (optional, for containerized deployment)
@@ -33,11 +32,10 @@ A real-time transit display application that shows arrival times for nearby publ
 
 1. Request API access
 
-Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file. 
+Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file.
 
-> `.env` for local development using `pnpm`
-
-> `.env.docker` for deployment using docker
+  > `.env` for local development using `pnpm`
+  > `.env.docker` for deployment using docker
 
 2. Create your `.env` files
 
@@ -168,43 +166,7 @@ This feature allows you to skip the configuration popup on first launch - automa
 
 To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method (modify them in `.env` for local deployment, `.env.docker` for Docker deployments)
 
-The following variables are available:
-
-```bash
-# UNATTENDED_SETUP: Enable automatic setup without user interaction (true/false)
-UNATTENDED_SETUP=false
-
-# UNATTENDED_LOCATION: Latitude and longitude coordinates for transit data
-# Format: "latitude,longitude" (e.g., "40.7240,-74.0002" for New York City)
-UNATTENDED_LOCATION=
-
-# UNATTENDED_TITLE: Display title for the transit screen
-UNATTENDED_TITLE=Transit Display
-
-# UNATTENDED_TIME_FORMAT: Time display format
-# Options: "HH:mm" (24-hour format) or "hh:mm A" (12-hour format with AM/PM)
-UNATTENDED_TIME_FORMAT=HH:mm
-
-# UNATTENDED_TIME_FORMAT: Time display format
-# Options: "HH:mm" (24-hour format) or "hh:mm A" (12-hour format with AM/PM)
-UNATTENDED_TIME_FORMAT=HH:mm
-
-# UNATTENDED_THEME: Theme for background
-# Options: light, dark, auto
-UNATTENDED_THEME=auto
-
-# UNATTENDED_HEADER_COLOR: Hex color code for header background
-# Format: "#RRGGBB" (e.g., #FF5733)
-UNATTENDED_HEADER_COLOR=(#hex)
-
-# UNATTENDED_COLUMNS: Number of columns to display
-# Options: 
-UNATTENDED_COLUMNS=auto
-
-# UNATTENDED_SHOW_ROUTE_LONG_NAME: Show route long name next to route short name or logo
-# Options: true, false
-UNATTENDED_SHOW_ROUTE_LONG_NAME=true
-```
+Please review the `.env` examples for an overview of all unattended variables available.
 
 ## Project structure
 
