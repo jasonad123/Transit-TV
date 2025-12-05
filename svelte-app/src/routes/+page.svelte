@@ -31,6 +31,11 @@
 	let gettingLocation = $state(false);
 	let locationError = $state<string | null>(null);
 
+	// Location validation state
+	let validatingLocation = $state(false);
+	let validationMessage = $state<string | null>(null);
+	let validationSuccess = $state<boolean | null>(null);
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
 	let currentPollingInterval = 30000; // Start at 30 seconds
@@ -317,6 +322,32 @@
 		config.update((c) => ({ ...c, isEditing: true }));
 	}
 
+	async function validateLocation(latitude: number, longitude: number) {
+		if (!$config.isEditing) return; // Only validate during interactive config
+
+		validatingLocation = true;
+		validationMessage = null;
+		validationSuccess = null;
+
+		try {
+			const routes = await findNearbyRoutes({ latitude, longitude }, 500);
+			const count = routes.length;
+
+			if (count > 0) {
+				validationSuccess = true;
+				validationMessage = `Location set - ${count} route${count !== 1 ? 's' : ''} found nearby`;
+			} else {
+				validationSuccess = false;
+				validationMessage = 'No routes found at this location';
+			}
+		} catch (error) {
+			validationSuccess = false;
+			validationMessage = 'Unable to validate location';
+		} finally {
+			validatingLocation = false;
+		}
+	}
+
 	function useCurrentLocation() {
 		if (!browser || !navigator.geolocation) {
 			locationError = 'Geolocation is not supported by your browser';
@@ -327,7 +358,7 @@
 		locationError = null;
 
 		navigator.geolocation.getCurrentPosition(
-			(position) => {
+			async (position) => {
 				config.update((c) => ({
 					...c,
 					latLng: {
@@ -337,6 +368,9 @@
 				}));
 				gettingLocation = false;
 				locationError = null;
+
+				// Validate the location
+				await validateLocation(position.coords.latitude, position.coords.longitude);
 			},
 			(error) => {
 				gettingLocation = false;
@@ -361,6 +395,17 @@
 				maximumAge: 0
 			}
 		);
+	}
+
+	function handleLocationInputBlur() {
+		// Clear validation when user starts typing again
+		validationMessage = null;
+		validationSuccess = null;
+
+		// Validate if we have valid coordinates
+		if ($config.latLng && !isNaN($config.latLng.latitude) && !isNaN($config.latLng.longitude)) {
+			validateLocation($config.latLng.latitude, $config.latLng.longitude);
+		}
 	}
 </script>
 
@@ -407,7 +452,12 @@
 						<input
 							type="text"
 							value={`${$config.latLng.latitude}, ${$config.latLng.longitude}`}
-							oninput={(e) => config.setLatLngStr(e.currentTarget.value)}
+							oninput={(e) => {
+								config.setLatLngStr(e.currentTarget.value);
+								validationMessage = null;
+								validationSuccess = null;
+							}}
+							onblur={handleLocationInputBlur}
 							placeholder="latitude, longitude"
 						/>
 						<button
@@ -424,6 +474,13 @@
 					</div>
 					{#if locationError}
 						<span class="location-error">{locationError}</span>
+					{/if}
+					{#if validatingLocation}
+						<span class="location-validating">Checking location...</span>
+					{:else if validationMessage}
+						<span class="location-validation" class:success={validationSuccess} class:error={!validationSuccess}>
+							{validationMessage}
+						</span>
 					{/if}
 				</label>
 
@@ -1333,5 +1390,28 @@
 		color: #e30022;
 		font-size: 0.9em;
 		margin-top: 0.3em;
+	}
+
+	.location-validating {
+		display: block;
+		color: var(--text-secondary);
+		font-size: 0.9em;
+		margin-top: 0.3em;
+		font-style: italic;
+	}
+
+	.location-validation {
+		display: block;
+		font-size: 0.9em;
+		margin-top: 0.3em;
+		font-weight: 500;
+	}
+
+	.location-validation.success {
+		color: #30b566;
+	}
+
+	.location-validation.error {
+		color: #f59e0b;
 	}
 </style>
