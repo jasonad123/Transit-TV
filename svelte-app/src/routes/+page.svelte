@@ -27,6 +27,10 @@
 	let resizeCleanup: (() => void) | null = null;
 	let isMounted = $state(false);
 
+	// Geolocation state
+	let gettingLocation = $state(false);
+	let locationError = $state<string | null>(null);
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
 	let currentPollingInterval = 30000; // Start at 30 seconds
@@ -312,6 +316,52 @@
 	function openConfig() {
 		config.update((c) => ({ ...c, isEditing: true }));
 	}
+
+	function useCurrentLocation() {
+		if (!browser || !navigator.geolocation) {
+			locationError = 'Geolocation is not supported by your browser';
+			return;
+		}
+
+		gettingLocation = true;
+		locationError = null;
+
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				config.update((c) => ({
+					...c,
+					latLng: {
+						latitude: position.coords.latitude,
+						longitude: position.coords.longitude
+					}
+				}));
+				gettingLocation = false;
+				locationError = null;
+			},
+			(error) => {
+				gettingLocation = false;
+				switch (error.code) {
+					case error.PERMISSION_DENIED:
+						locationError = 'Location permission denied';
+						break;
+					case error.POSITION_UNAVAILABLE:
+						locationError = 'Location information unavailable';
+						break;
+					case error.TIMEOUT:
+						locationError = 'Location request timed out';
+						break;
+					default:
+						locationError = 'An unknown error occurred';
+						break;
+				}
+			},
+			{
+				enableHighAccuracy: false,
+				timeout: 10000,
+				maximumAge: 0
+			}
+		);
+	}
 </script>
 
 <svelte:head>
@@ -353,11 +403,28 @@
 
 				<label>
 					{$_('config.fields.location')}
-					<input
-						type="text"
-						value={`${$config.latLng.latitude}, ${$config.latLng.longitude}`}
-						oninput={(e) => config.setLatLngStr(e.currentTarget.value)}
-					/>
+					<div class="location-input-group">
+						<input
+							type="text"
+							value={`${$config.latLng.latitude}, ${$config.latLng.longitude}`}
+							oninput={(e) => config.setLatLngStr(e.currentTarget.value)}
+							placeholder="latitude, longitude"
+						/>
+						<button
+							type="button"
+							class="btn-location"
+							onclick={useCurrentLocation}
+							disabled={gettingLocation}
+							title={gettingLocation ? 'Getting location...' : 'Use current location'}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+								<path fill="currentColor" d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8" />
+							</svg>
+						</button>
+					</div>
+					{#if locationError}
+						<span class="location-error">{locationError}</span>
+					{/if}
 				</label>
 
 				<label>
@@ -718,6 +785,8 @@
 		transition: opacity 0.3s ease-in-out;
 		vertical-align: middle;
 		border: none;
+		backface-visibility: hidden;
+		-webkit-font-smoothing: antialiased;
 	}
 
 	#title button iconify-icon {
@@ -1212,5 +1281,57 @@
 			opacity: 1;
 			transform: translateX(-50%) translateY(0);
 		}
+	}
+
+	/* Location input group */
+	.location-input-group {
+		display: flex;
+		gap: 0.5em;
+		align-items: center;
+	}
+
+	.location-input-group input {
+		flex: 1;
+	}
+
+	.btn-location {
+		flex-shrink: 0;
+		width: auto;
+		padding: 0.4em 0.5em;
+		background: var(--bg-header);
+		color: white;
+		border: 1px solid var(--border-color);
+		border-radius: 4px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1em;
+		backface-visibility: hidden;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.btn-location:hover:not(:disabled) {
+		opacity: 0.85;
+	}
+
+	.btn-location:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.btn-location svg {
+		width: 1.25em;
+		height: 1.25em;
+		display: block;
+		color: white;
+	}
+
+	.location-error {
+		display: block;
+		color: #e30022;
+		font-size: 0.9em;
+		margin-top: 0.3em;
 	}
 </style>
