@@ -47,6 +47,17 @@
       "save": "Save",
       "reset": "Reset",
       "resetToDefault": "Reset to default"
+    },
+    "location": {
+      "validating": "Checking location...",
+      "validationSuccess": "Location set - {count} route{plural} found nearby",
+      "validationNoRoutes": "No routes found at this location",
+      "validationError": "Unable to validate location",
+      "geolocationNotSupported": "Geolocation is not supported by your browser",
+      "geolocationPermissionDenied": "Location permission denied",
+      "geolocationUnavailable": "Location information unavailable",
+      "geolocationTimeout": "Location request timed out",
+      "geolocationError": "An unknown error occurred"
     }
   },
   "routes": {

@@ -335,14 +335,16 @@
 
 			if (count > 0) {
 				validationSuccess = true;
-				validationMessage = `Location set - ${count} route${count !== 1 ? 's' : ''} found nearby`;
+				validationMessage = $_('config.location.validationSuccess', {
+					values: { count, plural: count !== 1 ? 's' : '' }
+				});
 			} else {
 				validationSuccess = false;
-				validationMessage = 'No routes found at this location';
+				validationMessage = $_('config.location.validationNoRoutes');
 			}
 		} catch (error) {
 			validationSuccess = false;
-			validationMessage = 'Unable to validate location';
+			validationMessage = $_('config.location.validationError');
 		} finally {
 			validatingLocation = false;
 		}
@@ -350,7 +352,7 @@
 
 	function useCurrentLocation() {
 		if (!browser || !navigator.geolocation) {
-			locationError = 'Geolocation is not supported by your browser';
+			locationError = $_('config.location.geolocationNotSupported');
 			return;
 		}
 
@@ -376,16 +378,16 @@
 				gettingLocation = false;
 				switch (error.code) {
 					case error.PERMISSION_DENIED:
-						locationError = 'Location permission denied';
+						locationError = $_('config.location.geolocationPermissionDenied');
 						break;
 					case error.POSITION_UNAVAILABLE:
-						locationError = 'Location information unavailable';
+						locationError = $_('config.location.geolocationUnavailable');
 						break;
 					case error.TIMEOUT:
-						locationError = 'Location request timed out';
+						locationError = $_('config.location.geolocationTimeout');
 						break;
 					default:
-						locationError = 'An unknown error occurred';
+						locationError = $_('config.location.geolocationError');
 						break;
 				}
 			},
@@ -476,7 +478,7 @@
 						<span class="location-error">{locationError}</span>
 					{/if}
 					{#if validatingLocation}
-						<span class="location-validating">Checking location...</span>
+						<span class="location-validating">{$_('config.location.validating')}</span>
 					{:else if validationMessage}
 						<span class="location-validation" class:success={validationSuccess} class:error={!validationSuccess}>
 							{validationMessage}

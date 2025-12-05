@@ -47,6 +47,17 @@
       "save": "Speichern",
       "reset": "Zurücksetzen",
       "resetToDefault": "Auf Standard zurücksetzen"
+    },
+    "location": {
+      "validating": "Standort wird überprüft...",
+      "validationSuccess": "Standort festgelegt - {count} Linien in der Nähe gefunden",
+      "validationNoRoutes": "An diesem Standort wurden keine Routen gefunden.",
+      "validationError": "Standort konnte nicht überprüft werden.",
+      "geolocationNotSupported": "Die Geolocation-Funktion wird von Ihrem Browser nicht unterstützt.",
+      "geolocationPermissionDenied": "Standortberechtigung verweigert",
+      "geolocationUnavailable": "Standortinformationen nicht verfügbar",
+      "geolocationTimeout": "Standortanfrage abgelaufen",
+      "geolocationError": "Es ist ein unbekannter Fehler aufgetreten."
     }
   },
   "routes": {

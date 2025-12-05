@@ -47,11 +47,22 @@
       "save": "Ahorrar",
       "reset": "Restablecer",
       "resetToDefault": "Restablecer valores predeterminados"
+    },
+    "location": {
+      "validating": "Buscando ubicación...",
+      "validationSuccess": "Ubicación establecida - {count} ruta{plural} cercanas",
+      "validationNoRoutes": "No hay rutas encontradas cerca",
+      "validationError": "No se puede validar la ubicación",
+      "geolocationNotSupported": "Su navegador no admite la geolocalización",
+      "geolocationPermissionDenied": "Permiso de ubicación denegado",
+      "geolocationUnavailable": "Información de ubicación no disponible",
+      "geolocationTimeout": "La solicitud de ubicación ha caducado.",
+      "geolocationError": "Ocurrió un error desconocido"
     }
   },
   "routes": {
     "loading": "Cargando las rutas...",
-    "noRoutes": "Hay no rutas encontradas cerca",
+    "noRoutes": "No hay rutas encontradas cerca",
     "controls": {
       "moveToTop": "Subir al principio",
       "moveUp": "Subir",
