@@ -18,7 +18,7 @@ A real-time transit display application that shows arrival times for nearby publ
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
 
-> [!INFO]
+> [!IMPORTANT]
 > Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
