@@ -42,7 +42,8 @@ var all = {
     theme: process.env.UNATTENDED_THEME || 'light',
     headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
     columns: process.env.UNATTENDED_COLUMNS || 'auto',
-    showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true'
+    showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true',
+    maxDistance: parseInt(process.env.UNATTENDED_MAX_DISTANCE) || 500
   },
   
   // Security settings

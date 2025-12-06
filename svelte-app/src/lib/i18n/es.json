@@ -13,7 +13,8 @@
       "columns": "Columnas de cuadrícula:",
       "theme": "Tema:",
       "headerColor": "Color del encabezado:",
-      "showQRCode": "Mostrar código QR"
+      "showQRCode": "Mostrar código QR",
+      "maxDistance": "Radio de búsqueda:"
     },
     "timeFormats": {
       "12hour": "12 horas",

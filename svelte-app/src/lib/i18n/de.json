@@ -13,7 +13,8 @@
       "columns": "Rasterspalten:",
       "theme": "Thema:",
       "headerColor": "Kopfzeilenfarbe:",
-      "showQRCode": "QR-Code anzeigen"
+      "showQRCode": "QR-Code anzeigen",
+      "maxDistance": "Suchradius:"
     },
     "timeFormats": {
       "12hour": "12 Stunden",

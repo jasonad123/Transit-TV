@@ -13,7 +13,8 @@
       "columns": "Grid Columns:",
       "theme": "Theme:",
       "headerColor": "Header Color:",
-      "showQRCode": "Show QR Code"
+      "showQRCode": "Show QR Code",
+      "maxDistance": "Search Radius:"
     },
     "timeFormats": {
       "12hour": "12 Hours",

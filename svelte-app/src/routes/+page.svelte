@@ -79,7 +79,7 @@
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
 
-			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, 500);
+			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, currentConfig.maxDistance);
 			allRoutes = fetchedRoutes;
 
 			routes = fetchedRoutes
@@ -330,7 +330,7 @@
 		validationSuccess = null;
 
 		try {
-			const routes = await findNearbyRoutes({ latitude, longitude }, 500);
+			const routes = await findNearbyRoutes({ latitude, longitude }, $config.maxDistance);
 			const count = routes.length;
 
 			if (count > 0) {
@@ -502,6 +502,24 @@
 						<option value="es">{$_('config.languages.spanish')}</option>
 						<option value="de">{$_('config.languages.german')}</option>
 					</select>
+				</label>
+
+				<label>
+					{$_('config.fields.maxDistance')}
+					<div class="slider-container">
+						<input
+							type="range"
+							min="250"
+							max="1500"
+							step="250"
+							bind:value={$config.maxDistance}
+							class="distance-slider"
+							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+						/>
+						<div class="slider-labels">
+							<span>{$config.maxDistance}m</span>
+						</div>
+					</div>
 				</label>
 
 				<label>
@@ -1415,5 +1433,75 @@
 
 	.location-validation.error {
 		color: #f59e0b;
+	}
+
+	.slider-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+		padding: 0.3em 9px;
+	}
+
+	.distance-slider {
+		width: 100%;
+		height: 4px;
+		border-radius: 10px;
+		background: var(--border-color);
+		outline: none;
+		-webkit-appearance: none;
+		appearance: none;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+
+	.distance-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		background: white;
+		cursor: pointer;
+		border: none;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+		margin-top: -7px;
+	}
+
+	.distance-slider::-moz-range-thumb {
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		background: white;
+		cursor: pointer;
+		border: none;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	}
+
+	.distance-slider::-webkit-slider-runnable-track {
+		width: 100%;
+		height: 4px;
+		background: linear-gradient(to right, var(--bg-header) 0%, var(--bg-header) var(--slider-progress, 0%), var(--border-color) var(--slider-progress, 0%), var(--border-color) 100%);
+		border-radius: 10px;
+	}
+
+	.distance-slider::-moz-range-track {
+		width: 100%;
+		height: 4px;
+		background: var(--border-color);
+		border-radius: 10px;
+	}
+
+	.distance-slider::-moz-range-progress {
+		background: var(--bg-header);
+		height: 4px;
+		border-radius: 10px;
+	}
+
+	.slider-labels {
+		display: flex;
+		justify-content: center;
+		font-size: 0.9em;
+		font-weight: 500;
+		color: var(--text-primary);
 	}
 </style>
