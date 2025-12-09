@@ -104,6 +104,26 @@
 	// Complex logos that should not be recolored (contain their own internal colors)
 	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
 
+	// Manual color overrides for specific logos
+	// Options:
+	//   - alwaysUseDarkModeColor: boolean - Always use the dark mode color calculation
+	//   - alwaysUseLightModeColor: boolean - Always use the light mode color calculation
+	//   - color: string - Always use this specific hex color (e.g., 'FF0000')
+	const COLOR_OVERRIDES = new Map<string, {
+		alwaysUseDarkModeColor?: boolean;
+		alwaysUseLightModeColor?: boolean;
+		color?: string;
+	}>([
+		// Example: Always use dark mode color (even in light mode)
+		['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
+		['wmata-metrorail-silver-v2', { alwaysUseDarkModeColor: true }],
+		['wmata-metrorail-yellow-v2', { alwaysUseDarkModeColor: true }]
+		// Example: Always use light mode color (even in dark mode)
+		// ['another-logo', { alwaysUseLightModeColor: true }],
+		// Example: Always use a specific color
+		// ['third-logo', { color: 'FF0000' }],
+	]);
+
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
 			const iconName = route.route_display_short_name.elements[index];
@@ -113,17 +133,43 @@
 				return `/api/images/${iconName}.svg`;
 			}
 
-			// In dark mode:
-			//   - If route should be inverted (very dark bg + light text), use route_text_color
-			//   - Otherwise use route_color (for visibility on dark background)
-			// In light mode:
-			//   - Use black if useBlackText, otherwise route_color
+			// Check for manual color overrides
+			const override = COLOR_OVERRIDES.get(iconName);
 			let hex: string;
-			if (isDarkMode) {
-				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+
+			if (override) {
+				// If a fixed color is specified
+				if (override.color) {
+					hex = override.color;
+				}
+				// If we should always use dark mode color calculation
+				else if (override.alwaysUseDarkModeColor) {
+					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+				}
+				// If we should always use light mode color calculation
+				else if (override.alwaysUseLightModeColor) {
+					hex = useBlackText ? '000000' : route.route_color;
+				}
+				// Fallback to normal logic
+				else if (isDarkMode) {
+					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+				} else {
+					hex = useBlackText ? '000000' : route.route_color;
+				}
 			} else {
-				hex = useBlackText ? '000000' : route.route_color;
+				// Default color logic (no overrides)
+				// In dark mode:
+				//   - If route should be inverted (very dark bg + light text), use route_text_color
+				//   - Otherwise use route_color (for visibility on dark background)
+				// In light mode:
+				//   - Use black if useBlackText, otherwise route_color
+				if (isDarkMode) {
+					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
+				} else {
+					hex = useBlackText ? '000000' : route.route_color;
+				}
 			}
+
 			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
 		}
 		return null;
