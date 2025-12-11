@@ -50,6 +50,22 @@
       "reset": "Zurücksetzen",
       "resetToDefault": "Auf Standard zurücksetzen"
     },
+    "server": {
+      "title": "Server Controls",
+      "status": {
+        "running": "Running",
+        "shutdown": "Shutdown",
+        "restarting": "Restarting..."
+      },
+      "actions": {
+        "shutdown": "Herunterfahren",
+        "start": "Anfangen",
+        "restart": "Neustart"
+      },
+      "confirmShutdown": "Möchten Sie das Abfragen der Transit-API stoppen? Dadurch werden Live-Updates pausiert.",
+      "confirmRestart": "Den Server neu starten? Dies wird den Dienst kurz unterbrechen.",
+      "helpText": "Verwenden Sie diese Steuerelemente, um den Server zur Fehlersuche zu verwalten oder die API-Nutzung zu reduzieren."
+    },
     "location": {
       "validating": "Standort wird überprüft...",
       "validationSuccess": "Standort festgelegt - {count} Linien in der Nähe gefunden",

@@ -50,6 +50,22 @@
       "reset": "Restablecer",
       "resetToDefault": "Restablecer valores predeterminados"
     },
+    "server": {
+      "title": "Server Controls",
+      "status": {
+        "running": "Running",
+        "shutdown": "Shutdown",
+        "restarting": "Restarting..."
+      },
+      "actions": {
+        "shutdown": "Pausa",
+        "start": "Iniciar",
+        "restart": "Reanudar"
+      },
+      "confirmShutdown": "¿Desea detener la consulta a la API de Transit? Esto pausará las actualizaciones en tiempo real.",
+      "confirmRestart": "¿Reiniciar el servidor? Esto interrumpirá brevemente el servicio.",
+      "helpText": "Usando estos controles para Utilice estos controles para administrar el servidor con fines de solución de problemas o para reducir el uso de la API."
+    },
     "location": {
       "validating": "Buscando ubicación...",
       "validationSuccess": "Ubicación establecida - {count} ruta{plural} cercanas",
