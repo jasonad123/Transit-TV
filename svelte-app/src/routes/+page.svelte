@@ -36,6 +36,19 @@
 	let validationMessage = $state<string | null>(null);
 	let validationSuccess = $state<boolean | null>(null);
 
+	// Server status state
+	let serverStatus = $state<{
+		isShutdown: boolean;
+		isRestarting: boolean;
+		shutdownTime: string | null;
+	}>({
+		isShutdown: false,
+		isRestarting: false,
+		shutdownTime: null
+	});
+	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
+	let serverActionInProgress = $state(false);
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
 	let currentPollingInterval = 30000; // Start at 30 seconds
@@ -75,6 +88,12 @@
 	}
 
 	async function loadNearby() {
+		// Don't poll Transit API if server is in shutdown state
+		if (serverStatus.isShutdown) {
+			console.log('Skipping Transit API poll - server is shutdown');
+			return;
+		}
+
 		try {
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
@@ -277,6 +296,10 @@
 			currentTime = new Date();
 		}, 1000);
 
+		// Poll server status every 10 seconds
+		await checkServerStatus();
+		serverStatusIntervalId = setInterval(checkServerStatus, 10000);
+
 		// Mark as mounted to enable reactive width effects
 		isMounted = true;
 	});
@@ -312,6 +335,9 @@
 		}
 		if (errorRetryTimeoutId) {
 			clearTimeout(errorRetryTimeoutId);
+		}
+		if (serverStatusIntervalId) {
+			clearInterval(serverStatusIntervalId);
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
@@ -407,6 +433,85 @@
 		// Validate if we have valid coordinates
 		if ($config.latLng && !isNaN($config.latLng.latitude) && !isNaN($config.latLng.longitude)) {
 			validateLocation($config.latLng.latitude, $config.latLng.longitude);
+		}
+	}
+
+	// Server status and control functions
+	async function checkServerStatus() {
+		try {
+			const response = await fetch('/api/server/status');
+			if (response.ok) {
+				const status = await response.json();
+				serverStatus = {
+					isShutdown: status.isShutdown,
+					isRestarting: status.isRestarting,
+					shutdownTime: status.shutdownTime
+				};
+			}
+		} catch (error) {
+			console.error('Error checking server status:', error);
+		}
+	}
+
+	async function shutdownServer() {
+		if (!confirm($_('config.server.confirmShutdown'))) {
+			return;
+		}
+
+		serverActionInProgress = true;
+		try {
+			const response = await fetch('/api/server/shutdown', { method: 'POST' });
+			if (response.ok) {
+				await checkServerStatus();
+			}
+		} catch (error) {
+			console.error('Error shutting down server:', error);
+			alert('Failed to shutdown server');
+		} finally {
+			serverActionInProgress = false;
+		}
+	}
+
+	async function startServer() {
+		serverActionInProgress = true;
+		try {
+			const response = await fetch('/api/server/start', { method: 'POST' });
+			if (response.ok) {
+				await checkServerStatus();
+				// Reload routes after starting
+				setTimeout(() => {
+					loadNearby();
+				}, 1000);
+			}
+		} catch (error) {
+			console.error('Error starting server:', error);
+			alert('Failed to start server');
+		} finally {
+			serverActionInProgress = false;
+		}
+	}
+
+	async function restartServer() {
+		if (!confirm($_('config.server.confirmRestart'))) {
+			return;
+		}
+
+		serverActionInProgress = true;
+		try {
+			const response = await fetch('/api/server/restart', { method: 'POST' });
+			if (response.ok) {
+				await checkServerStatus();
+				// Reload routes after restart completes
+				setTimeout(() => {
+					checkServerStatus();
+					loadNearby();
+				}, 3000);
+			}
+		} catch (error) {
+			console.error('Error restarting server:', error);
+			alert('Failed to restart server');
+		} finally {
+			serverActionInProgress = false;
 		}
 	}
 </script>
@@ -667,6 +772,51 @@
 					</div>
 				{/if}
 
+				<div class="server-management">
+					<h3>{$_('config.server.title')}</h3>
+					<p class="help-text">{$_('config.server.helpText')}</p>
+
+					<div class="server-status">
+						<span class="status-label">Status:</span>
+						<span class="status-value" class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting} class:status-shutdown={serverStatus.isShutdown} class:status-restarting={serverStatus.isRestarting}>
+							{#if serverStatus.isRestarting}
+								{$_('config.server.status.restarting')}
+							{:else if serverStatus.isShutdown}
+								{$_('config.server.status.shutdown')}
+							{:else}
+								{$_('config.server.status.running')}
+							{/if}
+						</span>
+					</div>
+
+					<div class="button-group server-controls-buttons">
+						<button
+							type="button"
+							class="btn-server-control btn-shutdown"
+							onclick={shutdownServer}
+							disabled={serverStatus.isShutdown || serverActionInProgress}
+						>
+							{$_('config.server.actions.shutdown')}
+						</button>
+						<button
+							type="button"
+							class="btn-server-control btn-start"
+							onclick={startServer}
+							disabled={!serverStatus.isShutdown || serverActionInProgress}
+						>
+							{$_('config.server.actions.start')}
+						</button>
+						<button
+							type="button"
+							class="btn-server-control btn-restart"
+							onclick={restartServer}
+							disabled={serverStatus.isShutdown || serverActionInProgress}
+						>
+							{$_('config.server.actions.restart')}
+						</button>
+					</div>
+				</div>
+
 				<div class="modal-actions">
 					<button
 						type="button"
@@ -696,17 +846,28 @@
 	{/if}
 
 	<div class="content">
-		{#if errorMessage}
-			<div class="error-banner" class:error-auth={errorType === 'auth'} class:error-timeout={errorType === 'timeout'} class:error-backend={errorType === 'backend'}>
-				<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}></iconify-icon>
-				{errorMessage}
+		{#if serverStatus.isShutdown}
+			<div class="shutdown-notice">
+				<div class="shutdown-icon-stack">
+					<iconify-icon icon="fluent:vehicle-bus-24-regular" class="bus-icon"></iconify-icon>
+					<iconify-icon icon="ix:maintenance-warning-filled" class="warning-badge"></iconify-icon>
+				</div>
+				<h2>{$_('shutdown.title')}</h2>
+				<p>{$_('shutdown.message')}</p>
+				<p class="shutdown-subtitle">{$_('shutdown.subtitle')}</p>
 			</div>
-		{/if}
-		{#if loading}
-			<div class="loading">{$_('routes.loading')}</div>
-		{:else if routes.length === 0}
-			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
+			{#if errorMessage}
+				<div class="error-banner" class:error-auth={errorType === 'auth'} class:error-timeout={errorType === 'timeout'} class:error-backend={errorType === 'backend'}>
+					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}></iconify-icon>
+					{errorMessage}
+				</div>
+			{/if}
+			{#if loading}
+				<div class="loading">{$_('routes.loading')}</div>
+			{:else if routes.length === 0}
+				<div class="no-routes">{$_('routes.noRoutes')}</div>
+			{:else}
 			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
@@ -758,6 +919,7 @@
 					</div>
 				{/each}
 			</section>
+			{/if}
 		{/if}
 	</div>
 
@@ -1517,5 +1679,162 @@
 		font-size: 0.9em;
 		font-weight: 500;
 		color: var(--text-primary);
+	}
+
+	/* Server Management Styles */
+	.server-management {
+		margin-top: 1.5em;
+		padding-top: 1em;
+		border-top: 1px solid var(--border-color);
+	}
+
+	.server-management h3 {
+		margin-top: 0;
+		margin-bottom: 0.5em;
+		font-size: 1.2em;
+		color: var(--text-primary);
+	}
+
+	.server-status {
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+		margin-bottom: 1em;
+		padding: 0.75em;
+		background: var(--bg-primary);
+		border-radius: 4px;
+		border: 1px solid var(--border-color);
+	}
+
+	.status-label {
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.status-value {
+		font-weight: 700;
+		padding: 0.3em 0.8em;
+		border-radius: 4px;
+		font-size: 0.9em;
+	}
+
+	.status-running {
+		background: #30b566;
+		color: white;
+	}
+
+	.status-shutdown {
+		background: #f59e0b;
+		color: white;
+	}
+
+	.status-restarting {
+		background: #8b5cf6;
+		color: white;
+	}
+
+	.server-controls-buttons {
+		display: flex;
+		gap: 0.5em;
+	}
+
+	.btn-server-control {
+		flex: 1;
+		padding: 0.7em 1em;
+		border: 2px solid var(--border-color);
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 0.95em;
+		font-weight: 600;
+		color: white;
+	}
+
+	.btn-server-control:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.btn-shutdown {
+		background: #e30022;
+		border-color: #e30022;
+	}
+
+	.btn-shutdown:hover:not(:disabled) {
+		background: #b8001b;
+		border-color: #b8001b;
+	}
+
+	.btn-start {
+		background: #30b566;
+		border-color: #30b566;
+	}
+
+	.btn-start:hover:not(:disabled) {
+		background: #1f7a42;
+		border-color: #1f7a42;
+	}
+
+	.btn-restart {
+		background: #8b5cf6;
+		border-color: #8b5cf6;
+	}
+
+	.btn-restart:hover:not(:disabled) {
+		background: #7c3aed;
+		border-color: #7c3aed;
+	}
+
+	/* Shutdown Notice Styles */
+	.shutdown-notice {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		text-align: center;
+		padding: 3em;
+		color: var(--text-primary);
+	}
+
+	.shutdown-icon-stack {
+		position: relative;
+		display: inline-block;
+		margin-bottom: 0.5em;
+	}
+
+	.shutdown-icon-stack .bus-icon {
+		font-size: 8em;
+		color: var(--text-secondary);;
+		display: block;
+	}
+
+	.shutdown-icon-stack .warning-badge {
+		position: absolute;
+		bottom: -0.05em;
+		right: -0.1em;
+		font-size: 3em;
+		color: #f59e0b;
+		background: var(--bg-primary);
+		border-radius: 50%;
+		padding: 0.1px;
+	}
+
+	.shutdown-notice h2 {
+		font-size: 3em;
+		margin: 0.3em 0;
+		color: var(--text-primary);
+	}
+
+	.shutdown-notice p {
+		font-size: 1.8em;
+		margin: 0.5em 0;
+		color: var(--text-secondary);
+	}
+
+	.shutdown-subtitle {
+		font-size: 1.4em;
+		font-style: italic;
+		opacity: 0.8;
 	}
 </style>

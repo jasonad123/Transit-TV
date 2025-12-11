@@ -9,6 +9,7 @@ module.exports = function(app) {
   app.use('/api/images', require('./api/image'));
   app.use('/api/routes', require('./api/routes'));
   app.use('/api/config', require('./api/config'));
+  app.use('/api/server', require('./api/server'));
 
   // All undefined asset or api routes should return a 404
   app.get([
