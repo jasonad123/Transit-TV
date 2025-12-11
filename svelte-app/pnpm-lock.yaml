@@ -12,6 +12,12 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/overpass':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/overpass':
+        specifier: ^5.2.8
+        version: 5.2.8
       svelte-i18n:
         specifier: ^4.0.1
         version: 4.0.1(svelte@5.45.3)
@@ -360,6 +366,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/overpass@5.2.8':
+    resolution: {integrity: sha512-7/gP2f9ylVFYEhdyeHl6JSEcmNQ5QBdDs5BuT4V+FqSvkk9XjwdikmtTJuNTRWevMAhBkTUWf/dm68G2SbMdjQ==}
+
+  '@fontsource/overpass@5.2.8':
+    resolution: {integrity: sha512-Svtn/TJCtVZ99JoCi3P+jvHiCo8WoUHZjm5RwHMgSqX2k4qiL4sK1Lh4enotfyDkEIyj/oP99ezOdy5YlEqkDA==}
 
   '@formatjs/ecma402-abstract@2.3.6':
     resolution: {integrity: sha512-HJnTFeRM2kVFVr5gr5kH1XP6K0JcJtE7Lzvtr3FS/so5f1kpsqqqxy5JF+FRaO6H2qmcMfAUIox7AJteieRtVw==}
@@ -1231,6 +1243,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.0':
     optional: true
+
+  '@fontsource-variable/overpass@5.2.8': {}
+
+  '@fontsource/overpass@5.2.8': {}
 
   '@formatjs/ecma402-abstract@2.3.6':
     dependencies:

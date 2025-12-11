@@ -401,7 +401,8 @@
 							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
 						</div>
 						<div class="direction" style={cellStyle}>
-							<h3><span
+							<h3>
+								<span
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
@@ -465,7 +466,7 @@
 	}
 
 	.route > div {
-		padding: 1em;
+		padding: 0.5em 1em 0.5em;
 		border-radius: 4px;
 	}
 
@@ -484,28 +485,33 @@
 		align-items: flex-start;
 		flex-wrap: nowrap;
 		gap: 0.5em;
+		line-height: .9;
 	}
 
 	.route h2 .route-icon {
 		white-space: nowrap;
 		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.1em;
 	}
 
 	.route-alert-header {
 		font-size: 1.5em;
 		font-weight: bold;
-		line-height: 1.4;
+		line-height: 1.3;
 		padding: 0.5em;
 		margin-top: 0.25em;
-		border-radius: 0.2em 0.2em 0 0;
+		border-radius: 0.3em 0.3em 0 0;
 		text-align: left;
 		min-height: 1.5em;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
 		gap: 0.3em;
-		white-space: normal;
-		word-break: break-word;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
@@ -528,6 +534,10 @@
 		align-items: center;
 		gap: 0.3em;
 		flex-wrap: nowrap;
+		line-height: .5;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
 	.route-alert-header iconify-icon {
@@ -551,7 +561,7 @@
 		border-radius: 0 0 0.2em 0.2em;
 		overflow: hidden;
 		position: relative;
-		height: 7em;
+		height: 6em;
 	}
 
 	@keyframes scroll-alert-vertical {
@@ -594,6 +604,11 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		overflow: hidden;
 		position: relative;
+		min-height: 1.1em;
+		max-height: 1.1em;
+		line-height: 1.1em;
+		display: flex;
+		align-items: center;
 	}
 
 	.route.white h3 {
@@ -627,15 +642,13 @@
 	}
 
 	.route .img28 {
-		height: 1em;
-		vertical-align: middle;
-		display: inline-block;
+		height: 0.9em;
+		display: block;
 	}
 
 	.route .img34 {
-		height: 1em;
-		vertical-align: middle;
-		display: inline-block;
+		height: 0.9em;
+		display: block;
 	}
 
 	.route i {
@@ -654,8 +667,15 @@
 	}
 
 	.route .direction {
-		border-radius: 0.2em;
-		margin-bottom: 0.25em;
+		border-radius: 0.3em;
+		margin-bottom: 0.1em;
+	}
+
+	.direction iconify-icon {
+		transform: translateY(20%);
+		width: 1em;
+		height: 1em;
+		fill: currentColor;
 	}
 
 	.route .time {
@@ -704,16 +724,6 @@
 		text-overflow: ellipsis;
 		overflow: hidden;
 	}
-
-	/* .route .stop_name .pin-icon {
-		position: absolute;
-		left: 0;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 1em;
-		height: 1em;
-		fill: currentColor;
-	} */
 
 	.route .stop_name iconify-icon {
 		position: absolute;

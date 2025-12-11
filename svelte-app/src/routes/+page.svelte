@@ -763,7 +763,10 @@
 
 	{#if $config.showQRCode && !$config.isEditing}
 		<div class="floating-qr">
-			<p class="qr-label">{$_('config.qrCode.scanPrompt')}</p>
+			<p class="qr-label">
+				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br/></span>
+				<span class= "qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
+			</p>
 			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={90} />
 		</div>
 	{/if}
@@ -836,7 +839,7 @@
 	}
 
 	#title h1 {
-		font-family: Helvetica, Arial, serif;
+		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		font-size: 2em;
 		vertical-align: middle;
 		display: inline-block;
@@ -871,6 +874,7 @@
 		height: 2em;
 		font-size: 2em;
 		color: #ffffff;
+		transform: translateY(-5%);
 	}
 
 	#title:hover button {
@@ -887,7 +891,7 @@
 
 	.clock {
 		font-size: 1.8em;
-		font-family: Helvetica, Arial, serif;
+		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		line-height: 2em;
 		display: inline-block;
 		margin-left: 3em;
@@ -1231,7 +1235,7 @@
 		z-index: 100;
 		background: var(--bg-header);
 		padding: 1em;
-		border-radius: 8px;
+		border-radius: 24px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		transition: transform 0.2s ease;
 		border: 2px solid rgba(255, 255, 255, 0.3);
@@ -1251,7 +1255,7 @@
 		display: block;
 		background: white;
 		padding: 0.4em;
-		border-radius: 4px;
+		border-radius: 8px;
 		flex-shrink: 0;
 	}
 
@@ -1266,16 +1270,24 @@
 		margin: 0;
 		color: white;
 		font-size: 1.1em;
-		font-weight: bold;
 		text-align: left;
 		letter-spacing: 0.02em;
 		opacity: 0.95;
 		flex: 1;
 		overflow-wrap: break-word;
-		line-height: 1.3;
+		line-height: 1.5;
+
+	}
+	.qr-label-1 {
+		font-weight: 400;
+
+	}
+	.qr-label-2 {
+		font-weight: bold;
 	}
 
-	.qr-section {
+
+	/* .qr-section {
 		margin-top: 1em;
 		padding: 1em;
 		background: var(--bg-secondary);
@@ -1312,7 +1324,7 @@
 		background: white;
 		border-color: #666;
 		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-	}
+	} */
 
 	.error-banner {
 		position: fixed;

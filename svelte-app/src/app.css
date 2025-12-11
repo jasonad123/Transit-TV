@@ -1,3 +1,6 @@
+@import '@fontsource-variable/overpass/wght-italic.css';
+@import '@fontsource-variable/overpass/wght.css';
+
 :root {
 	/* Light theme (default) */
 	--bg-primary: #fafafa;
@@ -31,7 +34,7 @@ html,
 body {
 	height: 100%;
 	width: 100%;
-	font-family: Helvetica, Arial, serif;
+	font-family: 'Overpass Variable', Helvetica, Arial, serif;
 	font-size: 12px;
 	padding: 0;
 	margin: 0;
@@ -44,7 +47,7 @@ h1,
 h2,
 h3,
 h4 {
-	font-family: Helvetica, Arial, serif;
+	font-family: 'Overpass Variable', Helvetica, Arial, serif;
 	font-weight: bold;
 	margin: 0;
 	display: block;
@@ -64,7 +67,7 @@ h2 span {
 }
 
 h3 {
-	font-family: Helvetica, Arial, serif;
+	font-family: 'Overpass Variable', Helvetica, Arial, serif;
 	font-size: 2em;
 	clear: both;
 }

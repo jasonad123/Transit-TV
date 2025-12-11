@@ -41,7 +41,8 @@
     "qrCode": {
       "title": "QR Code",
       "helpText": "Scan with your phone to open this location in Transit app",
-      "scanPrompt": "Scan to open departures in Transit app"
+      "scanPrompt": "Want these departures to go?",
+      "scanPrompt2": "Scan to open in the Transit app"
     },
     "buttons": {
       "cancel": "Cancel",
