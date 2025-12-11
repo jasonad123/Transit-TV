@@ -463,6 +463,9 @@
 		width: 100%;
 		box-sizing: border-box;
 		contain: layout style;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 
 	.route > div {
@@ -473,6 +476,10 @@
 	.route > div:hover {
 		background: rgba(255, 255, 255, 0.6);
 		cursor: move;
+	}
+
+	.route > div:last-child {
+		flex-shrink: 0;
 	}
 
 	.route h2 {
@@ -486,6 +493,7 @@
 		flex-wrap: nowrap;
 		gap: 0.5em;
 		line-height: .9;
+		flex-shrink: 0;
 	}
 
 	.route h2 .route-icon {
@@ -500,11 +508,11 @@
 		font-size: 1.5em;
 		font-weight: bold;
 		line-height: 1.3;
-		padding: 0.5em;
+		padding: 0.75em 0.5em 0.5em;
 		margin-top: 0.25em;
 		border-radius: 0.3em 0.3em 0 0;
 		text-align: left;
-		min-height: 1.5em;
+		height: 1.3em;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
@@ -534,7 +542,7 @@
 		align-items: center;
 		gap: 0.3em;
 		flex-wrap: nowrap;
-		line-height: .5;
+		line-height: 1;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		min-width: 0;
@@ -543,9 +551,9 @@
 	.route-alert-header iconify-icon {
 		display: block;
 		width: 1.25em;
-		height: auto;
+		height: 1.25em;
 		flex-shrink: 0;
-		line-height: 1;
+		transform: translateY(0.05em);
 	}
 
 	.route.white .route-alert-header {
@@ -561,7 +569,8 @@
 		border-radius: 0 0 0.2em 0.2em;
 		overflow: hidden;
 		position: relative;
-		height: 6em;
+		height: clamp(5.5em, 15vh, 40em);
+		flex-shrink: 0;
 	}
 
 	@keyframes scroll-alert-vertical {
@@ -668,7 +677,7 @@
 
 	.route .direction {
 		border-radius: 0.3em;
-		margin-bottom: 0.1em;
+		margin-bottom: 0.2em;
 	}
 
 	.direction iconify-icon {
@@ -681,6 +690,7 @@
 	.route .time {
 		white-space: nowrap;
 		display: flex;
+		/* height: clamp(6.5em, 12vh, 30em); */
 		align-items: flex-start;
 	}
 

@@ -796,7 +796,7 @@
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
-		padding-bottom: 3em; /* TODO: make conditional based on QR code visibility */
+		padding-bottom: 3em;
 	}
 
 	header {
@@ -857,12 +857,11 @@
 		width: 2em;
 		height: 2em;
 		background: none;
-		/* background-image: url('/assets/images/settings@2x.png'); */
 		background-size: 2em auto;
 		outline: none;
 		cursor: pointer;
 		opacity: 0;
-		transition: opacity 0.3s ease-in-out;
+		/* transition: opacity 0.3s ease-in-out; */
 		vertical-align: middle;
 		border: none;
 		backface-visibility: hidden;
@@ -1056,6 +1055,8 @@
 		vertical-align: top;
 		box-sizing: border-box;
 		position: relative;
+		max-height: calc(100vh - 4em);
+		overflow: hidden;
 	}
 
 	/* Responsive auto-layout defaults */
