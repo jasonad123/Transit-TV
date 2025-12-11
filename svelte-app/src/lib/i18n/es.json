@@ -50,6 +50,22 @@
       "reset": "Restablecer",
       "resetToDefault": "Restablecer valores predeterminados"
     },
+    "server": {
+      "title": "Controles del servidor",
+      "status": {
+        "running": "Funcionamiento",
+        "shutdown": "A Pausa",
+        "restarting": "Reanudado..."
+      },
+      "actions": {
+        "shutdown": "Pausa",
+        "start": "Iniciar",
+        "restart": "Reanudar"
+      },
+      "confirmShutdown": "¿Desea detener la consulta a la API de Transit? Esto pausará las actualizaciones en tiempo real.",
+      "confirmRestart": "¿Reiniciar el servidor? Esto interrumpirá brevemente el servicio.",
+      "helpText": "Usando estos controles para Utilice estos controles para administrar el servidor con fines de solución de problemas o para reducir el uso de la API."
+    },
     "location": {
       "validating": "Buscando ubicación...",
       "validationSuccess": "Ubicación establecida - {count} ruta{plural} cercanas",
@@ -99,5 +115,10 @@
     "timeout": "Buscando actualizaciones...",
     "backend": "Transit TV está fuera de servicio. Reintentando...",
     "generic": "Transit TV tuvo un problema. Reintentando..."
+  },
+  "shutdown": {
+    "title": "Transit TV está fuera de servicio.",
+    "message": "El servidor ha sido pausado para mantenimiento.",
+    "subtitle": "Las actualizaciones de tránsito en vivo no están disponibles temporalmente."
   }
 }
