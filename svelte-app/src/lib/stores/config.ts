@@ -30,10 +30,10 @@ const defaultConfig: Config = {
 	routeOrder: [],
 	hiddenRoutes: [],
 	latLng: {
-		latitude: 40.724029430769484,
-		longitude: -74.00022736495859
+		latitude: 40.75426683398718,
+		longitude: -73.98672703719805
 	},
-	timeFormat: 'HH:mm',
+	timeFormat: 'HH:mm A',
 	language: 'en',
 	columns: 'auto',
 	theme: 'light',

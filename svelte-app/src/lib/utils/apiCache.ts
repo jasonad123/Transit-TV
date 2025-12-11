@@ -12,7 +12,7 @@ interface PendingRequest<T> {
 class ApiCache {
 	private cache = new Map<string, CacheEntry<any>>();
 	private pendingRequests = new Map<string, PendingRequest<any>>();
-	private defaultTTL = 30000; // 30 seconds default (aligned with polling interval)
+	private defaultTTL = 20000; // 20 seconds default (aligned with polling interval)
 
 	getCacheKey(endpoint: string, params: Record<string, any>): string {
 		const sortedParams = Object.keys(params)
@@ -103,9 +103,9 @@ class ApiCache {
 			}
 		}
 
-		// Clear stale pending requests (older than 30 seconds)
+		// Clear stale pending requests (older than 20 seconds)
 		for (const [key, pending] of this.pendingRequests.entries()) {
-			if (now - pending.timestamp > 30000) {
+			if (now - pending.timestamp > 20000) {
 				this.pendingRequests.delete(key);
 			}
 		}

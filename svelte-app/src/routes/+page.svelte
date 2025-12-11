@@ -51,8 +51,8 @@
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
-	let currentPollingInterval = 30000; // Start at 30 seconds
-	const MIN_POLLING_INTERVAL = 30000; // 30 seconds minimum
+	let currentPollingInterval = 20000; // Start at 20 seconds
+	const MIN_POLLING_INTERVAL = 20000; // 20 seconds minimum
 	const MAX_POLLING_INTERVAL = 120000; // 2 minutes maximum
 	const BACKOFF_MULTIPLIER = 1.5;
 
@@ -192,7 +192,7 @@
 					errorType = null;
 					errorRetryTimeoutId = null;
 					loadNearby();
-				}, 30000);
+				}, 20000);
 			}
 			// Generic error handling
 			else {
@@ -205,7 +205,7 @@
 					errorType = null;
 					errorRetryTimeoutId = null;
 					loadNearby();
-				}, 30000);
+				}, 20000);
 			}
 		}
 	}
@@ -287,7 +287,7 @@
 		// Only load routes if screen is wide enough
 		if (!$config.isEditing && !isScreenTooNarrow) {
 			await loadNearby();
-			// Use adaptive polling interval (starts at 30s)
+			// Use adaptive polling interval (starts at 20s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
 		}
 
