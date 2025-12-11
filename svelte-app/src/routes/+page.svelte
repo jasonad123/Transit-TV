@@ -849,7 +849,7 @@
 		{#if serverStatus.isShutdown}
 			<div class="shutdown-notice">
 				<div class="shutdown-icon-stack">
-					<iconify-icon icon="fluent:vehicle-bus-24-regular" class="bus-icon"></iconify-icon>
+					<iconify-icon icon="fluent:vehicle-bus-20-filled" class="bus-icon"></iconify-icon>
 					<iconify-icon icon="ix:maintenance-warning-filled" class="warning-badge"></iconify-icon>
 				</div>
 				<h2>{$_('shutdown.title')}</h2>
