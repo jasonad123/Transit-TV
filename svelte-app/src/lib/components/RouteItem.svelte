@@ -569,7 +569,7 @@
 		border-radius: 0 0 0.2em 0.2em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5.5em, 15vh, 40em);
+		height: clamp(5.5em, 15vh, 30em);
 		flex-shrink: 0;
 	}
 
