@@ -350,6 +350,7 @@
 
 	async function validateLocation(latitude: number, longitude: number) {
 		if (!$config.isEditing) return; // Only validate during interactive config
+		if (serverStatus.isShutdown) return; // Don't validate when server is shutdown
 
 		validatingLocation = true;
 		validationMessage = null;
