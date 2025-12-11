@@ -41,7 +41,8 @@
     "qrCode": {
       "title": "QR-Code",
       "helpText": "Scannen Sie den Scanner, um diesen Standort zu öffnen in der Transit-App",
-      "scanPrompt": "Scannen Sie den Scanner, um diesen Standort zu öffnen in der Transit-App"
+      "scanPrompt": "Willst du diese Reisen mit dir nehmen?",
+      "scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
     },
     "buttons": {
       "cancel": "Stornieren",

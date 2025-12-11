@@ -41,7 +41,8 @@
     "qrCode": {
       "title": "Código QR",
       "helpText": "Escanea para abrir esta ubicación en la aplicación Transit",
-      "scanPrompt": "Escanea para abrir esta ubicación en la aplicación Transit"
+      "scanPrompt": "¿Quieres llevarte estas salidas contigo?",
+      "scanPrompt2": "Escanea para abrir en la aplicación Transit"
     },
     "buttons": {
       "cancel": "Cancelar",

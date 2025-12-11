@@ -892,6 +892,7 @@
 		font-size: 1.8em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		line-height: 2em;
+		font-weight: 500;
 		display: inline-block;
 		margin-left: 3em;
 		margin-right: 0.5em;
