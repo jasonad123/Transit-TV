@@ -1686,6 +1686,7 @@
 		margin-top: 1.5em;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
+		max-width: 500px;
 	}
 
 	.server-management h3 {
@@ -1693,6 +1694,7 @@
 		margin-bottom: 0.5em;
 		font-size: 1.2em;
 		color: var(--text-primary);
+		overflow-wrap: normal;
 	}
 
 	.server-status {
@@ -1824,6 +1826,8 @@
 		font-size: 3em;
 		margin: 0.3em 0;
 		color: var(--text-primary);
+		text-wrap: wrap; 
+		overflow-wrap: normal;
 	}
 
 	.shutdown-notice p {

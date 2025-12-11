@@ -51,11 +51,11 @@
       "resetToDefault": "Restablecer valores predeterminados"
     },
     "server": {
-      "title": "Server Controls",
+      "title": "Controles del servidor",
       "status": {
-        "running": "Running",
-        "shutdown": "Shutdown",
-        "restarting": "Restarting..."
+        "running": "Funcionamiento",
+        "shutdown": "A Pausa",
+        "restarting": "Reanudado..."
       },
       "actions": {
         "shutdown": "Pausa",
@@ -115,5 +115,10 @@
     "timeout": "Buscando actualizaciones...",
     "backend": "Transit TV está fuera de servicio. Reintentando...",
     "generic": "Transit TV tuvo un problema. Reintentando..."
+  },
+  "shutdown": {
+    "title": "Transit TV está fuera de servicio.",
+    "message": "El servidor ha sido pausado para mantenimiento.",
+    "subtitle": "Las actualizaciones de tránsito en vivo no están disponibles temporalmente."
   }
 }

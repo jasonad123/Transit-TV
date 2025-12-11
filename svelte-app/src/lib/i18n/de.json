@@ -51,11 +51,11 @@
       "resetToDefault": "Auf Standard zurücksetzen"
     },
     "server": {
-      "title": "Server Controls",
+      "title": "Serversteuerungen",
       "status": {
-        "running": "Running",
-        "shutdown": "Shutdown",
-        "restarting": "Restarting..."
+        "running": "Ausgeführt",
+        "shutdown": "Herunterfahren",
+        "restarting": "Neustarten..."
       },
       "actions": {
         "shutdown": "Herunterfahren",
@@ -115,5 +115,10 @@
     "timeout": "Überprüfung auf Updates...",
     "backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
     "generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."
+  },
+  "shutdown": {
+    "title": "Entschuldigung, Transit-TV hat eine Technische Störung",
+    "message": "Der Server wurde für Wartungsarbeiten pausiert.",
+    "subtitle": "Aktuelle Informationen zum Öffis sind vorübergehend nicht verfügbar."
   }
 }

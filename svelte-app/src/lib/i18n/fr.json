@@ -51,11 +51,11 @@
       "resetToDefault": "Réinitialiser par défaut"
     },
     "server": {
-      "title": "Server Controls",
+      "title": "Contrôles du serveur",
       "status": {
-        "running": "Running",
-        "shutdown": "Shutdown",
-        "restarting": "Restarting..."
+        "running": "Activé",
+        "shutdown": "Fermé",
+        "restarting": "Redémarrage..."
       },
       "actions": {
         "shutdown": "Arrêter",
@@ -115,5 +115,10 @@
     "timeout": "Vérification des mises à jour...",
     "backend": "Transit TV est hors service. J'essaie encore...",
     "generic": "Transit TV a rencontré un problème. J'essaie encore..."
+  },
+  "shutdown": {
+    "title": "Transit TV c'est En Transit",
+    "message": "Le serveur a été mis en pause pour maintenance.",
+    "subtitle": "Les mises à jour en direct des transport collectif sont temporairement indisponibles."
   }
 }

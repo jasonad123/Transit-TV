@@ -41,7 +41,7 @@
     "qrCode": {
       "title": "QR Code",
       "helpText": "Scan with your phone to open this location in Transit app",
-      "scanPrompt": "Want these departures to go?",
+      "scanPrompt": "Want to take these departures with you?",
       "scanPrompt2": "Scan to open in the Transit app"
     },
     "buttons": {
@@ -54,7 +54,7 @@
       "title": "Server Controls",
       "status": {
         "running": "Running",
-        "shutdown": "Shutdown",
+        "shutdown": "Shut down",
         "restarting": "Restarting..."
       },
       "actions": {
@@ -62,7 +62,7 @@
         "start": "Start",
         "restart": "Restart"
       },
-      "confirmShutdown": "Stop the Transit API polling? This will pause live updates.",
+      "confirmShutdown": "Stop polling the Transit API? This will pause live updates.",
       "confirmRestart": "Restart the server? This will briefly interrupt service.",
       "helpText": "Use these controls to manage the server for troubleshooting or to reduce API usage."
     },
@@ -117,7 +117,7 @@
     "generic": "Transit TV ran into a problem. Retrying..."
   },
   "shutdown": {
-    "title": "Transit TV is out of service",
+    "title": "Sorry, Transit TV is out of service!",
     "message": "The server has been paused for maintenance.",
     "subtitle": "Live transit updates are temporarily unavailable."
   }
