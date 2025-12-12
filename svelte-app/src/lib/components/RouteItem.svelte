@@ -279,11 +279,27 @@
 		['mta-subway-q', { alwaysUseDarkModeColor: true }],
 		['mta-subway-r', { alwaysUseDarkModeColor: true }],
 		['mta-subway-w', { alwaysUseDarkModeColor: true }],
-		['ttc-subway-1', { alwaysUseDarkModeColor: true }]
+		['ttc-subway-1', { alwaysUseDarkModeColor: true }],
+		['stm-metro', { alwaysUseDarkModeColor: true }],
+		['stm-metro-4', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
 		// ['third-logo', { color: 'FF0000' }],
+	]);
+
+	// Route color overrides for route backgrounds and text
+	// Options:
+	//   - alwaysUseLightModeColors: boolean - Use light mode colors even in dark mode
+	//   - alwaysUseDarkModeColors: boolean - Use dark mode colors even in light mode
+	const ROUTE_COLOR_OVERRIDES = new Map<string, {
+		alwaysUseLightModeColors?: boolean;
+		alwaysUseDarkModeColors?: boolean;
+	}>([
+		// Certain routes with orange backgrounds need to keep black text in dark mode
+		['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
+		['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
+		['MUNI:4578', { alwaysUseDarkModeColors: true }], // Route 27
 	]);
 
 	function getImageUrl(index: number): string | null {
@@ -295,41 +311,38 @@
 				return `/api/images/${iconName}.svg`;
 			}
 
-			// Check for manual color overrides
-			const override = COLOR_OVERRIDES.get(iconName);
+			// Check for manual color overrides (icon-specific or route-level)
+			const iconOverride = COLOR_OVERRIDES.get(iconName);
+			const routeOverride = ROUTE_COLOR_OVERRIDES.get(route.global_route_id);
 			let hex: string;
 
-			if (override) {
-				// If a fixed color is specified
-				if (override.color) {
-					hex = override.color;
-				}
-				// If we should always use dark mode color calculation
-				else if (override.alwaysUseDarkModeColor) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				}
-				// If we should always use light mode color calculation
-				else if (override.alwaysUseLightModeColor) {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
-				// Fallback to normal logic
-				else if (isDarkMode) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				} else {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
+			// Determine which mode's color logic to use
+			let useLightMode: boolean;
+			if (iconOverride) {
+				// Icon-specific overrides take precedence
+				useLightMode = iconOverride.alwaysUseLightModeColor ? true :
+				               iconOverride.alwaysUseDarkModeColor ? false :
+				               !isDarkMode;
+			} else if (routeOverride) {
+				// Route-level overrides
+				useLightMode = routeOverride.alwaysUseLightModeColors ? true :
+				               routeOverride.alwaysUseDarkModeColors ? false :
+				               !isDarkMode;
 			} else {
-				// Default color logic (no overrides)
-				// In dark mode:
-				//   - If route should be inverted (very dark bg + light text), use route_text_color
-				//   - Otherwise use route_color (for visibility on dark background)
-				// In light mode:
-				//   - Use black if useBlackText, otherwise route_color
-				if (isDarkMode) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				} else {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
+				// No overrides - use actual mode
+				useLightMode = !isDarkMode;
+			}
+
+			// Apply color based on determined mode
+			if (iconOverride?.color) {
+				// Fixed color override
+				hex = iconOverride.color;
+			} else if (useLightMode) {
+				// Light mode calculation
+				hex = useBlackText ? '000000' : route.route_color;
+			} else {
+				// Dark mode calculation
+				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
 			}
 
 			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
@@ -338,11 +351,22 @@
 	}
 
 	// Determine text color for route icon and name
-	let routeDisplayColor = $derived(
-		isDarkMode
-			? (shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`)
-			: (useBlackText ? '#000000' : `#${route.route_color}`)
-	);
+	let routeDisplayColor = $derived.by(() => {
+		const override = ROUTE_COLOR_OVERRIDES.get(route.global_route_id);
+
+		// Determine which mode's color logic to use
+		const useLightMode = override?.alwaysUseLightModeColors ? true :
+		                     override?.alwaysUseDarkModeColors ? false :
+		                     !isDarkMode;
+
+		if (useLightMode) {
+			// Light mode: use black if route has black text, otherwise use route color
+			return useBlackText ? '#000000' : `#${route.route_color}`;
+		} else {
+			// Dark mode: invert if very dark bg + light text, otherwise use route color
+			return shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`;
+		}
+	});
 
 	function getMinutesUntil(departure: number): number {
 		return Math.round((departure * 1000 - Date.now()) / 60000);
