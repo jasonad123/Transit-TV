@@ -23,12 +23,134 @@
 		// Check if route name is numeric and mode_name doesn't contain Train/Subway/Metro
 		if (routeName && /^\d+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
-			if (!modeName.includes('train') && !modeName.includes('subway') && !modeName.includes('metro')) {
+			if (!modeName.includes('train') &&
+				!modeName.includes('subway') &&
+					!modeName.includes('metro') &&
+						!modeName.includes('streetcar') &&
+							!modeName.includes('light rail')) {
 				return `Route ${routeName}`;
 			}
 		}
 
+		// Name inversion for branded routes - Part 1: Hide route name
+		// These pair with alertModeName checks below that prepend the brand name
+		// Example: "E RapidRide" becomes "RapidRide E"
+
+		// RapidRide (Seattle): Uppercase letter routes (A, B, C, etc.)
+		if (routeName && /^[A-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('rapidride')) {
+				return ''; // Pairs with line 93: returns "RapidRide E"
+			}
+		}
+
+		// CityLink (Baltimore): Word-based routes (Orange, Yellow, Navy, etc.)
+		if (routeName && /^[a-zA-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('citylink')) {
+				return ''; // Pairs with line 109: returns "CityLink Orange"
+			}
+		}
+
+		// TTC Toronto: Numbered subway/streetcar lines (1, 2, 4, etc.)
+		// TTS name is "line 2" (starts with "line") and mode is "Subway", so we invert to "Line 2"
+		// Note: BART "yellow line" (ends with "line") and Seattle "1 Line" (Light Rail) do NOT get inverted
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+			if (modeName.includes('subway') && ttsName.startsWith('line')) {
+				return ''; // Pairs with line 107: returns "Line 2"
+			}
+		}
+
+		// SF Muni: Hide route name so full designation appears in alertModeName
+		// Example: "N" hidden here, "N Judah" shown by line 81
+		if (route.mode_name?.includes('Muni')) {
+			return ''; // Pairs with line 81: returns "N Judah"
+		}
+
 		return routeName;
+	});
+
+	// Smart mode name for alerts
+	let alertModeName = $derived.by(() => {
+		// Hide mode name if route long name already contains "Line"
+		if (route.route_long_name?.includes('Line')) {
+			return "";
+		}
+
+		const modeName = route.mode_name;
+		const shortName = route.route_short_name;
+
+		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
+		if (modeName?.includes('Muni') && shortName && route.route_long_name) {
+			return `${shortName} ${route.route_long_name}`;
+		}
+
+		// Generic replacements for common mode types
+		// If Metro or Light Rail, generically return "Line"
+		if (modeName?.includes('Metro') || modeName?.includes('Light Rail')) {
+			return "Line";
+		}
+
+		// Canadian systems - brand name already in route name
+		if (modeName?.includes('MAX') || modeName?.includes('REM')) {
+			return "";
+		}
+
+		if (shortName?.includes('SeaBus')) {
+			return "";
+		}
+
+		// Subway route differentiation using tts_short_name
+		// Toronto TTC uses "line 2", NYC MTA uses "7 train", BART uses "yellow line"
+		if (modeName?.includes('Subway') && shortName) {
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+
+			// Toronto TTC: TTS starts with "line" (e.g., "line 2")
+			// Name inversion: "2" + "Line" becomes "Line 2"
+			if (ttsName.startsWith('line')) {
+				return `Line ${shortName}`; // Pairs with line 62: routeName returns ''
+			}
+
+			// BART and other color-based systems: TTS ends with "line" (e.g., "yellow line")
+			// No inversion needed, generic "Line" suffix
+			if (ttsName.endsWith('line')) {
+				return "Line";
+			}
+
+			// NYC MTA: routes with "train" in TTS name (both letters like "Q train" and numbers like "7 train")
+			if (ttsName.includes('train')) {
+				return "Train";
+			}
+		}
+
+		// Hide generic "Bus" mode name (route number is sufficient)
+		if (modeName?.includes('Bus')) {
+			return "";
+		}
+
+		// Name inversion for branded routes - Part 2: Prepend brand to route name
+		// These pair with alertRouteName checks above that hide the route name
+		// Example: "E" + "RapidRide" becomes "RapidRide E"
+
+		// RapidRide (Seattle): Uppercase letter routes (A, B, C, E, etc.)
+		if (shortName && /^[A-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('rapidride')) {
+				return `RapidRide ${shortName}`; // Pairs with line 42: routeName returns ''
+			}
+		}
+
+		// CityLink (Baltimore): Word routes (Orange, Yellow, Navy, etc.)
+		if (shortName && /^[a-zA-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('citylink')) {
+				return `CityLink ${shortName}`; // Pairs with line 50: routeName returns ''
+			}
+		}
+
+		return modeName;
 	});
 
 	let destinationElements: Map<number, HTMLElement> = new Map();
@@ -144,7 +266,8 @@
 		['mta-subway-n', { alwaysUseDarkModeColor: true }],
 		['mta-subway-q', { alwaysUseDarkModeColor: true }],
 		['mta-subway-r', { alwaysUseDarkModeColor: true }],
-		['mta-subway-w', { alwaysUseDarkModeColor: true }]
+		['mta-subway-w', { alwaysUseDarkModeColor: true }],
+		['ttc-subway-1', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
@@ -456,7 +579,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
-				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {alertRouteName} {route.mode_name}</span>
+				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>

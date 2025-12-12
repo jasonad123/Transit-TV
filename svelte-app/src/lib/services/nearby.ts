@@ -10,6 +10,7 @@ export interface Route {
 	route_display_short_name?: {
 		elements: string[];
 	};
+	tts_short_name?: string;
 	branch_code?: string;
 	itineraries?: Itinerary[];
 	alerts?: Alert[];
