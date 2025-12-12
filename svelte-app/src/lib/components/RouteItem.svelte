@@ -11,6 +11,26 @@
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
 
+	// Smart route name for alerts
+	let alertRouteName = $derived.by(() => {
+		// Prioritize long names containing "Line"
+		if (route.route_long_name?.includes('Line')) {
+			return route.route_long_name;
+		}
+
+		const routeName = route.route_short_name || route.route_long_name;
+
+		// Check if route name is numeric and mode_name doesn't contain Train/Subway/Metro
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (!modeName.includes('train') && !modeName.includes('subway') && !modeName.includes('metro')) {
+				return `Route ${routeName}`;
+			}
+		}
+
+		return routeName;
+	});
+
 	let destinationElements: Map<number, HTMLElement> = new Map();
 	let overflowingDestinations = $state<Set<number>>(new Set());
 	let sharedResizeObserver: ResizeObserver | null = null;
@@ -436,7 +456,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
-				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
+				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {alertRouteName} {route.mode_name}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
