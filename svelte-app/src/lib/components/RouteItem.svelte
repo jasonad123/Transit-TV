@@ -591,7 +591,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
-				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
+				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> {$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>

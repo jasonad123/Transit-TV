@@ -776,7 +776,7 @@
 				</label>
 
 				<label class="toggle-label">
-					<span>{$_('config.fields.showQRCode')}</span>
+					<span>{$_('config.fields.showQRCode')} </span>
 					<label class="toggle-switch">
 						<input
 							type="checkbox"
@@ -785,16 +785,8 @@
 						<span class="toggle-slider"></span>
 					</label>
 				</label>
+				<p class="help-text">{$_('config.qrCode.helpText')}</p>
 
-				<!-- {#if $config.showQRCode}
-					<div class="qr-section">
-						<h3>{$_('config.qrCode.title')}</h3>
-						<p class="help-text">{$_('config.qrCode.helpText')}</p>
-						<div class="qr-display">
-							<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={150} />
-						</div>
-					</div>
-				{/if} -->
 
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
@@ -1487,7 +1479,7 @@
 		align-items: center;
 		gap: 1.2em;
 		min-width: 19.8%;
-		max-width: 25em;
+		max-width: 24em;
 		min-height: 125px;
 		max-height: auto;
 	}

@@ -46,7 +46,7 @@
     },
     "qrCode": {
       "title": "Código QR",
-      "helpText": "Escanea para abrir esta ubicación en la aplicación Transit",
+      "helpText": "Mostrar un código QR que cargue esta ubicación en Transit",
       "scanPrompt": "¿Quieres llevarte estas salidas contigo?",
       "scanPrompt2": "Escanea para abrir en la aplicación Transit"
     },
@@ -104,7 +104,8 @@
     "hideRoute": "Esconder la ruta"
   },
   "alerts": {
-    "default": "Avisos de servicio"
+    "default": "Avisos de servicio",
+    "title": "Avisos"
   },
   "time": {
     "min": "min",

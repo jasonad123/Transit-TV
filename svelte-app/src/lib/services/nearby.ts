@@ -21,6 +21,7 @@ export interface Itinerary {
 	closest_stop?: {
 		stop_name: string;
 		global_stop_id?: string;
+        parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;
 	schedule_items?: ScheduleItem[];
