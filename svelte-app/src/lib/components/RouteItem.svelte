@@ -25,6 +25,16 @@
 			return route.route_long_name;
 		}
 
+		// LIRR: Use full branch name (e.g., "Montauk Branch", "City Terminal Zone")
+		if (route.route_network_name === 'Long Island Rail Road' && route.route_long_name) {
+			return route.route_long_name; // Pairs with line 104: returns ""
+		}
+
+		// GO Transit: Use long name for abbreviated routes (e.g., "Kitchener" not "KI")
+		if (route.route_network_name === 'GO Transit' && route.route_long_name) {
+			return route.route_long_name; // Pairs with line 182: returns "Line"
+		}
+
 		const routeName = route.route_short_name || route.route_long_name;
 
 		// Check if route name is numeric and mode_name doesn't contain Train/Subway/Metro
@@ -94,6 +104,11 @@
 			return "";
 		}
 
+		// LIRR: Hide mode name (full branch name shown in alertRouteName)
+		if (route.route_network_name === 'Long Island Rail Road') {
+			return ""; // Pairs with line 30: returns route_long_name
+		}
+
 		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
 		if (modeName?.includes('Muni') && shortName && route.route_long_name) {
 			return `${shortName} ${route.route_long_name}`;
@@ -160,6 +175,12 @@
 			if (modeNameLower.includes('citylink')) {
 				return `CityLink ${shortName}`; // Pairs with line 58: routeName returns ''
 			}
+		}
+
+		// Generic Commuter Rail fallback: Replace "Commuter Rail" with "Line"
+		// Handles MARC, GO Transit, and other systems not caught by specific checks above
+		if (modeName === 'Commuter Rail') {
+			return 'Line';
 		}
 
 		return modeName;
