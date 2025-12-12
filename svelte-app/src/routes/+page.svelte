@@ -527,7 +527,19 @@
 			<tbody>
 				<tr>
 					<td id="logo">
-						<a href="https://transitapp.com" aria-label={$_('aria.transitApp')}></a>
+						<div class="logo-container">
+							<a href="https://transitapp.com" aria-label={$_('aria.transitApp')}>
+								<img src="/assets/images/transit.svg" alt="Powered by Transit" class="transit-logo" />
+							</a>
+							{#if $config.customLogo}
+								<img
+									src={$config.customLogo}
+									alt={$_('aria.customLogo')}
+									class="custom-logo"
+									onerror={(e) => e.currentTarget.style.display = 'none'}
+								/>
+							{/if}
+						</div>
 					</td>
 					<td id="title">
 						<h1>{$config.title || $_('app.nearbyRoutes')}</h1>
@@ -731,6 +743,36 @@
 							{$_('config.buttons.reset')}
 						</button>
 					</div>
+				</label>
+
+				<label>
+					{$_('config.fields.customLogo')}
+					<input
+						type="text"
+						bind:value={$config.customLogo}
+						placeholder="https://example.com/logo.png or /assets/images/logo.png"
+					/>
+					<small class="help-text">{$_('config.customLogo.helpText')}</small>
+					{#if $config.customLogo}
+						<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
+							<button
+								type="button"
+								class="btn-reset"
+								onclick={() => config.update(c => ({ ...c, customLogo: null }))}
+							>
+								{$_('config.customLogo.clear')}
+							</button>
+						</div>
+						<div class="logo-preview">
+							<img
+								src={$config.customLogo}
+								alt="Logo preview"
+								onerror={(e) => {
+									e.currentTarget.parentElement.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+								}}
+							/>
+						</div>
+					{/if}
 				</label>
 
 				<label class="toggle-label">
@@ -978,20 +1020,31 @@
 		min-width: 200px;
 	}
 
+	.logo-container {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		width: 100%;
+	}
+
+	.transit-logo {
+		height: 3.5em;
+		width: auto;
+		display: block;
+	}
+
+	.custom-logo {
+		height: 3.5em;
+		width: auto;
+		max-width: 120px;
+		object-fit: contain;
+		flex-shrink: 0;
+	}
+
 	#logo a {
 		display: block;
-		height: 2em;
-		width: 100%;
-		color: #ffffff;
-		line-height: 1.1em;
-		font-family: Helvetica, Arial, serif;
-		font-weight: lighter;
-		font-size: 2em;
+		flex-shrink: 0;
 		text-decoration: none;
-		background: url('/assets/images/transit.svg') no-repeat center left;
-		background-size: auto 2em;
-		padding-left: 130px;
-		min-width: 200px;
 	}
 
 	#title {
@@ -1074,8 +1127,8 @@
 		box-shadow: 0 4px 6px var(--shadow-color);
 		z-index: 1000;
 		min-width: 400px;
-		max-width: 90vw;
-		max-height: 90vh;
+		max-width: 30vw;
+		max-height: 80vh;
 		overflow-y: auto;
 	}
 
@@ -1107,6 +1160,33 @@
 		font-size: 1em;
 		background: var(--bg-primary);
 		color: var(--text-primary);
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	.help-text {
+		display: block;
+		margin-top: 0.25em;
+		font-size: 0.85em;
+		color: var(--text-secondary);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		max-width: 100%;
+	}
+
+	.logo-preview {
+		margin-top: 0.5em;
+		padding: 1em;
+		background: var(--bg-header);
+		border-radius: 4px;
+		text-align: center;
+	}
+
+	.logo-preview img {
+		max-height: 60px;
+		max-width: 200px;
+		object-fit: contain;
 	}
 
 	.modal-actions {

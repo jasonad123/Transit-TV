@@ -13,6 +13,7 @@
       "columns": "Colonnes de grille :",
       "theme": "Thème :",
       "headerColor": "Couleur d'en-tête :",
+      "customLogo": "URL du logo personnalisé :",
       "showQRCode": "Afficher code QR",
       "maxDistance": "Rayon de recherche :"
     },
@@ -33,6 +34,11 @@
       "light": "Clair",
       "dark": "Sombre",
       "auto": "Auto"
+    },
+    "customLogo": {
+      "helpText": "Entrez l'URL ou le chemin local du logo de votre organisation (ex: https://example.com/logo.png ou /assets/images/logo.png)",
+      "clear": "Supprimer le logo personnalisé",
+      "invalidUrl": "Échec du chargement de l'image du logo"
     },
     "hiddenRoutes": {
       "title": "Lignes masquées",
@@ -90,6 +96,7 @@
   },
   "aria": {
     "transitApp": "Application Transit",
+    "customLogo": "Logo de l'organisation",
     "settings": "Paramètres",
     "moveRouteToTop": "Déplacer la ligne en haut",
     "moveRouteUp": "Déplacer la ligne vers le haut",
