@@ -284,8 +284,12 @@
 			};
 		}
 
-		// Only load routes if screen is wide enough
-		if (!$config.isEditing && !isScreenTooNarrow) {
+		// Check server status first, before starting polling
+		await checkServerStatus();
+		serverStatusIntervalId = setInterval(checkServerStatus, 10000);
+
+		// Only load routes if screen is wide enough and server is not shutdown
+		if (!$config.isEditing && !isScreenTooNarrow && !serverStatus.isShutdown) {
 			await loadNearby();
 			// Use adaptive polling interval (starts at 20s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -295,10 +299,6 @@
 		clockIntervalId = setInterval(() => {
 			currentTime = new Date();
 		}, 1000);
-
-		// Poll server status every 10 seconds
-		await checkServerStatus();
-		serverStatusIntervalId = setInterval(checkServerStatus, 10000);
 
 		// Mark as mounted to enable reactive width effects
 		isMounted = true;
@@ -314,8 +314,8 @@
 				clearInterval(intervalId);
 				intervalId = undefined!;
 			}
-		} else if (!$config.isEditing) {
-			// Screen wide enough - start/resume polling if not already running
+		} else if (!$config.isEditing && !serverStatus.isShutdown) {
+			// Screen wide enough and server running - start/resume polling if not already running
 			if (!intervalId) {
 				loadNearby();
 				intervalId = setInterval(loadNearby, currentPollingInterval);
