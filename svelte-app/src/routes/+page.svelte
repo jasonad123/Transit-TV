@@ -930,7 +930,7 @@
 				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br/></span>
 				<span class= "qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
 			</p>
-			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={90} />
+			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={100} />
 		</div>
 	{/if}
 </div>
@@ -950,7 +950,7 @@
 	}
 
 	.content {
-		height: calc(100% - 4.3em);
+		height: calc(100vh - 4.3em);
 		position: relative;
 	}
 
@@ -959,7 +959,7 @@
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
-		padding-bottom: 3em;
+		padding: 0;
 	}
 
 	header {
@@ -1219,8 +1219,7 @@
 		vertical-align: top;
 		box-sizing: border-box;
 		position: relative;
-		max-height: calc(100vh - 4em);
-		overflow: hidden;
+		padding: 0.5em 0.5em;
 	}
 
 	/* Responsive auto-layout defaults */
@@ -1395,21 +1394,22 @@
 	/* QR Code Styles */
 	.floating-qr {
 		position: fixed;
-		bottom: 2em;
-		right: 1em;
+		bottom: 1.5em;
+		right: 1.5em;
 		z-index: 100;
 		background: var(--bg-header);
 		padding: 1em;
-		border-radius: 24px;
+		border-radius: 1em;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		transition: transform 0.2s ease;
-		border: 2px solid rgba(255, 255, 255, 0.3);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		gap: 1.2em;
-		min-width: 20%;
-		max-width: 250px;
+		min-width: 19.8%;
+		max-width: 25em;
+		min-height: 125px;
+		max-height: auto;
 	}
 
 	.floating-qr:hover {
@@ -1434,7 +1434,7 @@
 	.qr-label {
 		margin: 0;
 		color: white;
-		font-size: 1.1em;
+		font-size: 1.3em;
 		text-align: left;
 		letter-spacing: 0.02em;
 		opacity: 0.95;

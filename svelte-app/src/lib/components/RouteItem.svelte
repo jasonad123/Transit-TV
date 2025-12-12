@@ -470,7 +470,7 @@
 
 	.route > div {
 		padding: 0.5em 1em 0.5em;
-		border-radius: 4px;
+		border-radius: 0.5em;
 	}
 
 	.route > div:hover {
@@ -480,6 +480,7 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
+		padding: 0 1em;
 	}
 
 	.route h2 {
@@ -494,6 +495,9 @@
 		gap: 0.5em;
 		line-height: .9;
 		flex-shrink: 0;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		font-weight: 800;
 	}
 
 	.route h2 .route-icon {
@@ -510,9 +514,9 @@
 		line-height: 1.3;
 		padding: 0.75em 0.5em 0.5em;
 		margin-top: 0.25em;
-		border-radius: 0.3em 0.3em 0 0;
+		border-radius: 0.5em 0.5em 0 0;
 		text-align: left;
-		height: 1.3em;
+		height: 1em;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
@@ -566,10 +570,10 @@
 		line-height: 1.4;
 		padding: 0.5em;
 		margin-top: 0;
-		border-radius: 0 0 0.2em 0.2em;
+		border-radius: 0 0 0.5em 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5.5em, 15vh, 30em);
+		height: clamp(5em, 15vh, 18em);
 		flex-shrink: 0;
 	}
 
@@ -608,14 +612,14 @@
 	}
 
 	.route h3 {
-		font-size: 1.5em;
+		font-size: 1.75em;
 		padding: 0.4em 0.35em 0.3em 0.35em;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		overflow: hidden;
 		position: relative;
-		min-height: 1.1em;
-		max-height: 1.1em;
-		line-height: 1.1em;
+		min-height: 1.5em;
+		max-height: 1.5em;
+		line-height: 1.5em;
 		display: flex;
 		align-items: center;
 	}
@@ -668,24 +672,24 @@
 	.route small {
 		color: inherit;
 		font-weight: lighter;
-		font-size: 0.4em;
-		line-height: 0.4em;
+		font-size: 0.5em;
+		line-height: 0.5em;
 		display: block;
-		margin-bottom: 0.4em;
-		margin-top: 0.2em;
+		margin-bottom: 0.5em;
+		margin-top: 0.3em;
 	}
 
 	.route .direction {
-		border-radius: 0.3em;
+		border-radius: 0.5em;
 		margin-bottom: 0.2em;
 	}
 
-	.direction iconify-icon {
+	/* .direction iconify-icon {
 		transform: translateY(20%);
 		width: 1em;
 		height: 1em;
 		fill: currentColor;
-	}
+	} */
 
 	.route .time {
 		white-space: nowrap;
@@ -729,6 +733,7 @@
 		padding-left: 1.1em;
 		font-size: 1.3em;
 		margin-bottom: 0.4em;
+		font-weight: 500;
 		display: block;
 		white-space: nowrap;
 		text-overflow: ellipsis;
