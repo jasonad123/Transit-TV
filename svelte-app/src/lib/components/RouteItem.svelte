@@ -281,7 +281,10 @@
 		['mta-subway-w', { alwaysUseDarkModeColor: true }],
 		['ttc-subway-1', { alwaysUseDarkModeColor: true }],
 		['stm-metro', { alwaysUseDarkModeColor: true }],
-		['stm-metro-4', { alwaysUseDarkModeColor: true }]
+		['stm-metro-4', { alwaysUseDarkModeColor: true }],
+		['muni-cablecar', { alwaysUseDarkModeColor: true }],
+		['san-diego-trolley', { alwaysUseDarkModeColor: true }],
+		['septa-metro-badge-g', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
