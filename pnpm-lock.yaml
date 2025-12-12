@@ -32,7 +32,7 @@ importers:
     devDependencies:
       '@sveltejs/mcp':
         specifier: ^0.1.11
-        version: 0.1.11
+        version: 0.1.13
 
 packages:
 
@@ -58,8 +58,8 @@ packages:
     resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/eslintrc@3.3.1':
-    resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
+  '@eslint/eslintrc@3.3.3':
+    resolution: {integrity: sha512-Kr+LPIUVKz2qkx1HAMH8q1q6azbqBAsXJUxBl/ODDuVPX45Z9DfwB8tPjTi6nNZ8BuM3nbJxC5zCAg5elnBUTQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.39.1':
@@ -93,8 +93,8 @@ packages:
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
-  '@sveltejs/mcp@0.1.11':
-    resolution: {integrity: sha512-OvZlWYMDV1DZGTV/G0ErehGEjszGAnUEtyk0XhnsWNUsraB2zniFkYqpkP27KtuJnBz/+LVhTXhnPHfS9gzEUA==}
+  '@sveltejs/mcp@0.1.13':
+    resolution: {integrity: sha512-x+a49LusLvMCm2Q90PZKefB37pTrI5nUMxC5pg+f1EJUqhcjSbz+SUpHOi0Vh8P3/SAc56jtK9GQSJ1Z/hkU1g==}
     hasBin: true
 
   '@types/estree@1.0.8':
@@ -466,8 +466,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  js-yaml@4.1.1:
+    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
     hasBin: true
 
   json-buffer@3.0.1:
@@ -701,8 +701,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  tmcp@1.16.4:
-    resolution: {integrity: sha512-coV3ChCclQwI9hTQDRb5uQaq7JY/zKQZ764Yhk0DkLiJEGLhckKTV8TNjuoCgt87zbqXe2v+ORih9sCJaaZ+1A==}
+  tmcp@1.18.1:
+    resolution: {integrity: sha512-P7MR8zKO447R317sm1rQES4JBkhibJS+W1YIz8neysO+rGr3oHSN1FO0vWgq/EtNz7EU57iutCZaBRBuiBbPvA==}
 
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
@@ -726,8 +726,8 @@ packages:
   uri-template-matcher@1.1.2:
     resolution: {integrity: sha512-uZc1h12jdO3m/R77SfTEOuo6VbMhgWznaawKpBjRGSJb7i91x5PgI37NQJtG+Cerxkk0yr1pylBY2qG1kQ+aEQ==}
 
-  valibot@1.1.0:
-    resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
+  valibot@1.2.0:
+    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -766,7 +766,7 @@ snapshots:
   '@eslint/config-array@0.21.1':
     dependencies:
       '@eslint/object-schema': 2.1.7
-      debug: 4.4.1
+      debug: 4.4.3
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -779,15 +779,15 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/eslintrc@3.3.1':
+  '@eslint/eslintrc@3.3.3':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.1
+      debug: 4.4.3
       espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
       import-fresh: 3.3.1
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       minimatch: 3.1.2
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -815,10 +815,10 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@sveltejs/mcp@0.1.11':
+  '@sveltejs/mcp@0.1.13':
     dependencies:
       eslint: 9.39.1
-      tmcp: 1.16.4
+      tmcp: 1.18.1
     transitivePeerDependencies:
       - jiti
       - supports-color
@@ -1015,7 +1015,7 @@ snapshots:
       '@eslint/config-array': 0.21.1
       '@eslint/config-helpers': 0.4.2
       '@eslint/core': 0.17.0
-      '@eslint/eslintrc': 3.3.1
+      '@eslint/eslintrc': 3.3.3
       '@eslint/js': 9.39.1
       '@eslint/plugin-kit': 0.4.1
       '@humanfs/node': 0.16.7
@@ -1025,7 +1025,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.1
+      debug: 4.4.3
       escape-string-regexp: 4.0.0
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -1229,7 +1229,7 @@ snapshots:
       filelist: 1.0.4
       minimatch: 3.1.2
 
-  js-yaml@4.1.0:
+  js-yaml@4.1.1:
     dependencies:
       argparse: 2.0.1
 
@@ -1462,13 +1462,13 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  tmcp@1.16.4:
+  tmcp@1.18.1:
     dependencies:
       '@standard-schema/spec': 1.0.0
       json-rpc-2.0: 1.7.1
       sqids: 0.3.0
       uri-template-matcher: 1.1.2
-      valibot: 1.1.0
+      valibot: 1.2.0
     transitivePeerDependencies:
       - typescript
 
@@ -1492,7 +1492,7 @@ snapshots:
 
   uri-template-matcher@1.1.2: {}
 
-  valibot@1.1.0: {}
+  valibot@1.2.0: {}
 
   vary@1.1.2: {}
 
