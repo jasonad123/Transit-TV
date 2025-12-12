@@ -13,6 +13,13 @@
 
 	// Smart route name for alerts
 	let alertRouteName = $derived.by(() => {
+		// SEPTA Metro: Letter-designated lines (L, B, M, D, etc.)
+		// Example: L Line, B Line, M Line, D Line
+		const shortName = route.route_short_name;
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return ''; // Pairs with line 89: returns "L Line"
+		}
+
 		// Prioritize long names containing "Line"
 		if (route.route_long_name?.includes('Line')) {
 			return route.route_long_name;
@@ -40,7 +47,7 @@
 		if (routeName && /^[A-Z]+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
 			if (modeName.includes('rapidride')) {
-				return ''; // Pairs with line 93: returns "RapidRide E"
+				return ''; // Pairs with line 153: returns "RapidRide E"
 			}
 		}
 
@@ -48,7 +55,7 @@
 		if (routeName && /^[a-zA-Z]+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
 			if (modeName.includes('citylink')) {
-				return ''; // Pairs with line 109: returns "CityLink Orange"
+				return ''; // Pairs with line 161: returns "CityLink Orange"
 			}
 		}
 
@@ -58,15 +65,15 @@
 		if (routeName && /^\d+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
 			const ttsName = route.tts_short_name?.toLowerCase() || '';
-			if (modeName.includes('subway') && ttsName.startsWith('line')) {
-				return ''; // Pairs with line 107: returns "Line 2"
+			if (modeName.includes('subway') && ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+				return ''; // Pairs with line 125: returns "Line 2"
 			}
 		}
 
 		// SF Muni: Hide route name so full designation appears in alertModeName
-		// Example: "N" hidden here, "N Judah" shown by line 81
+		// Example: "N" hidden here, "N Judah" shown by line 99
 		if (route.mode_name?.includes('Muni')) {
-			return ''; // Pairs with line 81: returns "N Judah"
+			return ''; // Pairs with line 99: returns "N Judah"
 		}
 
 		return routeName;
@@ -74,13 +81,18 @@
 
 	// Smart mode name for alerts
 	let alertModeName = $derived.by(() => {
+		const modeName = route.mode_name;
+		const shortName = route.route_short_name;
+
+		// SEPTA Metro: Letter-designated lines (L, B, M, D, etc.)
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return `${shortName} Line`; // Pairs with line 20: routeName returns ''
+		}
+
 		// Hide mode name if route long name already contains "Line"
 		if (route.route_long_name?.includes('Line')) {
 			return "";
 		}
-
-		const modeName = route.mode_name;
-		const shortName = route.route_short_name;
 
 		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
 		if (modeName?.includes('Muni') && shortName && route.route_long_name) {
@@ -102,25 +114,25 @@
 			return "";
 		}
 
-		// Subway route differentiation using tts_short_name
+		// Subway route differentiation using tts_short_name and route_network_name
 		// Toronto TTC uses "line 2", NYC MTA uses "7 train", BART uses "yellow line"
 		if (modeName?.includes('Subway') && shortName) {
 			const ttsName = route.tts_short_name?.toLowerCase() || '';
 
 			// Toronto TTC: TTS starts with "line" (e.g., "line 2")
 			// Name inversion: "2" + "Line" becomes "Line 2"
-			if (ttsName.startsWith('line')) {
-				return `Line ${shortName}`; // Pairs with line 62: routeName returns ''
+			if (ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+				return `Line ${shortName}`; // Pairs with line 69: routeName returns ''
 			}
 
-			// BART and other color-based systems: TTS ends with "line" (e.g., "yellow line")
+			// BART: Color-based lines with TTS ending with "line" (e.g., "yellow line")
 			// No inversion needed, generic "Line" suffix
-			if (ttsName.endsWith('line')) {
+			if (ttsName.endsWith('line') && route.route_network_name === 'BART') {
 				return "Line";
 			}
 
 			// NYC MTA: routes with "train" in TTS name (both letters like "Q train" and numbers like "7 train")
-			if (ttsName.includes('train')) {
+			if (ttsName.includes('train') && route.route_network_name === 'NYC Subway') {
 				return "Train";
 			}
 		}
@@ -138,7 +150,7 @@
 		if (shortName && /^[A-Z]+$/.test(shortName)) {
 			const modeNameLower = route.mode_name?.toLowerCase() || '';
 			if (modeNameLower.includes('rapidride')) {
-				return `RapidRide ${shortName}`; // Pairs with line 42: routeName returns ''
+				return `RapidRide ${shortName}`; // Pairs with line 50: routeName returns ''
 			}
 		}
 
@@ -146,7 +158,7 @@
 		if (shortName && /^[a-zA-Z]+$/.test(shortName)) {
 			const modeNameLower = route.mode_name?.toLowerCase() || '';
 			if (modeNameLower.includes('citylink')) {
-				return `CityLink ${shortName}`; // Pairs with line 50: routeName returns ''
+				return `CityLink ${shortName}`; // Pairs with line 58: routeName returns ''
 			}
 		}
 

@@ -12,6 +12,7 @@ export interface Route {
 	};
 	tts_short_name?: string;
 	branch_code?: string;
+	route_network_name?: string;
 	itineraries?: Itinerary[];
 	alerts?: Alert[];
 }
