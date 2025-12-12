@@ -16,6 +16,13 @@ var helmet = require('helmet');
 module.exports = function(app) {
   var env = app.get('env');
 
+  // Trust proxy setting for deployments behind reverse proxies/load balancers
+  // This allows req.ip to correctly reflect the client IP from X-Forwarded-For
+  // Set TRUST_PROXY=true in production if behind a proxy, or specify number of hops
+  if (process.env.TRUST_PROXY) {
+    app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? true : parseInt(process.env.TRUST_PROXY, 10));
+  }
+
   // Security middleware
   app.use(helmet({
     contentSecurityPolicy: false // We'll configure this manually if needed

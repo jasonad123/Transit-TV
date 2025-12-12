@@ -9,7 +9,7 @@
 
 	let { latitude, longitude, size = 150 }: Props = $props();
 
-	const deepLink = $derived(`transit://routes?q=${latitude},${longitude}`);
+	const deepLink = $derived(`transitapp.com/deep-links?url=transit://routes?q=${latitude},${longitude}`);
 </script>
 
 <div class="qr-container">

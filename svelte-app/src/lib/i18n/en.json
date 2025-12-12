@@ -13,6 +13,7 @@
       "columns": "Grid Columns:",
       "theme": "Theme:",
       "headerColor": "Header Color:",
+      "customLogo": "Custom Logo URL:",
       "showQRCode": "Show QR Code",
       "maxDistance": "Search Radius:"
     },
@@ -34,13 +35,18 @@
       "dark": "Dark",
       "auto": "Auto"
     },
+    "customLogo": {
+      "helpText": "Enter URL or local path to your organization's logo (e.g., https://example.com/logo.png or /assets/images/logo.png)",
+      "clear": "Remove Custom Logo",
+      "invalidUrl": "Failed to load logo image"
+    },
     "hiddenRoutes": {
       "title": "Hidden Routes",
       "helpText": "Click to unhide routes"
     },
     "qrCode": {
       "title": "QR Code",
-      "helpText": "Scan with your phone to open this location in Transit app",
+      "helpText": "Show a QR code that loads this location in Transit",
       "scanPrompt": "Want to take these departures with you?",
       "scanPrompt2": "Scan to open in the Transit app"
     },
@@ -90,6 +96,7 @@
   },
   "aria": {
     "transitApp": "Transit App",
+    "customLogo": "Organization logo",
     "settings": "Settings",
     "moveRouteToTop": "Move route to top",
     "moveRouteUp": "Move route up",
@@ -97,7 +104,8 @@
     "hideRoute": "Hide route"
   },
   "alerts": {
-    "default": "Service alert"
+    "default": "Service alert",
+    "title": "Alerts"
   },
   "time": {
     "min": "min",

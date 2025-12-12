@@ -11,6 +11,160 @@
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
 
+	// Smart route name for alerts
+	let alertRouteName = $derived.by(() => {
+		// SEPTA Metro: Letter-designated lines (L, B, M, D, etc.)
+		// Example: L Line, B Line, M Line, D Line
+		const shortName = route.route_short_name;
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return ''; // Pairs with line 89: returns "L Line"
+		}
+
+		// Prioritize long names containing "Line"
+		if (route.route_long_name?.includes('Line')) {
+			return route.route_long_name;
+		}
+
+		const routeName = route.route_short_name || route.route_long_name;
+
+		// Check if route name is numeric and mode_name doesn't contain Train/Subway/Metro
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (!modeName.includes('train') &&
+				!modeName.includes('subway') &&
+					!modeName.includes('metro') &&
+						!modeName.includes('streetcar') &&
+							!modeName.includes('light rail')) {
+				return `Route ${routeName}`;
+			}
+		}
+
+		// Name inversion for branded routes - Part 1: Hide route name
+		// These pair with alertModeName checks below that prepend the brand name
+		// Example: "E RapidRide" becomes "RapidRide E"
+
+		// RapidRide (Seattle): Uppercase letter routes (A, B, C, etc.)
+		if (routeName && /^[A-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('rapidride')) {
+				return ''; // Pairs with line 153: returns "RapidRide E"
+			}
+		}
+
+		// CityLink (Baltimore): Word-based routes (Orange, Yellow, Navy, etc.)
+		if (routeName && /^[a-zA-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('citylink')) {
+				return ''; // Pairs with line 161: returns "CityLink Orange"
+			}
+		}
+
+		// TTC Toronto: Numbered subway/streetcar lines (1, 2, 4, etc.)
+		// TTS name is "line 2" (starts with "line") and mode is "Subway", so we invert to "Line 2"
+		// Note: BART "yellow line" (ends with "line") and Seattle "1 Line" (Light Rail) do NOT get inverted
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+			if (modeName.includes('subway') && ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+				return ''; // Pairs with line 125: returns "Line 2"
+			}
+		}
+
+		// SF Muni: Hide route name so full designation appears in alertModeName
+		// Example: "N" hidden here, "N Judah" shown by line 99
+		if (route.mode_name?.includes('Muni')) {
+			return ''; // Pairs with line 99: returns "N Judah"
+		}
+
+		return routeName;
+	});
+
+	// Smart mode name for alerts
+	let alertModeName = $derived.by(() => {
+		const modeName = route.mode_name;
+		const shortName = route.route_short_name;
+
+		// SEPTA Metro: Letter-designated lines (L, B, M, D, etc.)
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return `${shortName} Line`; // Pairs with line 20: routeName returns ''
+		}
+
+		// Hide mode name if route long name already contains "Line"
+		if (route.route_long_name?.includes('Line')) {
+			return "";
+		}
+
+		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
+		if (modeName?.includes('Muni') && shortName && route.route_long_name) {
+			return `${shortName} ${route.route_long_name}`;
+		}
+
+		// Generic replacements for common mode types
+		// If Metro or Light Rail, generically return "Line"
+		if (modeName?.includes('Metro') || modeName?.includes('Light Rail')) {
+			return "Line";
+		}
+
+		// Canadian systems - brand name already in route name
+		if (modeName?.includes('MAX') || modeName?.includes('REM')) {
+			return "";
+		}
+
+		if (shortName?.includes('SeaBus')) {
+			return "";
+		}
+
+		// Subway route differentiation using tts_short_name and route_network_name
+		// Toronto TTC uses "line 2", NYC MTA uses "7 train", BART uses "yellow line"
+		if (modeName?.includes('Subway') && shortName) {
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+
+			// Toronto TTC: TTS starts with "line" (e.g., "line 2")
+			// Name inversion: "2" + "Line" becomes "Line 2"
+			if (ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+				return `Line ${shortName}`; // Pairs with line 69: routeName returns ''
+			}
+
+			// BART: Color-based lines with TTS ending with "line" (e.g., "yellow line")
+			// No inversion needed, generic "Line" suffix
+			if (ttsName.endsWith('line') && route.route_network_name === 'BART') {
+				return "Line";
+			}
+
+			// NYC MTA: routes with "train" in TTS name (both letters like "Q train" and numbers like "7 train")
+			if (ttsName.includes('train') && route.route_network_name === 'NYC Subway') {
+				return "Train";
+			}
+		}
+
+		// Hide generic "Bus" mode name (route number is sufficient)
+		if (modeName?.includes('Bus')) {
+			return "";
+		}
+
+		// Name inversion for branded routes - Part 2: Prepend brand to route name
+		// These pair with alertRouteName checks above that hide the route name
+		// Example: "E" + "RapidRide" becomes "RapidRide E"
+
+		// RapidRide (Seattle): Uppercase letter routes (A, B, C, E, etc.)
+		if (shortName && /^[A-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('rapidride')) {
+				return `RapidRide ${shortName}`; // Pairs with line 50: routeName returns ''
+			}
+		}
+
+		// CityLink (Baltimore): Word routes (Orange, Yellow, Navy, etc.)
+		if (shortName && /^[a-zA-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('citylink')) {
+				return `CityLink ${shortName}`; // Pairs with line 58: routeName returns ''
+			}
+		}
+
+		return modeName;
+	});
+
 	let destinationElements: Map<number, HTMLElement> = new Map();
 	let overflowingDestinations = $state<Set<number>>(new Set());
 	let sharedResizeObserver: ResizeObserver | null = null;
@@ -124,11 +278,28 @@
 		['mta-subway-n', { alwaysUseDarkModeColor: true }],
 		['mta-subway-q', { alwaysUseDarkModeColor: true }],
 		['mta-subway-r', { alwaysUseDarkModeColor: true }],
-		['mta-subway-w', { alwaysUseDarkModeColor: true }]
+		['mta-subway-w', { alwaysUseDarkModeColor: true }],
+		['ttc-subway-1', { alwaysUseDarkModeColor: true }],
+		['stm-metro', { alwaysUseDarkModeColor: true }],
+		['stm-metro-4', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
 		// ['third-logo', { color: 'FF0000' }],
+	]);
+
+	// Route color overrides for route backgrounds and text
+	// Options:
+	//   - alwaysUseLightModeColors: boolean - Use light mode colors even in dark mode
+	//   - alwaysUseDarkModeColors: boolean - Use dark mode colors even in light mode
+	const ROUTE_COLOR_OVERRIDES = new Map<string, {
+		alwaysUseLightModeColors?: boolean;
+		alwaysUseDarkModeColors?: boolean;
+	}>([
+		// Certain routes with orange backgrounds need to keep black text in dark mode
+		['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
+		['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
+		['MUNI:4578', { alwaysUseDarkModeColors: true }], // Route 27
 	]);
 
 	function getImageUrl(index: number): string | null {
@@ -140,41 +311,38 @@
 				return `/api/images/${iconName}.svg`;
 			}
 
-			// Check for manual color overrides
-			const override = COLOR_OVERRIDES.get(iconName);
+			// Check for manual color overrides (icon-specific or route-level)
+			const iconOverride = COLOR_OVERRIDES.get(iconName);
+			const routeOverride = ROUTE_COLOR_OVERRIDES.get(route.global_route_id);
 			let hex: string;
 
-			if (override) {
-				// If a fixed color is specified
-				if (override.color) {
-					hex = override.color;
-				}
-				// If we should always use dark mode color calculation
-				else if (override.alwaysUseDarkModeColor) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				}
-				// If we should always use light mode color calculation
-				else if (override.alwaysUseLightModeColor) {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
-				// Fallback to normal logic
-				else if (isDarkMode) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				} else {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
+			// Determine which mode's color logic to use
+			let useLightMode: boolean;
+			if (iconOverride) {
+				// Icon-specific overrides take precedence
+				useLightMode = iconOverride.alwaysUseLightModeColor ? true :
+				               iconOverride.alwaysUseDarkModeColor ? false :
+				               !isDarkMode;
+			} else if (routeOverride) {
+				// Route-level overrides
+				useLightMode = routeOverride.alwaysUseLightModeColors ? true :
+				               routeOverride.alwaysUseDarkModeColors ? false :
+				               !isDarkMode;
 			} else {
-				// Default color logic (no overrides)
-				// In dark mode:
-				//   - If route should be inverted (very dark bg + light text), use route_text_color
-				//   - Otherwise use route_color (for visibility on dark background)
-				// In light mode:
-				//   - Use black if useBlackText, otherwise route_color
-				if (isDarkMode) {
-					hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
-				} else {
-					hex = useBlackText ? '000000' : route.route_color;
-				}
+				// No overrides - use actual mode
+				useLightMode = !isDarkMode;
+			}
+
+			// Apply color based on determined mode
+			if (iconOverride?.color) {
+				// Fixed color override
+				hex = iconOverride.color;
+			} else if (useLightMode) {
+				// Light mode calculation
+				hex = useBlackText ? '000000' : route.route_color;
+			} else {
+				// Dark mode calculation
+				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
 			}
 
 			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
@@ -183,11 +351,22 @@
 	}
 
 	// Determine text color for route icon and name
-	let routeDisplayColor = $derived(
-		isDarkMode
-			? (shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`)
-			: (useBlackText ? '#000000' : `#${route.route_color}`)
-	);
+	let routeDisplayColor = $derived.by(() => {
+		const override = ROUTE_COLOR_OVERRIDES.get(route.global_route_id);
+
+		// Determine which mode's color logic to use
+		const useLightMode = override?.alwaysUseLightModeColors ? true :
+		                     override?.alwaysUseDarkModeColors ? false :
+		                     !isDarkMode;
+
+		if (useLightMode) {
+			// Light mode: use black if route has black text, otherwise use route color
+			return useBlackText ? '#000000' : `#${route.route_color}`;
+		} else {
+			// Dark mode: invert if very dark bg + light text, otherwise use route color
+			return shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`;
+		}
+	});
 
 	function getMinutesUntil(departure: number): number {
 		return Math.round((departure * 1000 - Date.now()) / 60000);
@@ -436,7 +615,7 @@
 	{#if hasRelevantAlerts()}
 		<div>
 			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
-				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> Alerts - {route.route_short_name || route.route_long_name} {route.mode_name}</span>
+				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> {$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
@@ -470,7 +649,7 @@
 
 	.route > div {
 		padding: 0.5em 1em 0.5em;
-		border-radius: 4px;
+		border-radius: 0.5em;
 	}
 
 	.route > div:hover {
@@ -480,6 +659,7 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
+		padding: 0 1em;
 	}
 
 	.route h2 {
@@ -494,6 +674,9 @@
 		gap: 0.5em;
 		line-height: .9;
 		flex-shrink: 0;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		font-weight: 800;
 	}
 
 	.route h2 .route-icon {
@@ -510,9 +693,9 @@
 		line-height: 1.3;
 		padding: 0.75em 0.5em 0.5em;
 		margin-top: 0.25em;
-		border-radius: 0.3em 0.3em 0 0;
+		border-radius: 0.5em 0.5em 0 0;
 		text-align: left;
-		height: 1.3em;
+		height: 1em;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
@@ -566,10 +749,10 @@
 		line-height: 1.4;
 		padding: 0.5em;
 		margin-top: 0;
-		border-radius: 0 0 0.2em 0.2em;
+		border-radius: 0 0 0.5em 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5.5em, 15vh, 30em);
+		height: clamp(5em, 15vh, 18em);
 		flex-shrink: 0;
 	}
 
@@ -608,14 +791,14 @@
 	}
 
 	.route h3 {
-		font-size: 1.5em;
+		font-size: 1.75em;
 		padding: 0.4em 0.35em 0.3em 0.35em;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		overflow: hidden;
 		position: relative;
-		min-height: 1.1em;
-		max-height: 1.1em;
-		line-height: 1.1em;
+		min-height: 1.5em;
+		max-height: 1.5em;
+		line-height: 1.5em;
 		display: flex;
 		align-items: center;
 	}
@@ -668,24 +851,24 @@
 	.route small {
 		color: inherit;
 		font-weight: lighter;
-		font-size: 0.4em;
-		line-height: 0.4em;
+		font-size: 0.5em;
+		line-height: 0.5em;
 		display: block;
-		margin-bottom: 0.4em;
-		margin-top: 0.2em;
+		margin-bottom: 0.5em;
+		margin-top: 0.3em;
 	}
 
 	.route .direction {
-		border-radius: 0.3em;
+		border-radius: 0.5em;
 		margin-bottom: 0.2em;
 	}
 
-	.direction iconify-icon {
+	/* .direction iconify-icon {
 		transform: translateY(20%);
 		width: 1em;
 		height: 1em;
 		fill: currentColor;
-	}
+	} */
 
 	.route .time {
 		white-space: nowrap;
@@ -729,6 +912,7 @@
 		padding-left: 1.1em;
 		font-size: 1.3em;
 		margin-bottom: 0.4em;
+		font-weight: 500;
 		display: block;
 		white-space: nowrap;
 		text-overflow: ellipsis;

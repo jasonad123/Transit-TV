@@ -14,6 +14,12 @@ services:
     env_file:
       - .env
 
+    # Optional: Mount custom logo files
+    # To use a custom logo, mount your logo file to the static assets directory
+    # and set UNATTENDED_CUSTOM_LOGO to the path (e.g., /assets/images/logo.png)
+    # volumes:
+    #   - ./path/to/your/logo.png:/app/svelte-app/static/assets/images/logo.png:ro
+
     networks:
       - transit-network
 

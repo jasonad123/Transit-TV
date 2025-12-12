@@ -14,6 +14,7 @@
       "theme": "Thema:",
       "headerColor": "Kopfzeilenfarbe:",
       "showQRCode": "QR-Code anzeigen",
+      "customLogo": "Logo-URL:",
       "maxDistance": "Suchradius:"
     },
     "timeFormats": {
@@ -34,13 +35,18 @@
       "dark": "Dunkel",
       "auto": "Auto"
     },
+    "customLogo": {
+      "helpText": "Geben Sie die URL oder den lokalen Pfad zum Logo Ihrer Organisation ein (z. B., https://example.com/logo.png oder /assets/images/logo.png)",
+      "clear": "Logo entfernen",
+      "invalidUrl": "Logo-Bild konnte nicht geladen werden"
+    },
     "hiddenRoutes": {
       "title": "Versteckte Routen",
       "helpText": "Zum Einblenden klicken"
     },
     "qrCode": {
       "title": "QR-Code",
-      "helpText": "Scannen Sie den Scanner, um diesen Standort zu öffnen in der Transit-App",
+      "helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
       "scanPrompt": "Willst du diese Reisen mit dir nehmen?",
       "scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
     },
@@ -97,7 +103,8 @@
     "hideRoute": "Verstecken routen"
   },
   "alerts": {
-    "default": "Störungsinformation"
+    "default": "Störungsinformation",
+    "title": "Meldungen"
   },
   "time": {
     "min": "min",

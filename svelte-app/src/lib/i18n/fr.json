@@ -13,6 +13,7 @@
       "columns": "Colonnes de grille :",
       "theme": "Thème :",
       "headerColor": "Couleur d'en-tête :",
+      "customLogo": "URL du logo personnalisé :",
       "showQRCode": "Afficher code QR",
       "maxDistance": "Rayon de recherche :"
     },
@@ -34,13 +35,18 @@
       "dark": "Sombre",
       "auto": "Auto"
     },
+    "customLogo": {
+      "helpText": "Entrez l'URL ou le chemin local du logo de votre organisation (ex: https://example.com/logo.png ou /assets/images/logo.png)",
+      "clear": "Supprimer le logo personnalisé",
+      "invalidUrl": "Échec du chargement de l'image du logo"
+    },
     "hiddenRoutes": {
       "title": "Lignes masquées",
       "helpText": "Cliquez pour afficher les lignes"
     },
     "qrCode": {
       "title": "Code QR",
-      "helpText": "Scannez avec votre téléphone pour ouvrir cet emplacement dans l'application Transit",
+      "helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
       "scanPrompt": "Aimeriez-vous apporter ces départs avec vous ?",
       "scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
     },
@@ -90,6 +96,7 @@
   },
   "aria": {
     "transitApp": "Application Transit",
+    "customLogo": "Logo de l'organisation",
     "settings": "Paramètres",
     "moveRouteToTop": "Déplacer la ligne en haut",
     "moveRouteUp": "Déplacer la ligne vers le haut",
@@ -97,7 +104,8 @@
     "hideRoute": "Masquer la ligne"
   },
   "alerts": {
-    "default": "Alerte de service"
+    "default": "Alerte de service",
+    "title": "Alertes"
   },
   "time": {
     "min": "min",

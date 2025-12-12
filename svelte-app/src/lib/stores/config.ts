@@ -21,6 +21,7 @@ export interface Config {
 	headerColor: string;
 	showQRCode: boolean;
 	maxDistance: number;
+	customLogo: string | null;
 }
 
 const defaultConfig: Config = {
@@ -39,7 +40,8 @@ const defaultConfig: Config = {
 	theme: 'light',
 	headerColor: '#30b566',
 	showQRCode: false,
-	maxDistance: 500
+	maxDistance: 500,
+	customLogo: null
 };
 
 function createConfigStore() {
