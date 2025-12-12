@@ -168,6 +168,35 @@ To use unattended setup, simply modify your relevant `.env` file or environment 
 
 Please review the `.env` examples for an overview of all unattended variables available.
 
+### Custom Logo
+
+Transit TV supports displaying your organization's logo alongside the "Powered by Transit" logo in the header. This feature works with both external URLs and local file paths.
+
+**Using external URLs:**
+
+Set the `UNATTENDED_CUSTOM_LOGO` environment variable to your logo URL:
+
+```bash
+UNATTENDED_CUSTOM_LOGO=https://example.com/logo.png
+```
+
+**Using local files with Docker:**
+
+1. Mount your logo file to the container's static assets directory:
+
+   ```yaml
+   volumes:
+     - ./path/to/your/logo.png:/app/svelte-app/static/assets/images/logo.png:ro
+   ```
+
+2. Set the environment variable to the mounted path:
+
+   ```bash
+   UNATTENDED_CUSTOM_LOGO=/assets/images/logo.png
+   ```
+
+See [compose.yaml](compose.yaml) for volume mount examples.
+
 ## Project structure
 
 ```bash
