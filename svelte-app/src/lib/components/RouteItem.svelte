@@ -798,7 +798,7 @@
 		align-items: flex-start;
 		flex-wrap: nowrap;
 		gap: 0.5em;
-		line-height: .9;
+		line-height: .82;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
