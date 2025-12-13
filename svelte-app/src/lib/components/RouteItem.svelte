@@ -317,16 +317,9 @@
 	}>([
 		// Example: Always use dark mode color (even in light mode)
 		// ['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
-		// ['wmata-metrorail-silver-v2', { alwaysUseDarkModeColor: true }],
-		// ['wmata-metrorail-yellow-v2', { alwaysUseDarkModeColor: true }],
 		// ['mla-j', { alwaysUseDarkModeColor: true }],
-		// ['mla-e', { alwaysUseDarkModeColor: true }],
 		// ['bart-y', { alwaysUseDarkModeColor: true }],
 		// ['mta-subway-n', { alwaysUseDarkModeColor: true }],
-		// ['mta-subway-q', { alwaysUseDarkModeColor: true }],
-		// ['mta-subway-r', { alwaysUseDarkModeColor: true }],
-		// ['mta-subway-w', { alwaysUseDarkModeColor: true }],
-		// ['ttc-subway-1', { alwaysUseDarkModeColor: true }],
 		// ['stm-metro', { alwaysUseDarkModeColor: true }],
 		// ['stm-metro-4', { alwaysUseDarkModeColor: true }],
 		// ['muni-cablecar', { alwaysUseDarkModeColor: true }],
