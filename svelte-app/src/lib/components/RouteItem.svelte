@@ -32,7 +32,12 @@
 
 		// GO Transit: Use long name for abbreviated routes (e.g., "Kitchener" not "KI")
 		if (route.route_network_name === 'GO Transit' && route.route_long_name) {
-			return route.route_long_name; // Pairs with line 182: returns "Line"
+			return route.route_long_name; // Pairs with line 200: returns "Line"
+		}
+
+		// Capitol Corridor: Use full name instead of abbreviation
+		if (route.route_network_name === 'Capitol Corridor' && route.route_long_name) {
+			return route.route_long_name; // Pairs with line 124: returns ""
 		}
 
 		const routeName = route.route_short_name || route.route_long_name;
@@ -107,6 +112,21 @@
 		// LIRR: Hide mode name (full branch name shown in alertRouteName)
 		if (route.route_network_name === 'Long Island Rail Road') {
 			return ""; // Pairs with line 30: returns route_long_name
+		}
+
+		// ACE: Branded service, hide mode name (just show "ACE")
+		if (route.route_network_name === 'ACE') {
+			return ""; // Returns just "ACE" without "Line"
+		}
+
+		// Capitol Corridor: Branded corridor name, hide mode name
+		if (route.route_network_name === 'Capitol Corridor') {
+			return ""; // Pairs with line 40: returns "Capitol Corridor"
+		}
+
+		// Hide mode name when it matches the route name (e.g., Caltrain)
+		if (modeName && (modeName === shortName || modeName === route.route_long_name)) {
+			return ""; // Prevents "Caltrain Caltrain"
 		}
 
 		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
@@ -225,6 +245,12 @@
 					checkAlertOverflow(element);
 					return;
 				}
+
+				// Check if this is the alert header element
+				if (element === alertHeaderElement) {
+					checkAlertHeaderOverflow(element);
+					return;
+				}
 			});
 		});
 	}
@@ -290,22 +316,24 @@
 		color?: string;
 	}>([
 		// Example: Always use dark mode color (even in light mode)
-		['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
-		['wmata-metrorail-silver-v2', { alwaysUseDarkModeColor: true }],
-		['wmata-metrorail-yellow-v2', { alwaysUseDarkModeColor: true }],
-		['mla-j', { alwaysUseDarkModeColor: true }],
-		['mla-e', { alwaysUseDarkModeColor: true }],
-		['bart-y', { alwaysUseDarkModeColor: true }],
-		['mta-subway-n', { alwaysUseDarkModeColor: true }],
-		['mta-subway-q', { alwaysUseDarkModeColor: true }],
-		['mta-subway-r', { alwaysUseDarkModeColor: true }],
-		['mta-subway-w', { alwaysUseDarkModeColor: true }],
-		['ttc-subway-1', { alwaysUseDarkModeColor: true }],
-		['stm-metro', { alwaysUseDarkModeColor: true }],
-		['stm-metro-4', { alwaysUseDarkModeColor: true }],
-		['muni-cablecar', { alwaysUseDarkModeColor: true }],
-		['san-diego-trolley', { alwaysUseDarkModeColor: true }],
-		['septa-metro-badge-g', { alwaysUseDarkModeColor: true }]
+		// ['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
+		// ['wmata-metrorail-silver-v2', { alwaysUseDarkModeColor: true }],
+		// ['wmata-metrorail-yellow-v2', { alwaysUseDarkModeColor: true }],
+		// ['mla-j', { alwaysUseDarkModeColor: true }],
+		// ['mla-e', { alwaysUseDarkModeColor: true }],
+		// ['bart-y', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-n', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-q', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-r', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-w', { alwaysUseDarkModeColor: true }],
+		// ['ttc-subway-1', { alwaysUseDarkModeColor: true }],
+		// ['stm-metro', { alwaysUseDarkModeColor: true }],
+		// ['stm-metro-4', { alwaysUseDarkModeColor: true }],
+		// ['muni-cablecar', { alwaysUseDarkModeColor: true }],
+		// ['san-diego-trolley', { alwaysUseDarkModeColor: true }],
+		// ['septa-metro-badge-g', { alwaysUseDarkModeColor: true }],
+		// ['vehicle-rail-coradialint', { alwaysUseDarkModeColor: true }],
+		// ['pstafl-sunrunner-wordmark', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
@@ -321,8 +349,8 @@
 		alwaysUseDarkModeColors?: boolean;
 	}>([
 		// Certain routes with orange backgrounds need to keep black text in dark mode
-		['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
-		['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
+		// ['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
+		// ['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
 		['MUNI:4578', { alwaysUseDarkModeColors: true }], // Route 27
 	]);
 
@@ -363,7 +391,9 @@
 				hex = iconOverride.color;
 			} else if (useLightMode) {
 				// Light mode calculation
-				hex = useBlackText ? '000000' : route.route_color;
+				// Use route color if vibrant enough (luminance > 0.15), otherwise black
+				const routeLuminance = getRelativeLuminance(route.route_color);
+				hex = (useBlackText && routeLuminance < 0.15) ? '000000' : route.route_color;
 			} else {
 				// Dark mode calculation
 				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
@@ -384,12 +414,44 @@
 		                     !isDarkMode;
 
 		if (useLightMode) {
-			// Light mode: use black if route has black text, otherwise use route color
-			return useBlackText ? '#000000' : `#${route.route_color}`;
+			// Light mode: use route color if vibrant enough, otherwise black
+			// Bright/vibrant colors (luminance > 0.15) should display in their color even with black text
+			// Very dark colors with black text should render as black
+			const routeLuminance = getRelativeLuminance(route.route_color);
+			return (useBlackText && routeLuminance < 0.15) ? '#000000' : `#${route.route_color}`;
 		} else {
 			// Dark mode: invert if very dark bg + light text, otherwise use route color
 			return shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`;
 		}
+	});
+
+	// Calculate contrast ratio between two colors (WCAG formula)
+	function getContrastRatio(lum1: number, lum2: number): number {
+		const lighter = Math.max(lum1, lum2);
+		const darker = Math.min(lum1, lum2);
+		return (lighter + 0.05) / (darker + 0.05);
+	}
+
+	// Stop name color: use route color if contrast is acceptable, otherwise use default text
+	let stopNameColor = $derived.by(() => {
+		// Get the route display color (remove # prefix)
+		const routeColorHex = routeDisplayColor.replace('#', '');
+		const routeColorLum = getRelativeLuminance(routeColorHex);
+
+		// Background luminance (light mode: white ~1.0, dark mode: dark ~0.05)
+		const bgLum = isDarkMode ? 0.03 : 1.0;
+
+		// Check contrast ratio with mode-specific thresholds
+		// Light mode: 2.0:1 (stricter - light colors on white are harder to see)
+		//   Allows: Green (3.59:1), Blue (5.65:1), Orange (2.54:1)
+		//   Forces default: Yellow (1.52:1), Silver (1.61:1)
+		// Dark mode: 1.5:1 (more lenient - most colors pop on dark backgrounds)
+		//   Allows: Blue (1.86:1), Green (2.93:1), Orange (4.13:1)
+		const contrast = getContrastRatio(routeColorLum, bgLum);
+		const threshold = isDarkMode ? 1.5 : 2.0;
+
+		// If contrast is sufficient, use route color; otherwise use default text color
+		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
 	});
 
 	function getMinutesUntil(departure: number): number {
@@ -494,6 +556,9 @@
 	let isAlertOverflowing = $state(false);
 	let shouldScrollAlert = $derived(relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing));
 
+	let alertHeaderElement: HTMLElement | null = null;
+	let isAlertHeaderOverflowing = $state(false);
+
 	let destinationCheckTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
 
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
@@ -507,7 +572,8 @@
 
 		const timeout = setTimeout(() => {
 			requestAnimationFrame(() => {
-				const isOverflowing = element.scrollWidth > parent.clientWidth;
+				// Add 5px threshold to trigger scrolling slightly before actual overflow
+				const isOverflowing = element.scrollWidth > (parent.clientWidth - 5);
 				const newSet = new Set(overflowingDestinations);
 				if (isOverflowing) {
 					newSet.add(index);
@@ -534,6 +600,26 @@
 		alertCheckTimeout = setTimeout(() => {
 			requestAnimationFrame(() => {
 				isAlertOverflowing = element.scrollHeight > parent.clientHeight;
+			});
+		}, 150);
+	}
+
+	let alertHeaderCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function checkAlertHeaderOverflow(element: HTMLElement) {
+		if (!element) return;
+		const parent = element.parentElement;
+		if (!parent) return;
+
+		// Debounce resize checks
+		if (alertHeaderCheckTimeout) clearTimeout(alertHeaderCheckTimeout);
+
+		alertHeaderCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				// Check if content width exceeds element's actual width (not parent)
+				// Using element.offsetWidth gives us the constrained flex width
+				// Add 2px threshold to account for sub-pixel rendering
+				isAlertHeaderOverflowing = element.scrollWidth > (element.offsetWidth + 2);
 			});
 		}, 150);
 	}
@@ -581,6 +667,28 @@
 			}
 		};
 	}
+
+	function bindAlertHeaderElement(node: HTMLElement) {
+		alertHeaderElement = node;
+
+		// Wait for layout to settle before checking overflow
+		setTimeout(() => {
+			checkAlertHeaderOverflow(node);
+		}, 100);
+
+		if (sharedResizeObserver) {
+			sharedResizeObserver.observe(node);
+		}
+
+		return {
+			destroy() {
+				if (sharedResizeObserver) {
+					sharedResizeObserver.unobserve(node);
+				}
+				alertHeaderElement = null;
+			}
+		};
+	}
 </script>
 
 <div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
@@ -600,7 +708,7 @@
 			{#each route.itineraries as dir, index}
 				{#if dir}
 					<div class="content">
-						<div class="stop_name">
+						<div class="stop_name" style="color: {stopNameColor}">
 							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
 						</div>
 						<div class="direction" style={cellStyle}>
@@ -638,8 +746,9 @@
 
 	{#if hasRelevantAlerts()}
 		<div>
-			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}>
-				<span><iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon> {$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
+			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? `${cellStyle}; --alert-bg-color: #${route.route_color}` : ''}>
+				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+				<span class="alert-header-text" class:scrolling={isAlertHeaderOverflowing} use:bindAlertHeaderElement>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
@@ -726,7 +835,6 @@
 		gap: 0.3em;
 		white-space: nowrap;
 		overflow: hidden;
-		text-overflow: ellipsis;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
@@ -744,15 +852,23 @@
 		/* Inherits from inline style (cellStyle) */
 	}
 
-	.route-alert-header span {
-		display: flex;
-		align-items: center;
-		gap: 0.3em;
-		flex-wrap: nowrap;
-		line-height: 1;
+	.route-alert-header .alert-header-text {
+		display: inline-block;
+		white-space: nowrap;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.route-alert-header .alert-header-text.scrolling {
+		animation: scroll-alert-header-horizontal 150s linear infinite;
+		will-change: transform;
+		overflow: visible;
+	}
+
+	.route-alert-header .alert-header-text:not(.scrolling) {
+		will-change: auto;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		min-width: 0;
 	}
 
 	.route-alert-header iconify-icon {
@@ -761,6 +877,23 @@
 		height: 1.25em;
 		flex-shrink: 0;
 		transform: translateY(0.05em);
+		position: relative;
+		z-index: 1;
+		padding-left: 0.5em;
+		padding-right: 0.5em;
+		margin-left: -0.5em;
+	}
+
+	.route-alert-header.severe iconify-icon {
+		background: linear-gradient(to right, #E30613 0%, #E30613 70%, transparent 100%);
+	}
+
+	.route-alert-header.warning iconify-icon {
+		background: linear-gradient(to right, #FFA700 0%, #FFA700 70%, transparent 100%);
+	}
+
+	.route-alert-header.info iconify-icon {
+		background: linear-gradient(to right, var(--alert-bg-color, transparent) 0%, var(--alert-bg-color, transparent) 70%, transparent 100%);
 	}
 
 	.route.white .route-alert-header {
@@ -840,6 +973,15 @@
 		}
 	}
 
+	@keyframes scroll-alert-header-horizontal {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-100%);
+		}
+	}
+
 	.route h3 .destination-text {
 		display: inline-block;
 		white-space: nowrap;
@@ -858,12 +1000,12 @@
 	}
 
 	.route .img28 {
-		height: 0.9em;
+		height: 0.82em;
 		display: block;
 	}
 
 	.route .img34 {
-		height: 0.9em;
+		height: 0.82em;
 		display: block;
 	}
 
