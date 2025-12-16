@@ -2,17 +2,26 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Install pnpm globally (cached layer)
 RUN npm install -g pnpm
 
+# Copy dependency files first for better layer caching
+COPY package.json pnpm-lock.yaml ./
 COPY svelte-app/package.json svelte-app/pnpm-lock.yaml ./svelte-app/
-WORKDIR /app/svelte-app
-RUN pnpm install
 
+# Install root dependencies (cached unless package files change)
+RUN pnpm install --frozen-lockfile
+
+# Install svelte-app dependencies (cached unless package files change)
+WORKDIR /app/svelte-app
+RUN pnpm install --frozen-lockfile
+
+# Copy source code (only rebuilds when source changes)
 WORKDIR /app
 COPY svelte-app ./svelte-app
 COPY server ./server
-COPY package.json pnpm-lock.yaml ./
 
+# Build the application
 RUN cd svelte-app && pnpm run build
 
 FROM node:24-alpine
