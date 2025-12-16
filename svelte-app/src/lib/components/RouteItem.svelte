@@ -906,6 +906,13 @@
 		flex-shrink: 0;
 	}
 
+	/* Adjust alert height for portrait displays */
+	@media (orientation: portrait) {
+		.route-alert-ticker {
+			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
 	@keyframes scroll-alert-vertical {
 		0% {
 			transform: translateY(0);
