@@ -1059,9 +1059,9 @@
 		font-size: 2em;
 		vertical-align: middle;
 		display: inline-block;
-		line-height: 1.4em;
+		line-height: 1.5em;
 		margin-bottom: -0.1em;
-		white-space: nowrap;
+		white-space:nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
@@ -1107,7 +1107,7 @@
 	.clock {
 		font-size: 1.8em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		line-height: 2em;
+		line-height: 2.2em;
 		font-weight: 500;
 		display: inline-block;
 		margin-left: 3em;
@@ -1457,14 +1457,11 @@
 	}
 
 	.btn-option:hover {
-		/* border-color: #007bff; */
 		border-color: var(--bg-header); 
 		background: var(--bg-primary);
 	}
 
 	.btn-option.active {
-		/* border-color: #007bff; */
-		/* background: #007bff; */
 		border-color: var(--bg-header);
 		background-color: var(--bg-header);
 		color: white;
