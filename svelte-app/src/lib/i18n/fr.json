@@ -15,7 +15,8 @@
       "headerColor": "Couleur d'en-tête :",
       "customLogo": "URL du logo personnalisé :",
       "showQRCode": "Afficher code QR",
-      "maxDistance": "Rayon de recherche :"
+      "maxDistance": "Rayon de recherche :",
+      "groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?"
     },
     "timeFormats": {
       "12hour": "12 heures",

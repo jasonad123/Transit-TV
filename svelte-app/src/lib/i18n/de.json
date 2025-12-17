@@ -15,7 +15,8 @@
       "headerColor": "Kopfzeilenfarbe:",
       "showQRCode": "QR-Code anzeigen",
       "customLogo": "Logo-URL:",
-      "maxDistance": "Suchradius:"
+      "maxDistance": "Suchradius:",
+      "groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?"
     },
     "timeFormats": {
       "12hour": "12 Stunden",

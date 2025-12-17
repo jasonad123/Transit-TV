@@ -15,7 +15,8 @@
       "headerColor": "Color del encabezado:",
       "customLogo": "URL del logotipo personalizado:",
       "showQRCode": "Mostrar código QR",
-      "maxDistance": "Radio de búsqueda:"
+      "maxDistance": "Radio de búsqueda:",
+      "groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?"
     },
     "timeFormats": {
       "12hour": "12 horas",
