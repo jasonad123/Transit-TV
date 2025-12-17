@@ -5,9 +5,10 @@ on:
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
     branches:
-      - 'main'           # Auto-build main branch
       - 'feature/**'     # Auto-beta for feature branches
-      - 'claude/**'      # Auto-beta for claude branches
+      - 'feat/**'        # Auto-beta for feat branches
+      - 'alpha/**'       # Auto-beta for alpha branches
+      - 'beta/**'        # Auto-beta for beta branches
     paths-ignore:        # Skip builds for doc-only changes (saves build minutes)
       - '**.md'
       - 'docs/**'
@@ -20,6 +21,7 @@ on:
         required: true
         type: choice
         options:
+          - alpha
           - beta
           - latest
           - branch-test
@@ -127,7 +129,11 @@ jobs:
             TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
             # Detect if it's a feature/development branch for auto-beta
-            if [[ "$BRANCH_NAME" =~ ^(feature|claude|feat) ]]; then
+            if [[ "$BRANCH_NAME" =~ ^(feature|feat) ]]; then
+              echo "release_type=auto-beta" >> $GITHUB_OUTPUT
+              echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            elif [[ "$BRANCH_NAME" =~ ^(alpha|beta) ]]; then
               echo "release_type=auto-beta" >> $GITHUB_OUTPUT
               echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
               echo "is_prerelease=true" >> $GITHUB_OUTPUT
