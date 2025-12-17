@@ -3,11 +3,11 @@ name: Build and publish Docker image
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
+      - 'v*.*.*'  # stable releases
     branches:
+      - 'main'        # Release branch for stable releases
       - 'feature/**'     # Auto-beta for feature branches
       - 'feat/**'        # Auto-beta for feat branches
-      - 'alpha/**'       # Auto-beta for alpha branches
       - 'beta/**'        # Auto-beta for beta branches
     paths-ignore:        # Skip builds for doc-only changes (saves build minutes)
       - '**.md'
@@ -21,7 +21,6 @@ on:
         required: true
         type: choice
         options:
-          - alpha
           - beta
           - latest
           - branch-test
@@ -126,14 +125,12 @@ jobs:
 
           # Handle automatic branch pushes (NEW - auto-beta)
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-
             # Detect if it's a feature/development branch for auto-beta
             if [[ "$BRANCH_NAME" =~ ^(feature|feat) ]]; then
               echo "release_type=auto-beta" >> $GITHUB_OUTPUT
               echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
               echo "is_prerelease=true" >> $GITHUB_OUTPUT
-            elif [[ "$BRANCH_NAME" =~ ^(alpha|beta) ]]; then
+            elif [[ "$BRANCH_NAME" =~ ^(beta) ]]; then
               echo "release_type=auto-beta" >> $GITHUB_OUTPUT
               echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
               echo "is_prerelease=true" >> $GITHUB_OUTPUT
@@ -231,7 +228,7 @@ jobs:
           
       - name: Generate summary
         run: |
-          echo "## Docker Image Published Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "## Docker Image Published Successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Add version info based on release type
