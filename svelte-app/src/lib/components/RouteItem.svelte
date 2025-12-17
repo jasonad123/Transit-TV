@@ -832,17 +832,16 @@
 	.route h2 {
 		position: relative;
 		padding-left: 0.15em;
-		padding-bottom: 0em;
+		padding-bottom: -0.2em;
 		padding-top: 0.25em;
 		display: flex;
 		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0.5em;
-		line-height: .81;
+		line-height: 0.82em;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
-		font-weight: 800;
 	}
 
 	.route h2 .route-icon {
@@ -1040,12 +1039,12 @@
 	}
 
 	.route .img28 {
-		height: 0.82em;
+		height: 0.875em;
 		display: block;
 	}
 
 	.route .img34 {
-		height: 0.82em;
+		height: 0.875em;
 		display: block;
 	}
 
