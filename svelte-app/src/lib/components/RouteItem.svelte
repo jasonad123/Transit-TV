@@ -774,7 +774,7 @@
 	}
 
 	.route > div {
-		padding: 0.5em 1em 0.5em;
+		padding: 0.5em .25em 0.5em;
 		border-radius: 0.5em;
 	}
 
@@ -785,7 +785,7 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
-		padding: 0 1em;
+		padding: 0 .25em 0;
 	}
 
 	.route h2 {
@@ -798,7 +798,7 @@
 		align-items: flex-start;
 		flex-wrap: nowrap;
 		gap: 0.5em;
-		line-height: .82;
+		line-height: .81;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;

@@ -992,7 +992,7 @@
 	}
 
 	.content {
-		height: calc(100vh - 4.3em);
+		height: calc(100vh - 4.9em);
 		position: relative;
 	}
 
