@@ -5,7 +5,7 @@ on:
     tags:
       - 'v*.*.*'  # stable releases
     branches:
-      - 'main'        # Release branch for stable releases
+      - 'main'           # Edge releases (bleeding edge, post-release commits)
       - 'feature/**'     # Auto-beta for feature branches
       - 'feat/**'        # Auto-beta for feat branches
       - 'beta/**'        # Auto-beta for beta branches
@@ -135,9 +135,9 @@ jobs:
               echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
               echo "is_prerelease=true" >> $GITHUB_OUTPUT
             else
-              # Main branch gets latest treatment
+              # Main branch gets edge treatment (bleeding edge builds)
               echo "release_type=release-branch" >> $GITHUB_OUTPUT
-              echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
+              echo "version=edge-$SHORT_SHA" >> $GITHUB_OUTPUT
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
             echo "is_tag=false" >> $GITHUB_OUTPUT
@@ -156,8 +156,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # For release branch push, tag as latest and with commit SHA
-            type=raw,value=latest,enable=${{ steps.version.outputs.release_type == 'release-branch' }}
+            # For main branch push, tag as edge (bleeding edge) with commit SHA
+            type=raw,value=edge,enable=${{ steps.version.outputs.release_type == 'release-branch' }}
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'release-branch' }}
 
             # For version tags (v1.0.0), tag with version number
@@ -259,7 +259,7 @@ jobs:
               fi
               ;;
             "release-branch")
-              echo "**Release Type:** Latest Release (from release branch)" >> $GITHUB_STEP_SUMMARY
+              echo "**Release Type:** Edge Release (from main branch)" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
           esac
@@ -317,10 +317,10 @@ jobs:
               fi
               ;;
             "release-branch")
-              echo "# Latest from release branch" >> $GITHUB_STEP_SUMMARY
-              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+              echo "# Edge (bleeding edge from main branch)" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:edge" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "# Specific version" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific edge version" >> $GITHUB_STEP_SUMMARY
               echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
               ;;
           esac
