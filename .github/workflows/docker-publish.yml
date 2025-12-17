@@ -3,7 +3,17 @@ name: Build and publish Docker image
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
+      - 'v*.*.*'  # stable releases
+    branches:
+      - 'main'        # Release branch for stable releases
+      - 'feature/**'     # Auto-beta for feature branches
+      - 'feat/**'        # Auto-beta for feat branches
+      - 'beta/**'        # Auto-beta for beta branches
+    paths-ignore:        # Skip builds for doc-only changes (saves build minutes)
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/docker-publish.yml'
   workflow_dispatch:  # Allow manual triggering
     inputs:
       release_type:
@@ -28,16 +38,22 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    
+
+    # Cancel redundant builds to save build minutes
+    concurrency:
+      group: docker-build-${{ github.ref }}
+      cancel-in-progress: true
+
     permissions:
       contents: read
       packages: write
-      
+
     outputs:
       version: ${{ steps.version.outputs.version }}
       is_tag: ${{ steps.version.outputs.is_tag }}
       is_prerelease: ${{ steps.version.outputs.is_prerelease }}
       image_digest: ${{ steps.build.outputs.digest }}
+      release_type: ${{ steps.version.outputs.release_type }}
       
     steps:
       - name: Checkout repository
@@ -107,11 +123,30 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
 
-          # Handle release branch push
+          # Handle automatic branch pushes (NEW - auto-beta)
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            # Detect if it's a feature/development branch for auto-beta
+            if [[ "$BRANCH_NAME" =~ ^(feature|feat) ]]; then
+              echo "release_type=auto-beta" >> $GITHUB_OUTPUT
+              echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            elif [[ "$BRANCH_NAME" =~ ^(beta) ]]; then
+              echo "release_type=auto-beta" >> $GITHUB_OUTPUT
+              echo "version=beta-${BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              # Main branch gets latest treatment
+              echo "release_type=release-branch" >> $GITHUB_OUTPUT
+              echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+            echo "is_tag=false" >> $GITHUB_OUTPUT
+
+          # Fallback
           else
             echo "version=latest-$SHORT_SHA" >> $GITHUB_OUTPUT
             echo "is_tag=false" >> $GITHUB_OUTPUT
-            echo "release_type=release-branch" >> $GITHUB_OUTPUT
+            echo "release_type=unknown" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
           
@@ -141,6 +176,10 @@ jobs:
 
             # For branch test builds
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'branch-test' }}
+
+            # For auto-beta from feature branches (NEW)
+            type=raw,value=beta,enable=${{ steps.version.outputs.release_type == 'auto-beta' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'auto-beta' }}
 
             # For any pre-release version tags (alpha, beta, rc, dev in version string)
             type=raw,value=pre-release,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.is_prerelease == 'true' }}
@@ -189,15 +228,20 @@ jobs:
           
       - name: Generate summary
         run: |
-          echo "## Docker Image Published Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "## Docker Image Published Successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Add version info based on release type
           RELEASE_TYPE="${{ steps.version.outputs.release_type }}"
           case "$RELEASE_TYPE" in
             "beta")
-              echo "**Release Type:** Beta Release" >> $GITHUB_STEP_SUMMARY
+              echo "**Release Type:** Beta Release (Manual)" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "auto-beta")
+              echo "**Release Type:** Beta Release (Auto from Feature Branch)" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
             "latest")
               echo "**Release Type:** Manual Latest Release" >> $GITHUB_STEP_SUMMARY
@@ -237,6 +281,13 @@ jobs:
               echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:beta" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "# Specific beta version" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "auto-beta")
+              echo "# Auto-beta - latest beta (multi-arch: amd64, arm64)" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:beta" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific beta version from this branch" >> $GITHUB_STEP_SUMMARY
               echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
               ;;
             "latest")
@@ -284,12 +335,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: success()
-    
+
     permissions:
       packages: write
-      
+
     steps:
-      - name: Delete old pre-release images
+      - name: Delete old beta images (aggressive cleanup for auto-beta)
+        if: needs.build-and-push.outputs.release_type == 'auto-beta' || needs.build-and-push.outputs.release_type == 'beta'
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
+        with:
+          package-name: transit-tv  # Match the lowercase image name
+          package-type: container
+          min-versions-to-keep: 5  # Keep fewer beta versions to save storage
+          delete-only-untagged-versions: false
+        continue-on-error: true
+
+      - name: Delete old pre-release images (other types)
+        if: needs.build-and-push.outputs.release_type != 'auto-beta' && needs.build-and-push.outputs.release_type != 'beta'
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
         with:
           package-name: transit-tv  # Match the lowercase image name

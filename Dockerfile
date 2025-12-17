@@ -4,15 +4,22 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY svelte-app/package.json svelte-app/pnpm-lock.yaml ./svelte-app/
-WORKDIR /app/svelte-app
-RUN pnpm install
+COPY package.json pnpm-lock.yaml ./
+COPY svelte-app/package.json svelte-app/pnpm-lock.yaml svelte-app/pnpm-workspace.yaml ./svelte-app/
 
+
+RUN pnpm install --frozen-lockfile
+
+# Install svelte-app dependencies (cached unless package files change)
+WORKDIR /app/svelte-app
+RUN pnpm install --frozen-lockfile
+
+# Copy source code (only rebuilds when source changes)
 WORKDIR /app
 COPY svelte-app ./svelte-app
 COPY server ./server
-COPY package.json pnpm-lock.yaml ./
 
+# Build the application
 RUN cd svelte-app && pnpm run build
 
 FROM node:24-alpine
