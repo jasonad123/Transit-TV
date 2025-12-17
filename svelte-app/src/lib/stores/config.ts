@@ -22,6 +22,7 @@ export interface Config {
 	showQRCode: boolean;
 	maxDistance: number;
 	customLogo: string | null;
+	groupItinerariesByStop: boolean;
 }
 
 const defaultConfig: Config = {
@@ -41,7 +42,8 @@ const defaultConfig: Config = {
 	headerColor: '#30b566',
 	showQRCode: false,
 	maxDistance: 500,
-	customLogo: null
+	customLogo: null,
+	groupItinerariesByStop: false,
 };
 
 function createConfigStore() {

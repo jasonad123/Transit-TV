@@ -2,7 +2,8 @@
 	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import type { Route, ScheduleItem} from '$lib/services/nearby';
+	import { config } from '$lib/stores/config';
+	import type { Route, ScheduleItem, Itinerary} from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 
 	let { route }: { route: Route } = $props();
