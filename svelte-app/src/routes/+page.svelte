@@ -795,6 +795,27 @@
 				</label>
 				<p class="help-text">{$_('config.qrCode.helpText')}</p>
 
+				<label class="toggle-label">
+					<span>{$_('config.fields.groupItinerariesByStop')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.groupItinerariesByStop}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
+
+				<label class="toggle-label">
+					<span>{$_('config.fields.filterRedundantTerminus')}</span>
+					<label class="toggle-switch">
+						<input
+							type="checkbox"
+							bind:checked={$config.filterRedundantTerminus}
+						/>
+						<span class="toggle-slider"></span>
+					</label>
+				</label>
 
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
@@ -1244,6 +1265,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1em;
+		margin-bottom: 0.5em;
 	}
 
 	.toggle-switch {

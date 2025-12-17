@@ -16,7 +16,8 @@
       "customLogo": "Custom Logo URL:",
       "showQRCode": "Show QR Code",
       "maxDistance": "Search Radius:",
-      "groupItinerariesByStop": "Group destinations with shared stop names?"
+      "groupItinerariesByStop": "Group destinations with shared stop names?",
+      "filterRedundantTerminus": "Filter redundant terminus entries?"
     },
     "timeFormats": {
       "12hour": "12 Hours",

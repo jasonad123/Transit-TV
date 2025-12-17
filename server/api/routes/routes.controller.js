@@ -53,14 +53,14 @@ exports.nearby = async function (req, res) {
       return res.status(response.status).json({ error: 'Transit API error' });
     }
 
-    const body = await response.text();
+    const data = await response.json();
 
     res.set({
       'Cache-Control': 'public, max-age=30',
       'Vary': 'Accept-Encoding'
     });
 
-    res.status(200).send(body);
+    res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching nearby routes:', error);
 

@@ -683,6 +683,45 @@
 			}
 		};
 	}
+
+	// Group itineraries by parent station
+	interface ItineraryGroup {
+		stopId: string;
+		stopName: string;
+		itineraries: Itinerary[];
+	}
+
+	function groupItinerariesByStop(): ItineraryGroup[] {
+		if (!route.itineraries) return [];
+
+		const groups = new Map<string, ItineraryGroup>();
+
+		route.itineraries.forEach((itinerary) => {
+			const stopId = itinerary.closest_stop?.parent_station_global_stop_id
+				|| itinerary.closest_stop?.global_stop_id
+				|| 'unknown';
+			const stopName = itinerary.closest_stop?.stop_name || 'Unknown stop';
+
+			if (!groups.has(stopId)) {
+				groups.set(stopId, {
+					stopId,
+					stopName,
+					itineraries: []
+				});
+			}
+
+			groups.get(stopId)!.itineraries.push(itinerary);
+		});
+
+		return Array.from(groups.values());
+	}
+
+	let itineraryGroups = $derived($config.groupItinerariesByStop ? groupItinerariesByStop() :
+		route.itineraries?.map(itinerary => ({
+			stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
+			stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
+			itineraries: [itinerary]
+		})) || []);
 </script>
 
 <div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
@@ -698,45 +737,46 @@
 				alt="Route icon"
 			/>{/if}{/if}</span></h2>
 
-		{#if route.itineraries}
-			{#each route.itineraries as dir, index}
-				{#if dir}
-					<div class="content">
-						<div class="stop_name" style="color: {stopNameColor}">
-							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
-						</div>
-						<div class="direction" style={cellStyle}>
-							<h3>
-								<span
+	{#if itineraryGroups.length > 0}
+		{#each itineraryGroups as group}
+			<div class="content">
+				<div class="stop_name" style="color: {stopNameColor}">
+					<iconify-icon icon="ix:location-filled"></iconify-icon> {group.stopName}
+				</div>
+				{#each group.itineraries as dir, index}
+					<div class="direction" style={cellStyle} class:first-branch={index === 0} class:multi-branch={group.itineraries.length > 1}>
+						<h3>
+							<span
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-							>{dir.merged_headsign || 'Unknown destination'}</span></h3>
+							>{dir.merged_headsign || 'Unknown destination'}</span>
+						</h3>
 
-							<div class="time">
-								{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
-									<h4>
-										<span>{getMinutesUntil(item.departure_time)}</span>
-										{#if item.is_real_time}
-											<i class="realtime"></i>
-										{/if}
-										<small class:last={item.is_last}
-											>{item.is_last ? 'last' : 'min'}</small
-										>
-									</h4>
-								{/each}
-								{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
-									<h4>
-										<span class="inactive">&nbsp;</span>
-										<small>&nbsp;</small>
-									</h4>
-								{/each}
-							</div>
+						<div class="time">
+							{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
+								<h4>
+									<span>{getMinutesUntil(item.departure_time)}</span>
+									{#if item.is_real_time}
+										<i class="realtime"></i>
+									{/if}
+									<small class:last={item.is_last}
+										>{item.is_last ? 'last' : 'min'}</small
+									>
+								</h4>
+							{/each}
+							{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
+								<h4>
+									<span class="inactive">&nbsp;</span>
+									<small>&nbsp;</small>
+								</h4>
+							{/each}
 						</div>
 					</div>
-				{/if}
-			{/each}
-		{/if}
+				{/each}
+			</div>
+		{/each}
+	{/if}
 
 	{#if hasRelevantAlerts()}
 		<div>
@@ -791,12 +831,11 @@
 
 	.route h2 {
 		position: relative;
-		padding-left: 0.26em;
-		margin-bottom: 0em;
+		padding-left: 0.15em;
 		padding-bottom: 0em;
 		padding-top: 0.25em;
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0.5em;
 		line-height: .81;
@@ -1028,6 +1067,34 @@
 	.route .direction {
 		border-radius: 0.5em;
 		margin-bottom: 0.2em;
+	}
+
+	/* Styling for multi-branch routes */
+	.route .direction.multi-branch {
+		margin-bottom: 0.15em;
+	}
+
+	.route .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(255, 255, 255, 0.15);
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+	}
+
+	.route.white .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(0, 0, 0, 0.15);
+	}
+
+	.route .direction.multi-branch.first-branch {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.route .direction.multi-branch:not(:last-child) {
+		margin-bottom: 0;
+	}
+
+	.route .direction.multi-branch:last-child {
+		margin-bottom: 0.25em;
 	}
 
 	/* .direction iconify-icon {

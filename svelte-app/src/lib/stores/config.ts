@@ -23,6 +23,7 @@ export interface Config {
 	maxDistance: number;
 	customLogo: string | null;
 	groupItinerariesByStop: boolean;
+	filterRedundantTerminus: boolean;
 }
 
 const defaultConfig: Config = {
@@ -44,6 +45,7 @@ const defaultConfig: Config = {
 	maxDistance: 500,
 	customLogo: null,
 	groupItinerariesByStop: false,
+	filterRedundantTerminus: true
 };
 
 function createConfigStore() {

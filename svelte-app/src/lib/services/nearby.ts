@@ -1,4 +1,5 @@
 import { apiCache } from '$lib/utils/apiCache';
+import { config } from '$lib/stores/config';
 
 export interface Route {
 	global_route_id: string;
@@ -137,21 +138,52 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			}
 
 			const data = await response.json();
-			return filterRoutes(data.routes || []);
+			return data.routes || [];
 		},
 		20000 // 20 second cache (aligned with polling interval)
-	);
+	).then(routes => applyFilters(routes));
 }
 
-function filterRoutes(routes: Route[]): Route[] {
+// Helper function to check if an itinerary is a redundant terminus
+function isRedundantTerminus(itinerary: Itinerary): boolean {
+	if (!itinerary.closest_stop || !itinerary.merged_headsign) {
+		return false;
+	}
+
+	const stopName = itinerary.closest_stop.stop_name.toLowerCase().trim();
+	const destination = itinerary.merged_headsign.toLowerCase().trim();
+	const coreStopName = stopName.replace(/\s+station$/i, '').trim();
+	const destinationPattern = new RegExp(`^(\\w+\\s+to\\s+)?${coreStopName}(\\s+station)?$`, 'i');
+
+	return destinationPattern.test(destination);
+}
+
+// Apply filters based on current config (called after cache retrieval)
+function applyFilters(routes: Route[]): Route[] {
 	const seen = new Set<string>();
 	const result: Route[] = [];
+
+	// Get current config value for terminus filtering
+	let shouldFilterTerminus = false;
+	config.subscribe(c => { shouldFilterTerminus = c.filterRedundantTerminus; })();
 
 	for (const route of routes) {
 		const idStr = route.global_route_id.toString();
 		if (!seen.has(idStr)) {
 			seen.add(idStr);
-			result.push(route);
+
+			// Clone route to avoid mutating cached data
+			const routeCopy = {
+				...route,
+				itineraries: route.itineraries ? [...route.itineraries] : undefined
+			};
+
+			// Filter redundant terminus entries if enabled
+			if (shouldFilterTerminus && routeCopy.itineraries && Array.isArray(routeCopy.itineraries)) {
+				routeCopy.itineraries = routeCopy.itineraries.filter(itinerary => !isRedundantTerminus(itinerary));
+			}
+
+			result.push(routeCopy);
 		}
 	}
 

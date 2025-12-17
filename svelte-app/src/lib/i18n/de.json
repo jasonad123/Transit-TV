@@ -16,7 +16,8 @@
       "showQRCode": "QR-Code anzeigen",
       "customLogo": "Logo-URL:",
       "maxDistance": "Suchradius:",
-      "groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?"
+      "groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
+      "filterRedundantTerminus": "Redundante Endstationseinträge filtern?"
     },
     "timeFormats": {
       "12hour": "12 Stunden",

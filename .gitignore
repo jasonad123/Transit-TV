@@ -164,3 +164,12 @@ svelte-app/static/fonts/*
 .pnpm-store/*
 svelte-app/.pnpm-store/*
 Screenshot*.png
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+.playwright-mcp/*

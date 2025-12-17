@@ -16,7 +16,8 @@
       "customLogo": "URL du logo personnalisé :",
       "showQRCode": "Afficher code QR",
       "maxDistance": "Rayon de recherche :",
-      "groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?"
+      "groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
+      "filterRedundantTerminus": "Filtrer les entrées de terminus redondantes ?"
     },
     "timeFormats": {
       "12hour": "12 heures",

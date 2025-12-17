@@ -16,7 +16,8 @@
       "customLogo": "URL del logotipo personalizado:",
       "showQRCode": "Mostrar código QR",
       "maxDistance": "Radio de búsqueda:",
-      "groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?"
+      "groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?",
+      "filterRedundantTerminus": "¿Filtrar entradas de terminal redundantes?"
     },
     "timeFormats": {
       "12hour": "12 horas",
