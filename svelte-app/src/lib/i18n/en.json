@@ -50,7 +50,7 @@
 			"title": "QR Code",
 			"helpText": "Show a QR code that loads this location in Transit",
 			"scanPrompt": "Want to take these departures with you?",
-			"scanPrompt2": "Scan to open in the Transit app"
+			"scanPrompt2": "Scan the code to open in Transit"
 		},
 		"stopManagement": {
 			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card",
@@ -91,7 +91,7 @@
 		},
 		"credits": {
 			"title": "Credits",
-			"madeWith": "Made with <iconify-icon icon=\"ix:heart\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC",
+			"madeWith": "Made with <iconify-icon icon=\"ix:heart\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC </br> Originally made with  with <iconify-icon icon=\"ix:heart-filled\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Montreal, QC by <a href=\"https://transitapp.com/\" target=\"_blank\" rel=\"noopener\">Transit</a>",
 			"links": "<a href=\"https://github.com/jasonad123/Transit-TV\" target=\"_blank\" rel=\"noopener\">View on GitHub</a> &middot; Powered by <a href=\"https://transitapp.com/partners/apis\" target=\"_blank\" rel=\"noopener\">Transit API</a>"
 		}
 	},
