@@ -14,13 +14,17 @@
   "scripts": {
     "start": "node --env-file=.env server/app.js",
     "build": "cd svelte-app && pnpm install && pnpm build",
-    "clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit"
+    "clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit",
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
   },
   "engines": {
     "node": ">=24.0.0"
   },
   "private": true,
   "devDependencies": {
-    "@sveltejs/mcp": "^0.1.11"
+    "@sveltejs/mcp": "^0.1.11",
+    "prettier": "^3.7.4",
+    "prettier-plugin-svelte": "^3.4.0"
   }
 }
