@@ -11,6 +11,17 @@ module.exports = function (app) {
 	app.use('/api/config', require('./api/config'));
 	app.use('/api/server', require('./api/server'));
 
+	// Health check endpoint for monitoring and orchestration
+	app.get('/health', function (req, res) {
+		res.status(200).json({
+			status: 'healthy',
+			timestamp: new Date().toISOString(),
+			version: '1.3.0',
+			uptime: process.uptime(),
+			environment: process.env.NODE_ENV || 'development'
+		});
+	});
+
 	// All undefined asset or api routes should return a 404
 	app.get(
 		['/api/*splat', '/auth/*splat', '/components/*splat', '/app/*splat', '/assets/*splat'],

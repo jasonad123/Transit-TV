@@ -199,6 +199,61 @@ UNATTENDED_CUSTOM_LOGO=https://example.com/logo.png
 
 See [compose.yaml](compose.yaml) for volume mount examples.
 
+### Stop Grouping (v1.3.0+)
+
+Transit TV can group multiple route branches that serve the same parent station together on a single card. This is useful for transit systems where multiple route variants (e.g., "North to Downtown" and "North to Airport") share the same stop but have different destinations.
+
+**Enable stop grouping:**
+
+```bash
+UNATTENDED_GROUP_ITINERARIES=true
+```
+
+**When enabled:**
+- Routes serving the same parent station are visually grouped together
+- Multiple destinations appear on a single card with shared stop name
+- Cleaner display for complex transit systems with many route variants
+
+**Best for:** Metro systems, regional rail networks, and bus systems with multiple route branches
+
+### Terminus Filtering (v1.3.0+)
+
+When you're located at or near a terminus station, Transit TV can filter out redundant destination entries. For example, if you're already at "Waterfront Station", the display won't show "North to Waterfront" since you're already there.
+
+**Enable terminus filtering:**
+
+```bash
+UNATTENDED_FILTER_TERMINUS=true
+```
+
+**When enabled:**
+- Automatically hides destinations for the station you're currently at
+- Reduces clutter on the display
+- Shows only relevant outbound/opposite direction departures
+
+**Best for:** End-of-line stations, major terminals, and turnaround points
+
+### Health Check Endpoint (v1.3.0+)
+
+Transit TV now includes a `/health` endpoint for monitoring and container orchestration:
+
+```bash
+curl http://localhost:8080/health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-12-18T16:00:00.000Z",
+  "version": "1.3.0",
+  "uptime": 3600,
+  "environment": "production"
+}
+```
+
+This endpoint is used by Docker Compose health checks and can be integrated with monitoring tools like Prometheus, Datadog, or your cloud provider's health check system.
+
 ## Project structure
 
 ```bash
