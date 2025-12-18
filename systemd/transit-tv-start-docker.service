@@ -1,0 +1,22 @@
+[Unit]
+Description=Transit TV Graceful Start (Docker)
+Documentation=https://github.com/jasonad123/Transit-TV
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Use docker exec to run wget inside the container where localhost is actually localhost
+# This bypasses the API's localhost-only security check
+# Alpine image includes wget by default (but not curl)
+ExecStart=/usr/bin/docker exec transit-tv wget -q -O- --post-data='' http://localhost:8080/api/server/start
+RemainAfterExit=no
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=transit-tv-start
+
+# Timeout settings
+TimeoutStartSec=30s
+
+[Install]
+WantedBy=multi-user.target

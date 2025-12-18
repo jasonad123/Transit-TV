@@ -1,0 +1,13 @@
+[Unit]
+Description=Transit TV Graceful Shutdown Timer (Docker)
+Documentation=https://github.com/jasonad123/Transit-TV
+Requires=transit-tv-shutdown-docker.service
+
+[Timer]
+# Run at 6:00 PM Monday through Friday
+# Adjust this time to match your desired shutdown schedule
+OnCalendar=Mon-Fri 18:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
