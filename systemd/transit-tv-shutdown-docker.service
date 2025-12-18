@@ -6,10 +6,9 @@ After=docker.service
 
 [Service]
 Type=oneshot
-# Use docker exec to run wget inside the container where localhost is actually localhost
-# This bypasses the API's localhost-only security check
-# Alpine image includes wget by default (but not curl)
-ExecStart=/usr/bin/docker exec transit-tv wget -q -O- --post-data='' http://localhost:8080/api/server/shutdown
+# Use docker exec to run Node.js inside the container where localhost is actually localhost
+# This bypasses the API's localhost-only security check and works reliably with Alpine
+ExecStart=/usr/bin/docker exec transit-tv node -e "require('http').request({host:'localhost',port:8080,method:'POST',path:'/api/server/shutdown'},r=>{r.on('data',d=>process.stdout.write(d));r.on('end',()=>process.exit(0))}).on('error',e=>{console.error(e);process.exit(1)}).end()"
 RemainAfterExit=no
 StandardOutput=journal
 StandardError=journal

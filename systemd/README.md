@@ -53,7 +53,7 @@ Use the non-suffixed files if you're running Transit TV directly on the host:
 1. Docker and Docker Compose installed
 2. Transit TV running via `docker compose up -d` (using the provided compose.yaml)
 3. Container name is `transit-tv` (default in compose.yaml)
-4. No additional dependencies needed (uses wget inside Alpine container)
+4. No additional dependencies needed (uses Node.js inside the container)
 
 ### For Bare Metal Deployment
 1. Node.js >= 24.0.0 installed
@@ -122,7 +122,7 @@ sudo systemctl list-timers transit-tv-*
 sudo systemctl start transit-tv-shutdown-docker.service
 
 # Check status (should show isShutdown: true)
-docker exec transit-tv wget -q -O- http://localhost:8080/api/server/status
+docker exec transit-tv node -e "require('http').get('http://localhost:8080/api/server/status',r=>{r.on('data',d=>process.stdout.write(d))})"
 
 # Manually trigger graceful start
 sudo systemctl start transit-tv-start-docker.service
@@ -254,7 +254,7 @@ sudo systemctl start transit-tv-shutdown-docker.service  # Shutdown
 sudo systemctl start transit-tv-start-docker.service     # Start
 
 # Check status
-docker exec transit-tv wget -q -O- http://localhost:8080/api/server/status
+docker exec transit-tv node -e "require('http').get('http://localhost:8080/api/server/status',r=>{r.on('data',d=>process.stdout.write(d))})"
 
 # View timer status
 sudo systemctl list-timers transit-tv-*
@@ -375,13 +375,13 @@ sudo journalctl -u transit-tv-start.service -n 20
 **Docker:**
 ```bash
 # Check server status
-docker exec transit-tv wget -q -O- http://localhost:8080/api/server/status
+docker exec transit-tv node -e "require('http').get('http://localhost:8080/api/server/status',r=>{r.on('data',d=>process.stdout.write(d))})"
 
 # Trigger shutdown
-docker exec transit-tv wget -q -O- --post-data='' http://localhost:8080/api/server/shutdown
+docker exec transit-tv node -e "require('http').request({host:'localhost',port:8080,method:'POST',path:'/api/server/shutdown'},r=>{r.on('data',d=>process.stdout.write(d))}).end()"
 
 # Trigger start
-docker exec transit-tv wget -q -O- --post-data='' http://localhost:8080/api/server/start
+docker exec transit-tv node -e "require('http').request({host:'localhost',port:8080,method:'POST',path:'/api/server/start'},r=>{r.on('data',d=>process.stdout.write(d))}).end()"
 ```
 
 **Bare Metal:**
@@ -422,7 +422,7 @@ Edit `transit-tv-shutdown-docker.service` and `transit-tv-start-docker.service`:
 
 ```ini
 # Replace 'transit-tv' with your container name
-ExecStart=/usr/bin/docker exec YOUR_CONTAINER_NAME wget -q -O- --post-data='' http://localhost:8080/api/server/shutdown
+ExecStart=/usr/bin/docker exec YOUR_CONTAINER_NAME node -e "require('http').request({host:'localhost',port:8080,method:'POST',path:'/api/server/shutdown'},r=>{r.on('data',d=>process.stdout.write(d));r.on('end',()=>process.exit(0))}).on('error',e=>{console.error(e);process.exit(1)}).end()"
 ```
 
 ### Docker: Different Port
@@ -432,7 +432,8 @@ If your container uses a different internal port, edit the Docker service files:
 Edit `transit-tv-shutdown-docker.service` and `transit-tv-start-docker.service`:
 
 ```ini
-ExecStart=/usr/bin/docker exec transit-tv wget -q -O- --post-data='' http://localhost:YOUR_PORT/api/server/shutdown
+# Change port:8080 to port:YOUR_PORT
+ExecStart=/usr/bin/docker exec transit-tv node -e "require('http').request({host:'localhost',port:YOUR_PORT,method:'POST',path:'/api/server/shutdown'},r=>{r.on('data',d=>process.stdout.write(d));r.on('end',()=>process.exit(0))}).on('error',e=>{console.error(e);process.exit(1)}).end()"
 ```
 
 ### Bare Metal: Different User or Paths
