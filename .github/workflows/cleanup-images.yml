@@ -1,0 +1,223 @@
+name: Cleanup Old Docker Images
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview deletions without executing'
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
+  KEEP_BETA_COUNT: 10
+  KEEP_EDGE_COUNT: 5
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Cleanup beta and edge versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+
+          echo "================================="
+          echo "Docker Image Cleanup Started"
+          echo "================================="
+          echo "Registry: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo "Dry Run: ${DRY_RUN}"
+          echo "Keep Beta: ${{ env.KEEP_BETA_COUNT }}"
+          echo "Keep Edge: ${{ env.KEEP_EDGE_COUNT }}"
+          echo ""
+
+          # Fetch all package versions
+          echo "Fetching package versions..."
+          VERSIONS=$(gh api --paginate \
+            "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions" \
+            --jq '.[] | {id: .id, name: .name, tags: .metadata.container.tags, created_at: .created_at}')
+
+          TOTAL_COUNT=$(echo "$VERSIONS" | jq -s 'length')
+          echo "Total versions found: $TOTAL_COUNT"
+          echo ""
+
+          # Function to check if version has protected tag
+          is_protected_version() {
+            local version_json="$1"
+            local tags=$(echo "$version_json" | jq -r '.tags[]?' 2>/dev/null || echo "")
+
+            if [ -z "$tags" ]; then
+              return 1  # No tags = not protected
+            fi
+
+            while IFS= read -r tag; do
+              # Preserve: latest, beta, edge, pre-release, semantic versions
+              if [[ "$tag" == "latest" ]] || \
+                 [[ "$tag" == "beta" ]] || \
+                 [[ "$tag" == "edge" ]] || \
+                 [[ "$tag" == "pre-release" ]] || \
+                 [[ "$tag" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+                echo "  Protected tag found: $tag"
+                return 0
+              fi
+            done <<< "$tags"
+
+            return 1
+          }
+
+          # Process beta versions (beta-{branch}-{sha})
+          echo "================================="
+          echo "Processing Beta Versions"
+          echo "================================="
+
+          BETA_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags[]? | select(. != null and startswith("beta-")))] |
+            unique_by(.id) |
+            sort_by(.created_at) |
+            reverse')
+
+          BETA_COUNT=$(echo "$BETA_VERSIONS" | jq 'length')
+          echo "Found $BETA_COUNT beta versions"
+
+          if [ "$BETA_COUNT" -gt "${{ env.KEEP_BETA_COUNT }}" ]; then
+            TO_DELETE_COUNT=$((BETA_COUNT - ${{ env.KEEP_BETA_COUNT }}))
+            echo "Keeping ${{ env.KEEP_BETA_COUNT }} most recent, deleting $TO_DELETE_COUNT oldest"
+            echo ""
+
+            echo "$BETA_VERSIONS" | jq -r ".[${{ env.KEEP_BETA_COUNT }}:] | .[]" | while IFS= read -r version; do
+              VERSION_ID=$(echo "$version" | jq -r '.id')
+              VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
+              VERSION_DATE=$(echo "$version" | jq -r '.created_at')
+
+              # Double-check protection
+              if is_protected_version "$version"; then
+                echo "SKIPPING protected version: $VERSION_ID (tags: $VERSION_TAGS)"
+                continue
+              fi
+
+              if [ "${DRY_RUN}" == "true" ]; then
+                echo "[DRY RUN] Would delete: $VERSION_ID (tags: $VERSION_TAGS, created: $VERSION_DATE)"
+              else
+                echo "Deleting: $VERSION_ID (tags: $VERSION_TAGS)"
+                if gh api -X DELETE \
+                  "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions/$VERSION_ID" 2>&1; then
+                  echo "  Successfully deleted"
+                else
+                  echo "  Failed to delete version $VERSION_ID"
+                fi
+              fi
+            done
+          else
+            echo "No beta versions to delete (within retention limit)"
+          fi
+          echo ""
+
+          # Process edge versions (edge-{sha})
+          echo "================================="
+          echo "Processing Edge Versions"
+          echo "================================="
+
+          EDGE_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags[]? | select(. != null and startswith("edge-")))] |
+            unique_by(.id) |
+            sort_by(.created_at) |
+            reverse')
+
+          EDGE_COUNT=$(echo "$EDGE_VERSIONS" | jq 'length')
+          echo "Found $EDGE_COUNT edge versions"
+
+          if [ "$EDGE_COUNT" -gt "${{ env.KEEP_EDGE_COUNT }}" ]; then
+            TO_DELETE_COUNT=$((EDGE_COUNT - ${{ env.KEEP_EDGE_COUNT }}))
+            echo "Keeping ${{ env.KEEP_EDGE_COUNT }} most recent, deleting $TO_DELETE_COUNT oldest"
+            echo ""
+
+            echo "$EDGE_VERSIONS" | jq -r ".[${{ env.KEEP_EDGE_COUNT }}:] | .[]" | while IFS= read -r version; do
+              VERSION_ID=$(echo "$version" | jq -r '.id')
+              VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
+              VERSION_DATE=$(echo "$version" | jq -r '.created_at')
+
+              # Double-check protection
+              if is_protected_version "$version"; then
+                echo "SKIPPING protected version: $VERSION_ID (tags: $VERSION_TAGS)"
+                continue
+              fi
+
+              if [ "${DRY_RUN}" == "true" ]; then
+                echo "[DRY RUN] Would delete: $VERSION_ID (tags: $VERSION_TAGS, created: $VERSION_DATE)"
+              else
+                echo "Deleting: $VERSION_ID (tags: $VERSION_TAGS)"
+                if gh api -X DELETE \
+                  "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions/$VERSION_ID" 2>&1; then
+                  echo "  Successfully deleted"
+                else
+                  echo "  Failed to delete version $VERSION_ID"
+                fi
+              fi
+            done
+          else
+            echo "No edge versions to delete (within retention limit)"
+          fi
+          echo ""
+
+          # Process branch-test versions (manual workflow_dispatch builds)
+          echo "================================="
+          echo "Processing Branch-Test Versions"
+          echo "================================="
+
+          # Find versions with tags that don't match beta-*, edge-*, or protected patterns
+          BRANCH_TEST_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] |
+            select(.tags | length > 0) |
+            select(.tags[] |
+              (startswith("beta-") or startswith("edge-") or
+               . == "latest" or . == "beta" or . == "edge" or . == "pre-release" or
+               test("^v?[0-9]+\\.[0-9]+\\.[0-9]+")) | not) |
+            select(.tags[] | test("-[a-f0-9]{7}$"))] |
+            unique_by(.id)')
+
+          BRANCH_TEST_COUNT=$(echo "$BRANCH_TEST_VERSIONS" | jq 'length')
+          echo "Found $BRANCH_TEST_COUNT branch-test versions"
+
+          if [ "$BRANCH_TEST_COUNT" -gt 0 ]; then
+            echo ""
+            echo "$BRANCH_TEST_VERSIONS" | jq -r '.[]' | while IFS= read -r version; do
+              VERSION_ID=$(echo "$version" | jq -r '.id')
+              VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
+              VERSION_DATE=$(echo "$version" | jq -r '.created_at')
+
+              # Double-check protection
+              if is_protected_version "$version"; then
+                echo "SKIPPING protected version: $VERSION_ID (tags: $VERSION_TAGS)"
+                continue
+              fi
+
+              if [ "${DRY_RUN}" == "true" ]; then
+                echo "[DRY RUN] Would delete: $VERSION_ID (tags: $VERSION_TAGS, created: $VERSION_DATE)"
+              else
+                echo "Deleting: $VERSION_ID (tags: $VERSION_TAGS)"
+                if gh api -X DELETE \
+                  "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions/$VERSION_ID" 2>&1; then
+                  echo "  Successfully deleted"
+                else
+                  echo "  Failed to delete version $VERSION_ID"
+                fi
+              fi
+            done
+          else
+            echo "No branch-test versions to delete"
+          fi
+          echo ""
+
+          echo "================================="
+          echo "Cleanup Complete"
+          echo "================================="
+
+          if [ "${DRY_RUN}" == "true" ]; then
+            echo "DRY RUN MODE: No versions were actually deleted"
+            echo "Run with dry_run=false to execute deletions"
+          fi
