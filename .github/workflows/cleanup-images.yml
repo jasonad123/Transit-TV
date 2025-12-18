@@ -213,6 +213,41 @@ jobs:
           fi
           echo ""
 
+          # Process untagged versions (sha256 digests, platform manifests)
+          echo "================================="
+          echo "Processing Untagged Versions"
+          echo "================================="
+
+          UNTAGGED_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags | length == 0)] | sort_by(.created_at) | reverse')
+          UNTAGGED_COUNT=$(echo "$UNTAGGED_VERSIONS" | jq 'length')
+          echo "Found $UNTAGGED_COUNT untagged versions (sha256 digests, platform manifests)"
+
+          if [ "$UNTAGGED_COUNT" -gt 0 ]; then
+            echo "Deleting all untagged versions to clean up manifest clutter"
+            echo ""
+
+            echo "$UNTAGGED_VERSIONS" | jq -c '.[]' | while IFS= read -r version; do
+              VERSION_ID=$(echo "$version" | jq -r '.id')
+              VERSION_NAME=$(echo "$version" | jq -r '.name')
+              VERSION_DATE=$(echo "$version" | jq -r '.created_at')
+
+              if [ "${DRY_RUN}" == "true" ]; then
+                echo "[DRY RUN] Would delete untagged: $VERSION_ID (name: $VERSION_NAME, created: $VERSION_DATE)"
+              else
+                echo "Deleting untagged: $VERSION_ID (name: $VERSION_NAME)"
+                if gh api -X DELETE \
+                  "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions/$VERSION_ID" 2>&1; then
+                  echo "  Successfully deleted"
+                else
+                  echo "  Failed to delete version $VERSION_ID"
+                fi
+              fi
+            done
+          else
+            echo "No untagged versions to delete"
+          fi
+          echo ""
+
           echo "================================="
           echo "Cleanup Complete"
           echo "================================="
