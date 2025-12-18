@@ -30,29 +30,22 @@ A real-time transit display application that shows arrival times for nearby publ
 
 ## Getting started
 
+> [!TIP]
+> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page. TL;DR you'll still need a Transit API key but
+
 1. Request API access
 
-Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file.
+Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment file.
 
 > `.env` for local development using `pnpm`
-> `.env.docker` for deployment using docker
 
 2. Create your `.env` files
 
-Depending on if you're deploying using `pnpm` or if you're using Docker, create your `.env` file from an example.
-
-For testing/deployment with `pnpm`:
+For testing/deployment with `pnpm` or Docker:
 
 ```bash
-# create .env for local deployment with pnpm
+# create .env for local deployment with pnpm or Docker
 cp .env.example .env
-```
-
-For testing/deployment with Docker:
-
-```bash
-# create .env for local deployment with docker
-cp .env.docker.example .env.docker
 ```
 
 ## Local testing/deployment
@@ -166,86 +159,13 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
 
 This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, language, clock format, and other preferences. You'll still be able to change the settings at any time through the UI.
 
-To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method (modify them in `.env` for local deployment, `.env.docker` for Docker deployments)
+To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method.
 
-**Available configuration options:**
-- **Location**: Latitude and longitude for transit data
-- **Title**: Display title for the screen
-- **Time Format**: 24-hour (`HH:mm`), 12-hour with AM/PM (`hh:mm A`), or 12-hour without AM/PM (`hh:mm`)
-- **Language**: Interface language - English (`en`), French (`fr`), Spanish (`es`), or German (`de`)
-- **Theme**: Light, dark, or auto (system preference)
-- **Header Color**: Custom hex color for the header
-- **Columns**: Number of route columns (auto, 1-5)
-- **QR Code**: Show/hide Transit app deeplink QR code
-- **Max Distance**: Search radius for nearby routes (250-1500m)
-- **Custom Logo**: Your organization's logo URL or path
-- **Group Itineraries**: Group routes by parent station (v1.3.0+)
-- **Filter Terminus**: Hide redundant terminus entries (v1.3.0+)
-
-Please review the `.env.example` file for detailed documentation of all available options.
+Please review the `.env.example` file and the [Unattended Setup documentation](https://github.com/jasonad123/Transit-TV/wiki/Unattended-Setup) for more information on all available options.
 
 ### Custom Logo
 
 Transit TV supports displaying your organization's logo alongside the "Powered by Transit" logo in the header. This feature works with both external URLs and local file paths.
-
-**Using external URLs:**
-
-Set the `UNATTENDED_CUSTOM_LOGO` environment variable to your logo URL:
-
-```bash
-UNATTENDED_CUSTOM_LOGO=https://example.com/logo.png
-```
-
-**Using local files with Docker:**
-
-1. Mount your logo file to the container's static assets directory:
-
-   ```yaml
-   volumes:
-     - ./path/to/your/logo.png:/app/svelte-app/static/assets/images/logo.png:ro
-   ```
-
-2. Set the environment variable to the mounted path:
-
-   ```bash
-   UNATTENDED_CUSTOM_LOGO=/assets/images/logo.png
-   ```
-
-See [compose.yaml](compose.yaml) for volume mount examples.
-
-### Stop Grouping (v1.3.0+)
-
-Transit TV can group multiple route branches that serve the same parent station together on a single card. This is useful for transit systems where multiple route variants (e.g., "North to Downtown" and "North to Airport") share the same stop but have different destinations.
-
-**Enable stop grouping:**
-
-```bash
-UNATTENDED_GROUP_ITINERARIES=true
-```
-
-**When enabled:**
-- Routes serving the same parent station are visually grouped together
-- Multiple destinations appear on a single card with shared stop name
-- Cleaner display for complex transit systems with many route variants
-
-**Best for:** Metro systems, regional rail networks, and bus systems with multiple route branches
-
-### Terminus Filtering (v1.3.0+)
-
-When you're located at or near a terminus station, Transit TV can filter out redundant destination entries. For example, if you're already at "Waterfront Station", the display won't show "North to Waterfront" since you're already there.
-
-**Enable terminus filtering:**
-
-```bash
-UNATTENDED_FILTER_TERMINUS=true
-```
-
-**When enabled:**
-- Automatically hides destinations for the station you're currently at
-- Reduces clutter on the display
-- Shows only relevant outbound/opposite direction departures
-
-**Best for:** End-of-line stations, major terminals, and turnaround points
 
 ### Health Check Endpoint (v1.3.0+)
 
