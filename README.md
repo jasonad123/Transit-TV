@@ -11,15 +11,15 @@ A real-time transit display application that shows arrival times for nearby publ
 </div>
 
 > [!IMPORTANT]
-> This is a *rewrite* of the original Transit TV application in a more up-to-date stack.
-> If you're looking for *my fork* of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
+> This is a _rewrite_ of the original Transit TV application in a more up-to-date stack.
+> If you're looking for _my fork_ of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
 > If you're looking for the original project, have a look over at [Transit App's account](https://github.com/TransitApp/Transit-TV)
 
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
 
 > [!IMPORTANT]
-> Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
+> Just as the original Transit TV was built by the Transit team as a fun project, **_this_** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
 
@@ -34,8 +34,8 @@ A real-time transit display application that shows arrival times for nearby publ
 
 Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file.
 
-  > `.env` for local development using `pnpm`
-  > `.env.docker` for deployment using docker
+> `.env` for local development using `pnpm`
+> `.env.docker` for deployment using docker
 
 2. Create your `.env` files
 
@@ -76,9 +76,11 @@ cd svelte-app && pnpm build && cd ..
 # Start the server with SvelteKit
 USE_SVELTE=true pnpm start
 ```
+
 The application will be available at http://localhost:8080
 
 For development with hot reload:
+
 ```bash
 # Terminal 1: Start SvelteKit dev server
 cd svelte-app && pnpm dev
@@ -227,4 +229,4 @@ See the [LICENSE](LICENSE) file for details.
 ## Additional Disclaimers
 
 > [!NOTE]
-> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
+> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been _lovingly_ reviewed and tested, users should validate results independently before use in production environments.

@@ -1,7 +1,7 @@
 name: Question / Support
 description: Ask a question or get help with Transit-TV
-title: "[question]: "
-labels: ["question", "needs-triage"]
+title: '[question]: '
+labels: ['question', 'needs-triage']
 assignees: []
 
 body:
@@ -53,11 +53,11 @@ body:
       placeholder: |
         - OS: 
         - Deployment method: 
-        - Version: 
+        - Version:
       value: |
         - OS: 
         - Deployment method: 
-        - Version: 
+        - Version:
 
   - type: textarea
     id: context

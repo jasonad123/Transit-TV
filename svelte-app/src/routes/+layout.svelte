@@ -5,7 +5,7 @@
 	import { init, locale, register } from 'svelte-i18n';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
-	import "iconify-icon";
+	import 'iconify-icon';
 
 	let { children } = $props();
 
@@ -104,9 +104,8 @@
 	// Compute effective theme
 	$effect(() => {
 		if (browser) {
-			const effectiveTheme = $config.theme === 'auto'
-				? (systemPrefersDark ? 'dark' : 'light')
-				: $config.theme;
+			const effectiveTheme =
+				$config.theme === 'auto' ? (systemPrefersDark ? 'dark' : 'light') : $config.theme;
 
 			document.documentElement.setAttribute('data-theme', effectiveTheme);
 		}

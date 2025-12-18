@@ -7,6 +7,7 @@ Modern rewrite of Transit TV using Svelte 5 + SvelteKit 2 + TypeScript.
 ### Option 1: With Backend (Full Features)
 
 Terminal 1 - Start Express backend:
+
 ```bash
 cd /Users/jasonadle/GitHub/Transit-TV
 pnpm install
@@ -14,6 +15,7 @@ pnpm start
 ```
 
 Terminal 2 - Start Svelte dev server:
+
 ```bash
 cd svelte-app
 pnpm install
@@ -63,6 +65,7 @@ USE_SVELTE=true pnpm start
 ```
 
 Express configuration dynamically loads the SvelteKit handler and serves:
+
 - Static assets from `svelte-app/build/client`
 - SSR pages via `svelte-app/build/handler.js`
 - API routes from `server/api/*`
@@ -81,6 +84,7 @@ docker compose up
 ### API Integration
 
 Backend endpoints (served by Express on port 8080):
+
 - `/api/routes/nearby` - Get nearby transit routes
 - `/api/config/unattended` - Get unattended setup config
 - `/api/images/*` - Get route images
@@ -91,6 +95,7 @@ In production, Express serves both the SvelteKit app and API routes.
 ## Features Migrated
 
 All 9 core features from AngularJS app:
+
 1. Nearby routes display
 2. Departure time display
 3. Route filtering
@@ -144,10 +149,12 @@ pnpm run build  # Build for production
 ## Troubleshooting
 
 **404 errors for /api endpoints:**
+
 - Ensure Express backend is running on port 8080
 - Check BACKEND_URL environment variable
 - SvelteKit dev server proxies API calls to Express
 
 **Build fails:**
+
 - Run `pnpm check` to see TypeScript errors
 - Ensure Node.js 20.18+ is installed

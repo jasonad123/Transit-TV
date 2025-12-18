@@ -11,10 +11,10 @@ services:
     container_name: transit-tv-svelte
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
-      NODE_ENV: "production"
-      USE_SVELTE: "true"
+      NODE_ENV: 'production'
+      USE_SVELTE: 'true'
     volumes:
       - ./logs:/app/logs
     networks:
@@ -70,12 +70,12 @@ services:
     image: node:24-alpine
     container_name: transit-tv-dev
     working_dir: /app/svelte-app
-    restart: "no"
+    restart: 'no'
     ports:
-      - "5173:5173"  # Vite dev server
+      - '5173:5173' # Vite dev server
     environment:
-      NODE_ENV: "development"
-      CI: "true"
+      NODE_ENV: 'development'
+      CI: 'true'
     env_file:
       - .env.docker
     volumes:
@@ -95,13 +95,13 @@ services:
     image: node:24-alpine
     container_name: transit-tv-backend
     working_dir: /app
-    restart: "no"
+    restart: 'no'
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
-      NODE_ENV: "development"
-      USE_SVELTE: "false"
-      CI: "true"
+      NODE_ENV: 'development'
+      USE_SVELTE: 'false'
+      CI: 'true'
     env_file:
       - .env.docker
     volumes:

@@ -8,7 +8,7 @@
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
-	import "iconify-icon";
+	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
 	let intervalId: ReturnType<typeof setInterval>;
@@ -67,10 +67,7 @@
 
 	function increasePollingInterval() {
 		consecutiveErrors++;
-		const newInterval = Math.min(
-			currentPollingInterval * BACKOFF_MULTIPLIER,
-			MAX_POLLING_INTERVAL
-		);
+		const newInterval = Math.min(currentPollingInterval * BACKOFF_MULTIPLIER, MAX_POLLING_INTERVAL);
 		if (newInterval !== currentPollingInterval) {
 			currentPollingInterval = newInterval;
 			console.log(`Increasing polling interval to ${currentPollingInterval}ms due to errors`);
@@ -526,7 +523,6 @@
 	<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="Transit TV" />
 	<link rel="manifest" href="/assets/site.webmanifest" />
-
 </svelte:head>
 
 <div class="container" style="--bg-header: {$config.headerColor}">
@@ -537,28 +533,36 @@
 					<td id="logo">
 						<div class="logo-container">
 							<a href="https://transitapp.com" aria-label={$_('aria.transitApp')}>
-								<img src="/assets/images/transit.svg" alt="Powered by Transit" class="transit-logo" />
+								<img
+									src="/assets/images/transit.svg"
+									alt="Powered by Transit"
+									class="transit-logo"
+								/>
 							</a>
 							{#if $config.customLogo}
 								<img
 									src={$config.customLogo}
 									alt={$_('aria.customLogo')}
 									class="custom-logo"
-									onerror={(e) => e.currentTarget.style.display = 'none'}
+									onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 								/>
 							{/if}
 						</div>
 					</td>
 					<td id="title">
 						<h1>{$config.title || $_('app.nearbyRoutes')}</h1>
-						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}><iconify-icon icon="ix:cogwheel-filled"></iconify-icon></button>
+						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}
+							><iconify-icon icon="ix:cogwheel-filled"></iconify-icon></button
+						>
 					</td>
 					<td id="utilities">
-						<span class="clock">{currentTime.toLocaleTimeString($config.language, {
-							hour: 'numeric',
-							minute: '2-digit',
-							hour12: $config.timeFormat === 'hh:mm A'
-						})}</span>
+						<span class="clock"
+							>{currentTime.toLocaleTimeString($config.language, {
+								hour: 'numeric',
+								minute: '2-digit',
+								hour12: $config.timeFormat === 'hh:mm A'
+							})}</span
+						>
 					</td>
 				</tr>
 			</tbody>
@@ -596,7 +600,10 @@
 							title={gettingLocation ? 'Getting location...' : 'Use current location'}
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-								<path fill="currentColor" d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8" />
+								<path
+									fill="currentColor"
+									d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
+								/>
 							</svg>
 						</button>
 					</div>
@@ -606,7 +613,11 @@
 					{#if validatingLocation}
 						<span class="location-validating">{$_('config.location.validating')}</span>
 					{:else if validationMessage}
-						<span class="location-validation" class:success={validationSuccess} class:error={!validationSuccess}>
+						<span
+							class="location-validation"
+							class:success={validationSuccess}
+							class:error={!validationSuccess}
+						>
 							{validationMessage}
 						</span>
 					{/if}
@@ -655,7 +666,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 'auto'}
-							onclick={() => config.update(c => ({ ...c, columns: 'auto' }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
 						>
 							{$_('config.columns.auto')}
 						</button>
@@ -663,7 +674,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 1}
-							onclick={() => config.update(c => ({ ...c, columns: 1 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
 						>
 							1
 						</button>
@@ -671,7 +682,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 2}
-							onclick={() => config.update(c => ({ ...c, columns: 2 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
 						>
 							2
 						</button>
@@ -679,7 +690,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 3}
-							onclick={() => config.update(c => ({ ...c, columns: 3 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
 						>
 							3
 						</button>
@@ -687,7 +698,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 4}
-							onclick={() => config.update(c => ({ ...c, columns: 4 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
 						>
 							4
 						</button>
@@ -695,7 +706,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 5}
-							onclick={() => config.update(c => ({ ...c, columns: 5 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
 						>
 							5
 						</button>
@@ -709,7 +720,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'light'}
-							onclick={() => config.update(c => ({ ...c, theme: 'light' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
 						>
 							{$_('config.theme.light')}
 						</button>
@@ -717,7 +728,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'auto'}
-							onclick={() => config.update(c => ({ ...c, theme: 'auto' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
 						>
 							{$_('config.theme.auto')}
 						</button>
@@ -725,7 +736,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'dark'}
-							onclick={() => config.update(c => ({ ...c, theme: 'dark' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
 						>
 							{$_('config.theme.dark')}
 						</button>
@@ -735,16 +746,13 @@
 				<label>
 					{$_('config.fields.headerColor')}
 					<div style="display: flex; gap: 0.5em; align-items: center;">
-						<input
-							type="color"
-							bind:value={$config.headerColor}
-						/>
+						<input type="color" bind:value={$config.headerColor} />
 						<button
 							type="button"
 							class="btn-reset"
 							onclick={() => {
 								const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-								config.update(c => ({ ...c, headerColor: defaultColor }));
+								config.update((c) => ({ ...c, headerColor: defaultColor }));
 							}}
 							title={$_('config.buttons.resetToDefault')}
 						>
@@ -766,7 +774,7 @@
 							<button
 								type="button"
 								class="btn-reset"
-								onclick={() => config.update(c => ({ ...c, customLogo: null }))}
+								onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
 							>
 								{$_('config.customLogo.clear')}
 							</button>
@@ -776,7 +784,10 @@
 								src={$config.customLogo}
 								alt="Logo preview"
 								onerror={(e) => {
-									e.currentTarget.parentElement.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+									const parent = (e.currentTarget as HTMLImageElement).parentElement;
+									if (parent) {
+										parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+									}
 								}}
 							/>
 						</div>
@@ -786,10 +797,7 @@
 				<label class="toggle-label">
 					<span>{$_('config.fields.showQRCode')} </span>
 					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.showQRCode}
-						/>
+						<input type="checkbox" bind:checked={$config.showQRCode} />
 						<span class="toggle-slider"></span>
 					</label>
 				</label>
@@ -798,10 +806,7 @@
 				<label class="toggle-label">
 					<span>{$_('config.fields.groupItinerariesByStop')}</span>
 					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.groupItinerariesByStop}
-						/>
+						<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
 						<span class="toggle-slider"></span>
 					</label>
 				</label>
@@ -809,10 +814,7 @@
 				<label class="toggle-label">
 					<span>{$_('config.fields.filterRedundantTerminus')}</span>
 					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.filterRedundantTerminus}
-						/>
+						<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
 						<span class="toggle-slider"></span>
 					</label>
 				</label>
@@ -822,7 +824,7 @@
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
 						<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
 						<div class="hidden-routes-list">
-							{#each allRoutes.filter(r => $config.hiddenRoutes.includes(r.global_route_id)) as route}
+							{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
 								<button
 									type="button"
 									class="hidden-route-item"
@@ -842,7 +844,12 @@
 
 					<div class="server-status">
 						<span class="status-label">Status:</span>
-						<span class="status-value" class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting} class:status-shutdown={serverStatus.isShutdown} class:status-restarting={serverStatus.isRestarting}>
+						<span
+							class="status-value"
+							class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
+							class:status-shutdown={serverStatus.isShutdown}
+							class:status-restarting={serverStatus.isRestarting}
+						>
 							{#if serverStatus.isRestarting}
 								{$_('config.server.status.restarting')}
 							{:else if serverStatus.isShutdown}
@@ -922,8 +929,14 @@
 			</div>
 		{:else}
 			{#if errorMessage}
-				<div class="error-banner" class:error-auth={errorType === 'auth'} class:error-timeout={errorType === 'timeout'} class:error-backend={errorType === 'backend'}>
-					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}></iconify-icon>
+				<div
+					class="error-banner"
+					class:error-auth={errorType === 'auth'}
+					class:error-timeout={errorType === 'timeout'}
+					class:error-backend={errorType === 'backend'}
+				>
+					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
+					></iconify-icon>
 					{errorMessage}
 				</div>
 			{/if}
@@ -932,57 +945,64 @@
 			{:else if routes.length === 0}
 				<div class="no-routes">{$_('routes.noRoutes')}</div>
 			{:else}
-			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
-				{#each routes as route, index (route.global_route_id)}
-					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} />
-						<div class="route-controls">
-							{#if index > 0}
+				<section
+					id="routes"
+					class:cols-1={$config.columns === 1}
+					class:cols-2={$config.columns === 2}
+					class:cols-3={$config.columns === 3}
+					class:cols-4={$config.columns === 4}
+					class:cols-5={$config.columns === 5}
+				>
+					{#each routes as route, index (route.global_route_id)}
+						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+							<RouteItem {route} />
+							<div class="route-controls">
+								{#if index > 0}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRouteToTop(index)}
+										aria-label={$_('aria.moveRouteToTop')}
+										title={$_('routes.controls.moveToTop')}
+									>
+										<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+									</button>
+								{/if}
+								{#if index > 0}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRoute(index, 'up')}
+										aria-label={$_('aria.moveRouteUp')}
+										title={$_('routes.controls.moveUp')}
+									>
+										<iconify-icon icon="ix:arrow-up"></iconify-icon>
+									</button>
+								{/if}
+								{#if index < routes.length - 1}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRoute(index, 'down')}
+										aria-label={$_('aria.moveRouteDown')}
+										title={$_('routes.controls.moveDown')}
+									>
+										<iconify-icon icon="ix:arrow-down"></iconify-icon>
+									</button>
+								{/if}
 								<button
 									type="button"
 									class="btn-route-control"
-									onclick={() => moveRouteToTop(index)}
-									aria-label={$_('aria.moveRouteToTop')}
-									title={$_('routes.controls.moveToTop')}
+									onclick={() => toggleRouteHidden(route.global_route_id)}
+									aria-label={$_('aria.hideRoute')}
+									title={$_('routes.controls.hide')}
 								>
-									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 								</button>
-							{/if}
-							{#if index > 0}
-								<button
-									type="button"
-									class="btn-route-control"
-									onclick={() => moveRoute(index, 'up')}
-									aria-label={$_('aria.moveRouteUp')}
-									title={$_('routes.controls.moveUp')}
-								>
-									<iconify-icon icon="ix:arrow-up"></iconify-icon>
-								</button>
-							{/if}
-							{#if index < routes.length - 1}
-								<button
-									type="button"
-									class="btn-route-control"
-									onclick={() => moveRoute(index, 'down')}
-									aria-label={$_('aria.moveRouteDown')}
-									title={$_('routes.controls.moveDown')}
-								>
-									<iconify-icon icon="ix:arrow-down"></iconify-icon>
-								</button>
-							{/if}
-							<button
-								type="button"
-								class="btn-route-control"
-								onclick={() => toggleRouteHidden(route.global_route_id)}
-								aria-label={$_('aria.hideRoute')}
-								title={$_('routes.controls.hide')}
-							>
-								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-							</button>
+							</div>
 						</div>
-					</div>
-				{/each}
-			</section>
+					{/each}
+				</section>
 			{/if}
 		{/if}
 	</div>
@@ -990,8 +1010,8 @@
 	{#if $config.showQRCode && !$config.isEditing}
 		<div class="floating-qr">
 			<p class="qr-label">
-				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br/></span>
-				<span class= "qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
+				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
+				<span class="qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
 			</p>
 			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={100} />
 		</div>
@@ -999,11 +1019,10 @@
 </div>
 
 <style>
-
-    iconify-icon {
-    	display: inline-block;
-    	width: 1em;
-    	height: 1em;
+	iconify-icon {
+		display: inline-block;
+		width: 1em;
+		height: 1em;
 	}
 
 	.container {
@@ -1082,7 +1101,7 @@
 		display: inline-block;
 		line-height: 1.5em;
 		margin-bottom: -0.1em;
-		white-space:nowrap;
+		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
@@ -1296,7 +1315,7 @@
 
 	.toggle-slider:before {
 		position: absolute;
-		content: "";
+		content: '';
 		height: 1.2em;
 		width: 1.2em;
 		left: 0.2em;
@@ -1479,7 +1498,7 @@
 	}
 
 	.btn-option:hover {
-		border-color: var(--bg-header); 
+		border-color: var(--bg-header);
 		background: var(--bg-primary);
 	}
 
@@ -1540,16 +1559,13 @@
 		flex: 1;
 		overflow-wrap: break-word;
 		line-height: 1.5;
-
 	}
 	.qr-label-1 {
 		font-weight: 400;
-
 	}
 	.qr-label-2 {
 		font-weight: bold;
 	}
-
 
 	/* .qr-section {
 		margin-top: 1em;
@@ -1756,7 +1772,13 @@
 	.distance-slider::-webkit-slider-runnable-track {
 		width: 100%;
 		height: 4px;
-		background: linear-gradient(to right, var(--bg-header) 0%, var(--bg-header) var(--slider-progress, 0%), var(--border-color) var(--slider-progress, 0%), var(--border-color) 100%);
+		background: linear-gradient(
+			to right,
+			var(--bg-header) 0%,
+			var(--bg-header) var(--slider-progress, 0%),
+			var(--border-color) var(--slider-progress, 0%),
+			var(--border-color) 100%
+		);
 		border-radius: 10px;
 	}
 
@@ -1907,7 +1929,7 @@
 
 	.shutdown-icon-stack .bus-icon {
 		font-size: 8em;
-		color: var(--text-secondary);;
+		color: var(--text-secondary);
 		display: block;
 	}
 
@@ -1926,7 +1948,7 @@
 		font-size: 3em;
 		margin: 0.3em 0;
 		color: var(--text-primary);
-		text-wrap: wrap; 
+		text-wrap: wrap;
 		overflow-wrap: normal;
 	}
 

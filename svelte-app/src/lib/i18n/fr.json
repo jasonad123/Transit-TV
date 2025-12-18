@@ -1,134 +1,134 @@
 {
-  "app": {
-    "title": "Télé Transit",
-    "nearbyRoutes": "Lignes à proximité"
-  },
-  "config": {
-    "title": "Configurer Télé Transit",
-    "fields": {
-      "title": "Titre :",
-      "location": "Emplacement (lat, lng) :",
-      "timeFormat": "Format de l'heure :",
-      "language": "Langue :",
-      "columns": "Colonnes de grille :",
-      "theme": "Thème :",
-      "headerColor": "Couleur d'en-tête :",
-      "customLogo": "URL du logo personnalisé :",
-      "showQRCode": "Afficher code QR",
-      "maxDistance": "Rayon de recherche :",
-      "groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
-      "filterRedundantTerminus": "Filtrer les entrées de terminus redondantes ?"
-    },
-    "timeFormats": {
-      "12hour": "12 heures",
-      "24hour": "24 heures"
-    },
-    "languages": {
-      "english": "English",
-      "french": "Français",
-      "spanish": "Español",
-      "german": "Deutsch"
-    },
-    "columns": {
-      "auto": "Auto"
-    },
-    "theme": {
-      "light": "Clair",
-      "dark": "Sombre",
-      "auto": "Auto"
-    },
-    "customLogo": {
-      "helpText": "Entrez l'URL ou le chemin local du logo de votre organisation (ex: https://example.com/logo.png ou /assets/images/logo.png)",
-      "clear": "Supprimer le logo personnalisé",
-      "invalidUrl": "Échec du chargement de l'image du logo"
-    },
-    "hiddenRoutes": {
-      "title": "Lignes masquées",
-      "helpText": "Cliquez pour afficher les lignes"
-    },
-    "qrCode": {
-      "title": "Code QR",
-      "helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
-      "scanPrompt": "Aimeriez-vous apporter ces départs avec vous ?",
-      "scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
-    },
-    "buttons": {
-      "cancel": "Annuler",
-      "save": "Enregistrer",
-      "reset": "Réinitialiser",
-      "resetToDefault": "Réinitialiser par défaut"
-    },
-    "server": {
-      "title": "Contrôles du serveur",
-      "status": {
-        "running": "Activé",
-        "shutdown": "Fermé",
-        "restarting": "Redémarrage..."
-      },
-      "actions": {
-        "shutdown": "Arrêter",
-        "start": "Commencer",
-        "restart": "Redémarrer"
-      },
-      "confirmShutdown": "Arrêter le sondage de l’API de Transit ? Cela mettra en pause les mises à jour en temps réel.",
-      "confirmRestart": "Redémarrer le serveur ? Cela entraînera une courte interruption du service.",
-      "helpText": "Utilisez ces commandes pour gérer le serveur à des fins de débogage ou pour réduire l'utilisation de l'API."
-    },
-    "location": {
-      "validating": "Chargement votre emplacement...",
-      "validationSuccess": "L'emplacement défini - {count} ligne{plural} trouvées à proximité",
-      "validationNoRoutes": "Aucune ligne trouvée à proximité",
-      "validationError": "Impossible de valider l'emplacement",
-      "geolocationNotSupported": "La géolocalisation n'est pas prise en charge par votre navigateur.",
-      "geolocationPermissionDenied": "Autorisation de la géolocalisation refusée",
-      "geolocationUnavailable": "Informations de localisation non disponibles",
-      "geolocationTimeout": "Délai d'attente dépassé pour la requête de localisation",
-      "geolocationError": "Une erreur inconnue s'est produite."
-    }
-  },
-  "routes": {
-    "loading": "Chargement des lignes...",
-    "noRoutes": "Aucune ligne trouvée à proximité",
-    "controls": {
-      "moveToTop": "Déplacer en haut",
-      "moveUp": "Déplacer vers le haut",
-      "moveDown": "Déplacer vers le bas",
-      "hide": "Masquer la ligne"
-    }
-  },
-  "aria": {
-    "transitApp": "Application Transit",
-    "customLogo": "Logo de l'organisation",
-    "settings": "Paramètres",
-    "moveRouteToTop": "Déplacer la ligne en haut",
-    "moveRouteUp": "Déplacer la ligne vers le haut",
-    "moveRouteDown": "Déplacer la ligne vers le bas",
-    "hideRoute": "Masquer la ligne"
-  },
-  "alerts": {
-    "default": "Alerte de service",
-    "title": "Alertes"
-  },
-  "time": {
-    "min": "min",
-    "now": "maintenant"
-  },
-  "screenWidth": {
-    "title": "Écran trop étroit",
-    "message": "Cette application est concu pour les grands ecrans comm les televiseurs. Pour consulter les horaires de départ du transport collectif sur votre téléphone, veuillez télécharger l'application Transit.",
-    "minimumWidth": "Largeur minimale : 640 pixels",
-    "developerMessage": "Développeurs web : utilisez toggleWidthCheck() dans la console pour désactiver ce message."
-  },
-  "errors": {
-    "rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
-    "auth": "Impossible de se connecter au service de données de Transit.",
-    "timeout": "Vérification des mises à jour...",
-    "backend": "Transit TV est hors service. J'essaie encore...",
-    "generic": "Transit TV a rencontré un problème. J'essaie encore..."
-  },
-  "shutdown": {
-    "title": "Transit TV c'est En Transit",
-    "message": "Le serveur a été mis en pause pour maintenance.",
-    "subtitle": "Les mises à jour en direct des transport collectif sont temporairement indisponibles."
-  }
+	"app": {
+		"title": "Télé Transit",
+		"nearbyRoutes": "Lignes à proximité"
+	},
+	"config": {
+		"title": "Configurer Télé Transit",
+		"fields": {
+			"title": "Titre :",
+			"location": "Emplacement (lat, lng) :",
+			"timeFormat": "Format de l'heure :",
+			"language": "Langue :",
+			"columns": "Colonnes de grille :",
+			"theme": "Thème :",
+			"headerColor": "Couleur d'en-tête :",
+			"customLogo": "URL du logo personnalisé :",
+			"showQRCode": "Afficher code QR",
+			"maxDistance": "Rayon de recherche :",
+			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
+			"filterRedundantTerminus": "Filtrer les entrées de terminus redondantes ?"
+		},
+		"timeFormats": {
+			"12hour": "12 heures",
+			"24hour": "24 heures"
+		},
+		"languages": {
+			"english": "English",
+			"french": "Français",
+			"spanish": "Español",
+			"german": "Deutsch"
+		},
+		"columns": {
+			"auto": "Auto"
+		},
+		"theme": {
+			"light": "Clair",
+			"dark": "Sombre",
+			"auto": "Auto"
+		},
+		"customLogo": {
+			"helpText": "Entrez l'URL ou le chemin local du logo de votre organisation (ex: https://example.com/logo.png ou /assets/images/logo.png)",
+			"clear": "Supprimer le logo personnalisé",
+			"invalidUrl": "Échec du chargement de l'image du logo"
+		},
+		"hiddenRoutes": {
+			"title": "Lignes masquées",
+			"helpText": "Cliquez pour afficher les lignes"
+		},
+		"qrCode": {
+			"title": "Code QR",
+			"helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
+			"scanPrompt": "Aimeriez-vous apporter ces départs avec vous ?",
+			"scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
+		},
+		"buttons": {
+			"cancel": "Annuler",
+			"save": "Enregistrer",
+			"reset": "Réinitialiser",
+			"resetToDefault": "Réinitialiser par défaut"
+		},
+		"server": {
+			"title": "Contrôles du serveur",
+			"status": {
+				"running": "Activé",
+				"shutdown": "Fermé",
+				"restarting": "Redémarrage..."
+			},
+			"actions": {
+				"shutdown": "Arrêter",
+				"start": "Commencer",
+				"restart": "Redémarrer"
+			},
+			"confirmShutdown": "Arrêter le sondage de l’API de Transit ? Cela mettra en pause les mises à jour en temps réel.",
+			"confirmRestart": "Redémarrer le serveur ? Cela entraînera une courte interruption du service.",
+			"helpText": "Utilisez ces commandes pour gérer le serveur à des fins de débogage ou pour réduire l'utilisation de l'API."
+		},
+		"location": {
+			"validating": "Chargement votre emplacement...",
+			"validationSuccess": "L'emplacement défini - {count} ligne{plural} trouvées à proximité",
+			"validationNoRoutes": "Aucune ligne trouvée à proximité",
+			"validationError": "Impossible de valider l'emplacement",
+			"geolocationNotSupported": "La géolocalisation n'est pas prise en charge par votre navigateur.",
+			"geolocationPermissionDenied": "Autorisation de la géolocalisation refusée",
+			"geolocationUnavailable": "Informations de localisation non disponibles",
+			"geolocationTimeout": "Délai d'attente dépassé pour la requête de localisation",
+			"geolocationError": "Une erreur inconnue s'est produite."
+		}
+	},
+	"routes": {
+		"loading": "Chargement des lignes...",
+		"noRoutes": "Aucune ligne trouvée à proximité",
+		"controls": {
+			"moveToTop": "Déplacer en haut",
+			"moveUp": "Déplacer vers le haut",
+			"moveDown": "Déplacer vers le bas",
+			"hide": "Masquer la ligne"
+		}
+	},
+	"aria": {
+		"transitApp": "Application Transit",
+		"customLogo": "Logo de l'organisation",
+		"settings": "Paramètres",
+		"moveRouteToTop": "Déplacer la ligne en haut",
+		"moveRouteUp": "Déplacer la ligne vers le haut",
+		"moveRouteDown": "Déplacer la ligne vers le bas",
+		"hideRoute": "Masquer la ligne"
+	},
+	"alerts": {
+		"default": "Alerte de service",
+		"title": "Alertes"
+	},
+	"time": {
+		"min": "min",
+		"now": "maintenant"
+	},
+	"screenWidth": {
+		"title": "Écran trop étroit",
+		"message": "Cette application est concu pour les grands ecrans comm les televiseurs. Pour consulter les horaires de départ du transport collectif sur votre téléphone, veuillez télécharger l'application Transit.",
+		"minimumWidth": "Largeur minimale : 640 pixels",
+		"developerMessage": "Développeurs web : utilisez toggleWidthCheck() dans la console pour désactiver ce message."
+	},
+	"errors": {
+		"rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
+		"auth": "Impossible de se connecter au service de données de Transit.",
+		"timeout": "Vérification des mises à jour...",
+		"backend": "Transit TV est hors service. J'essaie encore...",
+		"generic": "Transit TV a rencontré un problème. J'essaie encore..."
+	},
+	"shutdown": {
+		"title": "Transit TV c'est En Transit",
+		"message": "Le serveur a été mis en pause pour maintenance.",
+		"subtitle": "Les mises à jour en direct des transport collectif sont temporairement indisponibles."
+	}
 }

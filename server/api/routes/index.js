@@ -7,5 +7,4 @@ var router = express.Router();
 
 router.get('/nearby', controller.nearby);
 
-
 module.exports = router;

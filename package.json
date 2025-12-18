@@ -1,32 +1,32 @@
 {
-  "name": "transit-tv-server",
-  "version": "1.0.0",
-  "main": "server/app.js",
-  "dependencies": {
-    "compression": "^1.8.1",
-    "cookie-parser": "~1.4.7",
-    "ejs": "~3.1.10",
-    "errorhandler": "~1.5.1",
-    "express": "^5.2.1",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1"
-  },
-  "scripts": {
-    "start": "node --env-file=.env server/app.js",
-    "build": "cd svelte-app && pnpm install && pnpm build",
-    "clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit",
-    "format": "prettier --write .",
-    "lint": "prettier --check ."
-  },
-  "engines": {
-    "node": ">=24.0.0"
-  },
-  "private": true,
-  "devDependencies": {
-    "@playwright/test": "^1.57.0",
-    "@sveltejs/mcp": "^0.1.11",
-    "@types/node": "^25.0.2",
-    "prettier": "^3.7.4",
-    "prettier-plugin-svelte": "^3.4.0"
-  }
+	"name": "transit-tv-server",
+	"version": "1.0.0",
+	"main": "server/app.js",
+	"dependencies": {
+		"compression": "^1.8.1",
+		"cookie-parser": "~1.4.7",
+		"ejs": "~3.1.10",
+		"errorhandler": "~1.5.1",
+		"express": "^5.2.1",
+		"helmet": "^8.1.0",
+		"morgan": "^1.10.1"
+	},
+	"scripts": {
+		"start": "node --env-file=.env server/app.js",
+		"build": "cd svelte-app && pnpm install && pnpm build",
+		"clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit",
+		"format": "prettier --write .",
+		"lint": "prettier --check ."
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	},
+	"private": true,
+	"devDependencies": {
+		"@playwright/test": "^1.57.0",
+		"@sveltejs/mcp": "^0.1.11",
+		"@types/node": "^25.0.2",
+		"prettier": "^3.7.4",
+		"prettier-plugin-svelte": "^3.4.0"
+	}
 }

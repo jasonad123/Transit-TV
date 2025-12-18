@@ -13,7 +13,7 @@
 	--shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
 	--bg-primary: #1e1e1e;
 	--bg-secondary: #282828;
 	--bg-header: #1f7a42;
