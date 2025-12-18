@@ -182,4 +182,60 @@ var all = {
 	}
 };
 
+// Validate environment configuration on startup (non-breaking)
+// Logs warnings but doesn't exit in development mode
+function validateEnvironment() {
+	var warnings = [];
+	var errors = [];
+
+	// Critical: Transit API key in production
+	if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
+		errors.push('TRANSIT_API_KEY is required in production');
+	}
+
+	// Validate TRUST_PROXY if set
+	if (process.env.TRUST_PROXY) {
+		var validValues = ['true', '1', '2', '3'];
+		if (!validValues.includes(process.env.TRUST_PROXY)) {
+			warnings.push(
+				'TRUST_PROXY should be "true" or a number (1-3), got: ' + process.env.TRUST_PROXY
+			);
+		}
+	}
+
+	// Validate REQUEST_TIMEOUT if set
+	if (process.env.REQUEST_TIMEOUT) {
+		var timeout = parseInt(process.env.REQUEST_TIMEOUT);
+		if (isNaN(timeout) || timeout < 1000 || timeout > 60000) {
+			warnings.push('REQUEST_TIMEOUT should be between 1000-60000ms, got: ' + process.env.REQUEST_TIMEOUT);
+		}
+	}
+
+	// Log warnings
+	if (warnings.length > 0) {
+		console.warn('Environment configuration warnings:');
+		warnings.forEach(function (warning) {
+			console.warn('  ⚠ ' + warning);
+		});
+	}
+
+	// Handle errors
+	if (errors.length > 0) {
+		console.error('Environment configuration errors:');
+		errors.forEach(function (error) {
+			console.error('  ✗ ' + error);
+		});
+
+		if (process.env.NODE_ENV === 'production') {
+			console.error('\nFailing fast in production mode due to configuration errors.');
+			process.exit(1);
+		} else {
+			console.warn('\nContinuing in development mode despite errors (for testing).');
+		}
+	}
+}
+
+// Run validation on module load
+validateEnvironment();
+
 module.exports = all;
