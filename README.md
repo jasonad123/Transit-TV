@@ -164,11 +164,25 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
 
 ### Unattended Setup
 
-This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, and clock setting. You'll still be able to change the settings at any time.
+This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, language, clock format, and other preferences. You'll still be able to change the settings at any time through the UI.
 
 To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method (modify them in `.env` for local deployment, `.env.docker` for Docker deployments)
 
-Please review the `.env` examples for an overview of all unattended variables available.
+**Available configuration options:**
+- **Location**: Latitude and longitude for transit data
+- **Title**: Display title for the screen
+- **Time Format**: 24-hour (`HH:mm`), 12-hour with AM/PM (`hh:mm A`), or 12-hour without AM/PM (`hh:mm`)
+- **Language**: Interface language - English (`en`), French (`fr`), Spanish (`es`), or German (`de`)
+- **Theme**: Light, dark, or auto (system preference)
+- **Header Color**: Custom hex color for the header
+- **Columns**: Number of route columns (auto, 1-5)
+- **QR Code**: Show/hide Transit app deeplink QR code
+- **Max Distance**: Search radius for nearby routes (250-1500m)
+- **Custom Logo**: Your organization's logo URL or path
+- **Group Itineraries**: Group routes by parent station (v1.3.0+)
+- **Filter Terminus**: Hide redundant terminus entries (v1.3.0+)
+
+Please review the `.env.example` file for detailed documentation of all available options.
 
 ### Custom Logo
 

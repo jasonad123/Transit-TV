@@ -39,7 +39,7 @@ function validateMaxDistance(distance) {
  * @returns {string} - Valid format or default (HH:mm)
  */
 function validateTimeFormat(format) {
-	var allowed = ['HH:mm', 'hh:mm A'];
+	var allowed = ['HH:mm', 'hh:mm A', 'hh:mm'];
 	if (allowed.includes(format)) {
 		return format;
 	}
@@ -51,6 +51,26 @@ function validateTimeFormat(format) {
 			'. Using default: HH:mm'
 	);
 	return 'HH:mm';
+}
+
+/**
+ * Validates and returns a safe language code
+ * @param {string} lang - The language code to validate
+ * @returns {string} - Valid language or default (en)
+ */
+function validateLanguage(lang) {
+	var allowed = ['en', 'fr', 'es', 'de'];
+	if (allowed.includes(lang)) {
+		return lang;
+	}
+	console.warn(
+		'Invalid UNATTENDED_LANGUAGE value: ' +
+			lang +
+			'. Must be one of: ' +
+			allowed.join(', ') +
+			'. Using default: en'
+	);
+	return 'en';
 }
 
 /**
@@ -161,6 +181,7 @@ var all = {
 		location: validateLocation(process.env.UNATTENDED_LOCATION || ''),
 		title: process.env.UNATTENDED_TITLE || '',
 		timeFormat: validateTimeFormat(process.env.UNATTENDED_TIME_FORMAT || 'HH:mm'),
+		language: validateLanguage(process.env.UNATTENDED_LANGUAGE || 'en'),
 		theme: validateTheme(process.env.UNATTENDED_THEME || 'auto'),
 		headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
 		columns: validateColumns(process.env.UNATTENDED_COLUMNS || 'auto'),
