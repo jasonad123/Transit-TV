@@ -185,7 +185,7 @@ jobs:
 
           if [ "$BRANCH_TEST_COUNT" -gt 0 ]; then
             echo ""
-            echo "$BRANCH_TEST_VERSIONS" | jq -r '.[]' | while IFS= read -r version; do
+            echo "$BRANCH_TEST_VERSIONS" | jq -c '.[]' | while IFS= read -r version; do
               VERSION_ID=$(echo "$version" | jq -r '.id')
               VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
               VERSION_DATE=$(echo "$version" | jq -r '.created_at')
