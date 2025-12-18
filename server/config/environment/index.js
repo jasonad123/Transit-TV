@@ -44,7 +44,9 @@ var all = {
 		columns: process.env.UNATTENDED_COLUMNS || 'auto',
 		showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true',
 		maxDistance: parseInt(process.env.UNATTENDED_MAX_DISTANCE) || 500,
-		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null
+		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null,
+		groupItinerariesByStop: process.env.UNATTENDED_GROUP_ITINERARIES === 'true',
+		filterRedundantTerminus: process.env.UNATTENDED_FILTER_TERMINUS === 'true'
 	},
 
 	// Security settings

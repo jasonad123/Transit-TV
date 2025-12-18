@@ -68,6 +68,8 @@ exports.getUnattendedConfig = function (req, res) {
 		columns: config.unattendedSetup.columns,
 		showQRCode: config.unattendedSetup.showQRCode,
 		maxDistance: config.unattendedSetup.maxDistance || 500,
-		customLogo: config.unattendedSetup.customLogo
+		customLogo: config.unattendedSetup.customLogo,
+		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
+		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus
 	});
 };
