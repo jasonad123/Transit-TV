@@ -1,0 +1,32 @@
+[Unit]
+Description=Transit TV Server
+Documentation=https://github.com/jasonad123/Transit-TV
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=transitv
+Group=transitv
+WorkingDirectory=/opt/transit-tv
+Environment="NODE_ENV=production"
+EnvironmentFile=/opt/transit-tv/.env
+ExecStart=/usr/bin/node --env-file=/opt/transit-tv/.env /opt/transit-tv/server/app.js
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=transit-tv
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/transit-tv
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

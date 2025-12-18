@@ -1,0 +1,21 @@
+[Unit]
+Description=Transit TV Graceful Shutdown
+Documentation=https://github.com/jasonad123/Transit-TV
+Requires=transit-tv.service
+After=transit-tv.service
+
+[Service]
+Type=oneshot
+# Use curl to call the graceful shutdown API endpoint
+# The shutdown API pauses Transit API polling while keeping the HTTP server running
+ExecStart=/usr/bin/curl -f -X POST http://localhost:8080/api/server/shutdown
+RemainAfterExit=no
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=transit-tv-shutdown
+
+# Timeout settings
+TimeoutStartSec=30s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+[Unit]
+Description=Transit TV Graceful Start
+Documentation=https://github.com/jasonad123/Transit-TV
+Requires=transit-tv.service
+After=transit-tv.service
+
+[Service]
+Type=oneshot
+# Use curl to call the graceful start API endpoint
+# The start API resumes Transit API polling from shutdown state
+ExecStart=/usr/bin/curl -f -X POST http://localhost:8080/api/server/start
+RemainAfterExit=no
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=transit-tv-start
+
+# Timeout settings
+TimeoutStartSec=30s
+
+[Install]
+WantedBy=multi-user.target
