@@ -14,10 +14,10 @@
 			"theme": "Thème :",
 			"headerColor": "Couleur d'en-tête :",
 			"customLogo": "URL du logo personnalisé :",
-			"showQRCode": "Afficher code QR",
+			"showQRCode": "Afficher code QR deeplink Transit",
 			"maxDistance": "Rayon de recherche :",
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
-			"filterRedundantTerminus": "Filtrer les entrées de terminus redondantes ?"
+			"filterRedundantTerminus": "Masquer le terminus à proximité"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -51,6 +51,10 @@
 			"helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
 			"scanPrompt": "Aimeriez-vous apporter ces départs avec vous ?",
 			"scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
+		},
+		"stopManagement": {
+			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d’arrêt en une seule carte",
+			"filterTerminushelpText": "Aux stations terminus, afficher uniquement les directions opposées ou sortantes"
 		},
 		"buttons": {
 			"cancel": "Annuler",

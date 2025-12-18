@@ -13,11 +13,11 @@
 			"columns": "Rasterspalten:",
 			"theme": "Thema:",
 			"headerColor": "Kopfzeilenfarbe:",
-			"showQRCode": "QR-Code anzeigen",
+			"showQRCode": "Transit-Deep-Link-QR-Code anzeigen",
 			"customLogo": "Logo-URL:",
 			"maxDistance": "Suchradius:",
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
-			"filterRedundantTerminus": "Redundante Endstationseinträge filtern?"
+			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -51,6 +51,10 @@
 			"helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
 			"scanPrompt": "Willst du diese Reisen mit dir nehmen?",
 			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
+		},
+		"stopManagement": {
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte",
+			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
 		"buttons": {
 			"cancel": "Stornieren",

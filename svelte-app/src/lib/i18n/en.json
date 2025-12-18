@@ -14,10 +14,10 @@
 			"theme": "Theme:",
 			"headerColor": "Header Color:",
 			"customLogo": "Custom Logo URL:",
-			"showQRCode": "Show QR Code",
+			"showQRCode": "Show Transit deeplink QR Code",
 			"maxDistance": "Search Radius:",
 			"groupItinerariesByStop": "Group destinations with shared stop names?",
-			"filterRedundantTerminus": "Filter redundant terminus entries?"
+			"filterRedundantTerminus": "Hide nearby terminus"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -52,6 +52,10 @@
 			"scanPrompt": "Want to take these departures with you?",
 			"scanPrompt2": "Scan to open in the Transit app"
 		},
+		"stopManagement": {
+			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card",
+			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
+		},
 		"buttons": {
 			"cancel": "Cancel",
 			"save": "Save",
@@ -84,6 +88,11 @@
 			"geolocationUnavailable": "Location information unavailable",
 			"geolocationTimeout": "Location request timed out",
 			"geolocationError": "An unknown error occurred"
+		},
+		"credits": {
+			"title": "Credits",
+			"madeWith": "Made with <iconify-icon icon=\"ix:heart\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC",
+			"links": "<a href=\"https://github.com/jasonad123/Transit-TV\" target=\"_blank\" rel=\"noopener\">View on GitHub</a> &middot; Powered by <a href=\"https://transitapp.com/partners/apis\" target=\"_blank\" rel=\"noopener\">Transit API</a>"
 		}
 	},
 	"routes": {

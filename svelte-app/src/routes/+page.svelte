@@ -794,30 +794,38 @@
 					{/if}
 				</label>
 
-				<label class="toggle-label">
-					<span>{$_('config.fields.showQRCode')} </span>
-					<label class="toggle-switch">
-						<input type="checkbox" bind:checked={$config.showQRCode} />
-						<span class="toggle-slider"></span>
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.showQRCode')} </span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.showQRCode} />
+							<span class="toggle-slider"></span>
+						</label>
 					</label>
-				</label>
-				<p class="help-text">{$_('config.qrCode.helpText')}</p>
+					<small class="help-text">{$_('config.qrCode.helpText')}</small>
+				</div>
 
-				<label class="toggle-label">
-					<span>{$_('config.fields.groupItinerariesByStop')}</span>
-					<label class="toggle-switch">
-						<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
-						<span class="toggle-slider"></span>
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.groupItinerariesByStop')}</span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
+							<span class="toggle-slider"></span>
+						</label>
 					</label>
-				</label>
+					<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
+				</div>
 
-				<label class="toggle-label">
-					<span>{$_('config.fields.filterRedundantTerminus')}</span>
-					<label class="toggle-switch">
-						<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
-						<span class="toggle-slider"></span>
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.filterRedundantTerminus')}</span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
+							<span class="toggle-slider"></span>
+						</label>
 					</label>
-				</label>
+					<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
+				</div>
 
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
@@ -886,6 +894,16 @@
 							{$_('config.server.actions.restart')}
 						</button>
 					</div>
+				</div>
+
+				<div class="credits">
+					<h3>{$_('config.credits.title')}</h3>
+					<p class="help-text">
+						{@html $_('config.credits.madeWith')}
+					</p>
+					<p class="help-text">
+						{@html $_('config.credits.links')}
+					</p>
 				</div>
 
 				<div class="modal-actions">
@@ -1208,6 +1226,7 @@
 	.help-text {
 		display: block;
 		margin-top: 0.25em;
+		margin-bottom: 0;
 		font-size: 0.85em;
 		color: var(--text-secondary);
 		word-wrap: break-word;
@@ -1278,13 +1297,19 @@
 		border-color: #999;
 	}
 
+	.toggle-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+	}
+
 	.toggle-label {
 		display: flex;
 		flex-direction: row !important;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1em;
-		margin-bottom: 0.5em;
+		margin-bottom: 0;
 	}
 
 	.toggle-switch {
@@ -1415,7 +1440,7 @@
 	}
 
 	.route-management {
-		margin-top: 1.5em;
+		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
 	}
@@ -1425,12 +1450,6 @@
 		margin-bottom: 0.5em;
 		font-size: 1.2em;
 		color: var(--text-primary);
-	}
-
-	.help-text {
-		margin: 0 0 1em 0;
-		font-size: 0.9em;
-		color: var(--text-secondary);
 	}
 
 	.hidden-routes-list {
@@ -1805,7 +1824,7 @@
 
 	/* Server Management Styles */
 	.server-management {
-		margin-top: 1.5em;
+		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
 		max-width: 500px;
@@ -1962,5 +1981,34 @@
 		font-size: 1.4em;
 		font-style: italic;
 		opacity: 0.8;
+	}
+
+	/* Credits Styles */
+	.credits {
+		margin-top: 0;
+		padding-top: 1em;
+		border-top: 1px solid var(--border-color);
+		text-align: center;
+	}
+
+	.credits h3 {
+		margin-top: 0;
+		margin-bottom: 0.5em;
+		font-size: 1.2em;
+		color: var(--text-primary);
+	}
+
+	.credits .help-text {
+		text-align: center;
+	}
+
+	.credits a {
+		color: var(--bg-header);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.credits a:hover {
+		text-decoration: underline;
 	}
 </style>
