@@ -905,6 +905,8 @@
 					<p class="help-text">
 						{@html $_('config.credits.links')}
 					</p>
+					<a href="https://transitapp.com/partners/apis" target="_blank" rel="noopener noreferrer" class="api-badge-link">
+						<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a>
 				</div>
 
 				<div class="modal-actions">
@@ -1533,7 +1535,7 @@
 	.floating-qr {
 		position: fixed;
 		bottom: 1.5em;
-		right: 1.5em;
+		right: 0.75em;
 		z-index: 100;
 		background: var(--bg-header);
 		padding: 1em;
@@ -2009,6 +2011,13 @@
 	.credits .help-text {
 		text-align: left;
 		line-height: 1.5;
+	}
+
+	.credits-logo {
+		margin-top: 0.5em;
+		height: 40px;
+		width: auto;
+		display: block;
 	}
 
 	:global(.credits a) {

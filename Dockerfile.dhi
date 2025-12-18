@@ -16,7 +16,7 @@
 # ==============================================================================
 
 # Builder stage - use -dev variant for build tools
-FROM dhi.io/node:24-alpine3.22-dev AS builder
+FROM dhi.io/node:24-alpine3.22-sfw-dev AS builder
 
 WORKDIR /app
 
@@ -47,7 +47,7 @@ RUN cd svelte-app && pnpm run build
 # ==============================================================================
 # Production stage - hardened runtime image
 # ==============================================================================
-FROM dhi.io/node:24-alpine3.22
+FROM dhi.io/node:24-alpine3.22-sfw-dev
 
 WORKDIR /app
 
