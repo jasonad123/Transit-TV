@@ -340,21 +340,11 @@ jobs:
       packages: write
 
     steps:
-      - name: Delete untagged images (always run)
+      - name: Delete untagged images only
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
         with:
           package-name: transit-tv
           package-type: container
-          min-versions-to-keep: 0  # Delete all untagged (sha256 digests, platform images)
+          min-versions-to-keep: 0
           delete-only-untagged-versions: true
-        continue-on-error: true
-
-      - name: Delete old beta versions (preserve important tags)
-        if: needs.build-and-push.outputs.release_type == 'auto-beta' || needs.build-and-push.outputs.release_type == 'beta'
-        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
-        with:
-          package-name: transit-tv
-          package-type: container
-          min-versions-to-keep: 10
-          ignore-versions: '^(latest|edge|beta|pre-release|[0-9]+\.[0-9]+\.[0-9]+.*)$'
         continue-on-error: true
