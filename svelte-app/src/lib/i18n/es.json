@@ -1,10 +1,10 @@
 {
 	"app": {
-		"title": "Televisión de Transit",
+		"title": "Transit TV",
 		"nearbyRoutes": "Líneas cercanas"
 	},
 	"config": {
-		"title": "Configurar Televisión de Transit",
+		"title": "Configurar Transit TV",
 		"fields": {
 			"title": "Título :",
 			"location": "Posición (lat, lng) :",

@@ -898,6 +898,7 @@
 
 				<div class="credits">
 					<h3>{$_('config.credits.title')}</h3>
+					<h4>{@html $_('config.credits.version')}</h4>
 					<p class="help-text">
 						{@html $_('config.credits.madeWith')}
 					</p>
@@ -1988,7 +1989,7 @@
 		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
-		text-align: center;
+		text-align: left;
 	}
 
 	.credits h3 {
@@ -1998,17 +1999,25 @@
 		color: var(--text-primary);
 	}
 
-	.credits .help-text {
-		text-align: center;
+	.credits h4 {
+		margin-bottom: 0.2em;
+		font-size: 1em;
+		color: var(--text-secondary);
+		font-weight: 400;
 	}
 
-	.credits a {
+	.credits .help-text {
+		text-align: left;
+		line-height: 1.5;
+	}
+
+	:global(.credits a) {
 		color: var(--bg-header);
 		text-decoration: none;
 		font-weight: 500;
 	}
 
-	.credits a:hover {
+	:global(.credits a:hover) {
 		text-decoration: underline;
 	}
 </style>
