@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Package Manager Lockfiles
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+
+# Build Outputs
+build/
+dist/
+.svelte-kit/
+public/
+
+# Cache & Temp Files
+.cache/
+.temp/
+.tmp/
+*.tsbuildinfo
+
+# Test & Coverage
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+playwright/.auth/
+
+# Environment & Config
+.env*
+!.env.example
+configs.json
+
+# IDE & OS
+.DS_Store
+.vscode-test/
+.idea/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Project-Specific
+.claude/
+.mcp.json
+.playwright-mcp/
+svelte-app/static/fonts/
+Screenshot*.png
