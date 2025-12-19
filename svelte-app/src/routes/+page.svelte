@@ -54,8 +54,9 @@
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
-	let currentPollingInterval = 20000; // Start at 20 seconds
-	const MIN_POLLING_INTERVAL = 20000; // 20 seconds minimum
+	// Default 10s for free tier (5 calls/min), paid tier can use 5-7s via env var
+	const MIN_POLLING_INTERVAL = parseInt(import.meta.env.VITE_CLIENT_POLLING_INTERVAL || '10000'); // Default 10s
+	let currentPollingInterval = MIN_POLLING_INTERVAL; // Start at minimum
 	const MAX_POLLING_INTERVAL = 120000; // 2 minutes maximum
 	const BACKOFF_MULTIPLIER = 1.5;
 

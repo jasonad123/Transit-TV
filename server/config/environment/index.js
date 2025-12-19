@@ -173,6 +173,12 @@ var all = {
 	// API request timeout in milliseconds
 	requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 10000,
 
+	// Cache TTL configuration
+	cache: {
+		realtimeTTL: parseInt(process.env.REALTIME_CACHE_TTL) || 5000,
+		staticTTL: parseInt(process.env.STATIC_CACHE_TTL) || 120000
+	},
+
 	// Unattended setup configuration
 	unattendedSetup: {
 		enabled: process.env.UNATTENDED_SETUP === 'true',

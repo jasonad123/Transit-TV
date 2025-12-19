@@ -1,3 +1,4 @@
+import { get } from 'svelte/store';
 import { apiCache } from '$lib/utils/apiCache';
 import { config } from '$lib/stores/config';
 
@@ -138,8 +139,8 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 
 				const data = await response.json();
 				return data.routes || [];
-			},
-			20000 // 20 second cache (aligned with polling interval)
+			}
+			// Let cache determine TTL based on real-time vs schedule data (3s vs 120s)
 		)
 		.then((routes) => applyFilters(routes));
 }
@@ -164,10 +165,8 @@ function applyFilters(routes: Route[]): Route[] {
 	const result: Route[] = [];
 
 	// Get current config value for terminus filtering
-	let shouldFilterTerminus = false;
-	config.subscribe((c) => {
-		shouldFilterTerminus = c.filterRedundantTerminus;
-	})();
+	const currentConfig = get(config);
+	const shouldFilterTerminus = currentConfig.filterRedundantTerminus;
 
 	for (const route of routes) {
 		const idStr = route.global_route_id.toString();

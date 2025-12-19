@@ -1,9 +1,59 @@
 'use strict';
 
+/**
+ * Analyzes Transit API response to detect if it contains real-time predictions
+ * @param {Object} data - The API response data
+ * @returns {boolean} - True if any schedule items have is_real_time: true
+ */
+function hasRealTimeData(data) {
+	if (!data || typeof data !== 'object') {
+		return false;
+	}
+
+	// Check if response has routes array
+	const routes = data.routes || data;
+	if (!Array.isArray(routes)) {
+		return false;
+	}
+
+	// Traverse routes -> itineraries -> schedule_items to find real-time data
+	for (const route of routes) {
+		if (route.itineraries && Array.isArray(route.itineraries)) {
+			for (const itinerary of route.itineraries) {
+				if (itinerary.schedule_items && Array.isArray(itinerary.schedule_items)) {
+					// If ANY schedule item has is_real_time: true, this is real-time data
+					if (itinerary.schedule_items.some((item) => item.is_real_time === true)) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	// Default to false (schedule data) for safety
+	return false;
+}
+
 // Server-side request cache (optional, enabled via ENABLE_SERVER_CACHE env var)
 const CACHE_ENABLED = process.env.ENABLE_SERVER_CACHE === 'true';
-const CACHE_TTL = 20000; // 20 seconds (matches client polling interval)
+// Dual-TTL configuration: different cache times for real-time vs schedule data
+const REALTIME_CACHE_TTL = parseInt(process.env.REALTIME_CACHE_TTL) || 5000; // 5s default (free tier safe)
+const STATIC_CACHE_TTL = parseInt(process.env.STATIC_CACHE_TTL) || 120000; // 120s for schedule
 const MAX_CACHE_SIZE = 100; // Bounded cache to prevent memory issues
+
+/**
+ * Get appropriate Cache-Control max-age based on data freshness
+ * @param {string} freshness - 'fresh-realtime' or 'fresh-schedule'
+ * @returns {number} - max-age in seconds
+ */
+function getCacheMaxAge(freshness) {
+	if (freshness === 'fresh-realtime') {
+		// Match REALTIME_CACHE_TTL: 5s for free tier, 3s for paid tier
+		return Math.floor(REALTIME_CACHE_TTL / 1000);
+	}
+	// 120 seconds for schedule data
+	return Math.floor(STATIC_CACHE_TTL / 1000);
+}
 
 // In-memory cache storage
 const requestCache = new Map();
@@ -64,10 +114,12 @@ exports.nearby = async function (req, res) {
 	if (CACHE_ENABLED) {
 		const cached = requestCache.get(cacheKey);
 		if (cached && Date.now() < cached.expiresAt) {
+			const maxAge = getCacheMaxAge(cached.freshness || 'fresh-schedule');
 			res.set({
-				'Cache-Control': 'public, max-age=30',
+				'Cache-Control': `public, max-age=${maxAge}`,
 				'Vary': 'Accept-Encoding',
-				'X-Cache': 'HIT'
+				'X-Cache': 'HIT',
+				'X-Cache-Freshness': cached.freshness || 'unknown'
 			});
 			return res.status(200).json(cached.data);
 		}
@@ -77,8 +129,9 @@ exports.nearby = async function (req, res) {
 		if (pending) {
 			try {
 				const data = await pending;
+				// Use conservative short TTL for in-flight (no freshness info yet)
 				res.set({
-					'Cache-Control': 'public, max-age=30',
+					'Cache-Control': 'public, max-age=3',
 					'Vary': 'Accept-Encoding',
 					'X-Cache': 'HIT-INFLIGHT'
 				});
@@ -132,9 +185,15 @@ exports.nearby = async function (req, res) {
 
 			// Store in cache if enabled
 			if (CACHE_ENABLED) {
+				// Analyze response to determine appropriate TTL
+				const isRealTime = hasRealTimeData(data);
+				const cacheTTL = isRealTime ? REALTIME_CACHE_TTL : STATIC_CACHE_TTL;
+				const freshness = isRealTime ? 'fresh-realtime' : 'fresh-schedule';
+
 				requestCache.set(cacheKey, {
 					data,
-					expiresAt: Date.now() + CACHE_TTL
+					expiresAt: Date.now() + cacheTTL,
+					freshness
 				});
 			}
 
@@ -155,10 +214,16 @@ exports.nearby = async function (req, res) {
 	try {
 		const data = await fetchPromise;
 
+		// Analyze response to set freshness header
+		const isRealTime = hasRealTimeData(data);
+		const freshness = isRealTime ? 'fresh-realtime' : 'fresh-schedule';
+		const maxAge = getCacheMaxAge(freshness);
+
 		res.set({
-			'Cache-Control': 'public, max-age=30',
+			'Cache-Control': `public, max-age=${maxAge}`,
 			'Vary': 'Accept-Encoding',
-			'X-Cache': CACHE_ENABLED ? 'MISS' : 'DISABLED'
+			'X-Cache': CACHE_ENABLED ? 'MISS' : 'DISABLED',
+			'X-Cache-Freshness': freshness
 		});
 
 		res.status(200).json(data);
