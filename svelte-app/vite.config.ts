@@ -1,21 +1,8 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { writeFileSync, mkdirSync } from 'fs';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		{
-			name: 'generate-build-package-json',
-			writeBundle() {
-				// Generate package.json in build output to eliminate MODULE_TYPELESS_PACKAGE_JSON warning
-				// Node needs to know handler.js is ESM, but root package.json is CommonJS
-				const buildPackageJson = { type: 'module' };
-				mkdirSync('build', { recursive: true });
-				writeFileSync('build/package.json', JSON.stringify(buildPackageJson, null, 2));
-			}
-		}
-	],
+	plugins: [sveltekit()],
 
 	build: {
 		// Optimize chunk splitting for better caching
