@@ -835,7 +835,11 @@
 					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
 				>
 			</div>
-			<div class="route-alert-ticker" style={cellStyle}>
+			<div
+			class="route-alert-ticker"
+			class:grouped-alerts={$config.groupItinerariesByStop}
+			style={cellStyle}
+		>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
 					{#each parseAlertContent(getAlertText()) as content}
 						{#if content.type === 'text'}
@@ -1004,6 +1008,18 @@
 	@media (orientation: portrait) {
 		.route-alert-ticker {
 			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	/* Grouping saves space by consolidating cards, so give that space to alerts */
+	.route-alert-ticker.grouped-alerts {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-ticker.grouped-alerts {
+			height: clamp(5em, 10vh, 15em);
 		}
 	}
 
