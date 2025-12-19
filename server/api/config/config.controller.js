@@ -30,8 +30,14 @@ function validateCoordinates(locationStr) {
 
 // Validate time format
 function validateTimeFormat(format) {
-	var validFormats = ['HH:mm', 'hh:mm A'];
+	var validFormats = ['HH:mm', 'hh:mm A', 'hh:mm']; // Added 'hh:mm' for 12-hour without AM/PM
 	return validFormats.includes(format);
+}
+
+// Validate language code
+function validateLanguage(lang) {
+	var validLanguages = ['en', 'fr', 'es', 'de'];
+	return validLanguages.includes(lang);
 }
 
 // Get unattended setup configuration
@@ -53,7 +59,14 @@ exports.getUnattendedConfig = function (req, res) {
 	// Validate time format
 	if (!validateTimeFormat(config.unattendedSetup.timeFormat)) {
 		return res.status(400).json({
-			error: 'Invalid time format. Expected: "HH:mm" or "hh:mm A"'
+			error: 'Invalid time format. Expected: "HH:mm", "hh:mm A", or "hh:mm"'
+		});
+	}
+
+	// Validate language
+	if (!validateLanguage(config.unattendedSetup.language)) {
+		return res.status(400).json({
+			error: 'Invalid language. Expected: "en", "fr", "es", or "de"'
 		});
 	}
 
@@ -62,7 +75,7 @@ exports.getUnattendedConfig = function (req, res) {
 		latLng: coordinates,
 		title: config.unattendedSetup.title,
 		timeFormat: config.unattendedSetup.timeFormat,
-		language: 'en', // Default language for unattended setup
+		language: config.unattendedSetup.language,
 		theme: config.unattendedSetup.theme,
 		headerColor: config.unattendedSetup.headerColor,
 		columns: config.unattendedSetup.columns,

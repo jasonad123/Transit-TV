@@ -1,23 +1,26 @@
 # ==============================================================================
-# Optimized Dockerfile with zero-risk improvements
+# Docker Hardened Images (DHI) Dockerfile
 # ==============================================================================
-# Changes from original:
-# 1. Use corepack instead of npm install -g pnpm (fixes DHI EEXIST error)
-# 2. Add BuildKit cache mounts for 50-80% faster builds
-# 3. Remove unnecessary svelte-app prod dependencies (smaller image)
-# 4. Add Node heap size limit for stability
-# 5. Run as non-root user for security
+# This version uses Docker's hardened images for enhanced security
 #
-# Compatible with both node:24-alpine and dhi.io/node:24-alpine3.22
+# Benefits:
+# - Up to 95% smaller attack surface
+# - Near-zero CVEs maintained by Docker
+# - Free and open source (Apache 2.0)
+#
+# Requirements:
+# - Docker Hub authentication: docker login dhi.io
+# - Use your Docker Hub credentials
+#
+# To build: docker build -f Dockerfile.dhi -t transit-tv:dhi .
 # ==============================================================================
 
-# Builder stage
-FROM node:24-alpine AS builder
+# Builder stage - use -dev variant for build tools
+FROM dhi.io/node:24-alpine3.22-sfw-dev AS builder
 
 WORKDIR /app
 
-# Enable corepack (bundled with Node 24+) instead of global npm install
-# This avoids EEXIST errors in DHI images and is faster
+# Enable corepack (bundled with Node 24+)
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy dependency files first for better layer caching
@@ -42,10 +45,9 @@ COPY server ./server
 RUN cd svelte-app && pnpm run build
 
 # ==============================================================================
-# Production stage - minimal runtime image
+# Production stage - hardened runtime image
 # ==============================================================================
-
-FROM node:24-alpine
+FROM dhi.io/node:24-alpine3.22-sfw-dev
 
 WORKDIR /app
 
@@ -53,7 +55,6 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy only what's needed for runtime
-# Note: svelte-app/package.json NOT needed - build output is self-contained
 COPY --from=builder /app/svelte-app/build ./svelte-app/build
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/package.json ./package.json
@@ -70,9 +71,8 @@ ENV USE_SVELTE=true
 
 EXPOSE 8080
 
-# Run as non-root user for security (node user exists in alpine image)
+# Run as non-root user for security
 USER node
 
-# Start with heap size limit to prevent OOM with 512MB container limit
-# Heap: 400MB, leaves ~112MB for V8 overhead, buffers, and OS
+# Start with heap size limit for stability
 CMD ["node", "--max-old-space-size=400", "server/app.js"]

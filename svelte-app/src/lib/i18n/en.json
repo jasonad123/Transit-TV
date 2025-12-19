@@ -21,6 +21,7 @@
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
+			"12hourNoAmPm": "12 Hours (No AM/PM)",
 			"24hour": "24 Hours"
 		},
 		"languages": {
@@ -92,8 +93,8 @@
 		"credits": {
 			"version": "Transit TV version <a href=\"https://github.com/jasonad123/Transit-TV/releases/tag/v1.3.0\" target=\"_blank\" rel=\"noopener\">1.3.0</a>",
 			"title": "Credits",
-			"madeWith": "Made with <iconify-icon icon=\"ix:heart-filled\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC </br> Originally developed by <a href=\"https://transitapp.com/\" target=\"_blank\" rel=\"noopener\">Transit</a> in <iconify-icon icon=\"fluent-emoji-flat:maple-leaf\" style=\"color: #b53054; vertical-align: -0.2em;\"></iconify-icon> Montreal, QC",
-			"links": "<a href=\"https://github.com/jasonad123/Transit-TV\" target=\"_blank\" rel=\"noopener\">View on GitHub</a> &vert; Powered by the <a href=\"https://transitapp.com/partners/apis\" target=\"_blank\" rel=\"noopener\">Transit API</a>"
+			"madeWith": "Made with <iconify-icon icon=\"ix:heart-filled\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC by Jason A </br> Originally developed by <a href=\"https://transitapp.com/\" target=\"_blank\" rel=\"noopener\">Transit</a> in <iconify-icon icon=\"fluent-emoji-flat:maple-leaf\" style=\"color: #b53054; vertical-align: -0.2em;\"></iconify-icon> Montreal, QC",
+			"links": "<a href=\"https://github.com/jasonad123/Transit-TV\" target=\"_blank\" rel=\"noopener\">View on GitHub</a> &vert; Powered by the Transit API"
 		}
 	},
 	"routes": {

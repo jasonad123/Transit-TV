@@ -173,3 +173,5 @@ Screenshot*.png
 /playwright/.auth/
 
 .playwright-mcp/*
+
+.meta/*

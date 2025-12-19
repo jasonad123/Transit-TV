@@ -3,6 +3,7 @@
 var errors = require('./components/errors');
 var path = require('path');
 var config = require('./config/environment');
+var packageJson = require('../package.json');
 
 module.exports = function (app) {
 	// Insert routes below
@@ -10,6 +11,17 @@ module.exports = function (app) {
 	app.use('/api/routes', require('./api/routes'));
 	app.use('/api/config', require('./api/config'));
 	app.use('/api/server', require('./api/server'));
+
+	// Health check endpoint for monitoring and orchestration
+	app.get('/health', function (req, res) {
+		res.status(200).json({
+			status: 'healthy',
+			timestamp: new Date().toISOString(),
+			version: packageJson.version,
+			uptime: process.uptime(),
+			environment: process.env.NODE_ENV || 'development'
+		});
+	});
 
 	// All undefined asset or api routes should return a 404
 	app.get(

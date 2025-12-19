@@ -70,10 +70,21 @@ module.exports = function (app) {
 	app.use(
 		express.static(path.join(config.root, 'svelte-app/build/client'), {
 			maxAge: env === 'production' ? '1d' : 0,
+			etag: true, // Enable ETags for cache validation
+			lastModified: true, // Send Last-Modified headers
+			index: false, // Don't serve index.html (SvelteKit handles routing)
 			setHeaders: function (res, filepath) {
-				// Immutable cache for hashed assets
+				// Immutable cache for hashed assets (SvelteKit's /_app/immutable/)
 				if (filepath.includes('/_app/immutable/')) {
 					res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+				}
+				// Aggressive caching for fonts (they rarely change)
+				else if (filepath.match(/\.(woff2|woff|ttf|eot)$/)) {
+					res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+				}
+				// Medium-term caching for images
+				else if (filepath.match(/\.(png|jpg|jpeg|gif|svg|webp|ico)$/)) {
+					res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
 				}
 			}
 		})
