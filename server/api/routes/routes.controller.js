@@ -107,8 +107,13 @@ exports.nearby = async function (req, res) {
 		return res.status(400).json({ error: 'Invalid parameters: lat and lon must be valid numbers' });
 	}
 
-	// Cache key based on request parameters
-	const cacheKey = `${lat},${lon},${distance}`;
+	// Round coordinates to 4 decimal places (~10.1m precision) for effective cache key grouping
+	// This ensures nearby requests (GPS drift, manual pin drag) share the same cache
+	const roundedLat = parseFloat(lat).toFixed(4);
+	const roundedLon = parseFloat(lon).toFixed(4);
+
+	// Cache key based on rounded coordinates
+	const cacheKey = `${roundedLat},${roundedLon},${distance}`;
 
 	// Check cache if enabled
 	if (CACHE_ENABLED) {
