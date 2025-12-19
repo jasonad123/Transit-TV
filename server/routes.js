@@ -13,7 +13,12 @@ module.exports = function (app) {
 	app.use('/api/server', require('./api/server'));
 
 	// Health check endpoint for monitoring and orchestration
+	// Always allow CORS for health endpoint to support dev mode version fetching
 	app.get('/health', function (req, res) {
+		// Allow cross-origin requests for health check (always, even in production)
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
 		res.status(200).json({
 			status: 'healthy',
 			timestamp: new Date().toISOString(),

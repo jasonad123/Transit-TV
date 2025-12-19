@@ -1262,7 +1262,7 @@
 		display: block;
 		margin-top: 0.25em;
 		margin-bottom: 0;
-		font-size: 0.85em;
+		font-size: 0.95em;
 		color: var(--text-secondary);
 		word-wrap: break-word;
 		overflow-wrap: break-word;
@@ -1291,11 +1291,18 @@
 	}
 
 	.config-modal button {
-		padding: 0.5em 1em;
+		padding: 0.65em 1.5em 0.55em 1.5em;
 		border: none;
-		border-radius: 4px;
+		border-radius: 6px;
 		cursor: pointer;
 		font-size: 1em;
+		font-family: 'Overpass Variable', Helvetica, Arial, serif;
+		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
+
 	}
 
 	.btn-save {
@@ -1509,6 +1516,8 @@
 		cursor: pointer;
 		transition: background 0.2s;
 		text-align: left;
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	.hidden-route-item:hover {
@@ -1517,11 +1526,18 @@
 
 	.hidden-route-item iconify-icon {
 		color: var(--text-secondary);
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		flex-shrink: 0;
+		font-size: 1.2em;
 	}
 
 	.hidden-route-item span {
 		font-weight: 500;
 		color: var(--text-primary);
+		display: flex;
+		align-items: center;
 	}
 
 	.loading,
@@ -2043,6 +2059,14 @@
 	.credits .help-text {
 		text-align: left;
 		line-height: 1.5;
+		font-size: 0.85em;
+	}
+
+	:global(.credits iconify-icon) {
+		display: inline-block !important;
+		vertical-align: middle !important;
+		font-size: 1.3em !important;
+		transform: translateY(-1px);
 	}
 
 	.credits-logo {
