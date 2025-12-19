@@ -836,10 +836,10 @@
 				>
 			</div>
 			<div
-			class="route-alert-ticker"
-			class:grouped-alerts={$config.groupItinerariesByStop}
-			style={cellStyle}
-		>
+				class="route-alert-ticker"
+				class:grouped-alerts={$config.groupItinerariesByStop}
+				style={cellStyle}
+			>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
 					{#each parseAlertContent(getAlertText()) as content}
 						{#if content.type === 'text'}

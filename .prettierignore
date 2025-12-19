@@ -53,3 +53,5 @@ pnpm-debug.log*
 svelte-app/static/fonts/
 Screenshot*.png
 renovate.json
+
+.github/

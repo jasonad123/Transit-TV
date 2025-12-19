@@ -111,9 +111,7 @@ class ApiCache {
 				const freshness = isRealTime ? 'realtime' : 'schedule';
 
 				// Use explicit TTL if provided, otherwise use dual-TTL based on content
-				const cacheTTL = ttl !== undefined
-					? ttl
-					: (isRealTime ? this.realtimeTTL : this.scheduleTTL);
+				const cacheTTL = ttl !== undefined ? ttl : isRealTime ? this.realtimeTTL : this.scheduleTTL;
 
 				// Cache the result with appropriate TTL and freshness metadata
 				this.set(key, data, cacheTTL, freshness);

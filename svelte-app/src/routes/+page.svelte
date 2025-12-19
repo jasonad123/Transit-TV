@@ -5,6 +5,7 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
+	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -604,7 +605,9 @@
 						>
 					</td>
 					<td id="utilities">
-						<span class="clock">{formatTime(currentTime, $config.timeFormat, $config.language)}</span>
+						<span class="clock"
+							>{formatTime(currentTime, $config.timeFormat, $config.language)}</span
+						>
 					</td>
 				</tr>
 			</tbody>
@@ -625,7 +628,7 @@
 					<div class="location-input-group">
 						<input
 							type="text"
-							value={`${$config.latLng.latitude}, ${$config.latLng.longitude}`}
+							value={formatCoordinatesForDisplay($config.latLng.latitude, $config.latLng.longitude)}
 							oninput={(e) => {
 								config.setLatLngStr(e.currentTarget.value);
 								validationMessage = null;
@@ -1325,7 +1328,6 @@
 		align-items: center;
 		justify-content: center;
 		line-height: 1;
-
 	}
 
 	.btn-save {
