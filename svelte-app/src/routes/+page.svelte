@@ -87,6 +87,34 @@
 		}
 	}
 
+	// Helper function to format time based on configured format
+	function formatTime(date: Date, format: string, language: string): string {
+		if (format === 'hh:mm') {
+			// 12-hour format without AM/PM - manual formatting required
+			let hours = date.getHours();
+			const minutes = date.getMinutes();
+
+			// Convert to 12-hour format
+			if (hours === 0) {
+				hours = 12; // Midnight is 12:XX
+			} else if (hours > 12) {
+				hours = hours - 12;
+			}
+
+			// Pad minutes with leading zero
+			const minutesStr = minutes.toString().padStart(2, '0');
+
+			return `${hours}:${minutesStr}`;
+		} else {
+			// Use toLocaleTimeString for other formats
+			return date.toLocaleTimeString(language, {
+				hour: 'numeric',
+				minute: '2-digit',
+				hour12: format.startsWith('hh:mm')
+			});
+		}
+	}
+
 	async function loadNearby() {
 		// Don't poll Transit API if server is in shutdown state
 		if (serverStatus.isShutdown) {
@@ -575,13 +603,7 @@
 						>
 					</td>
 					<td id="utilities">
-						<span class="clock"
-							>{currentTime.toLocaleTimeString($config.language, {
-								hour: 'numeric',
-								minute: '2-digit',
-								hour12: $config.timeFormat.startsWith('hh:mm')
-							})}</span
-						>
+						<span class="clock">{formatTime(currentTime, $config.timeFormat, $config.language)}</span>
 					</td>
 				</tr>
 			</tbody>
