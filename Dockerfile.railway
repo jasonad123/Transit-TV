@@ -1,14 +1,9 @@
 # ==============================================================================
-# Optimized Dockerfile with zero-risk improvements
+# Railway-specific Dockerfile (without BuildKit cache mounts)
 # ==============================================================================
-# Changes from original:
-# 1. Use corepack instead of npm install -g pnpm (fixes DHI EEXIST error)
-# 2. Add BuildKit cache mounts for 50-80% faster builds
-# 3. Remove unnecessary svelte-app prod dependencies (smaller image)
-# 4. Add Node heap size limit for stability
-# 5. Run as non-root user for security
-#
-# Compatible with both node:24-alpine and dhi.io/node:24-alpine3.22
+# Railway requires service-specific cache mount IDs which creates portability
+# issues. This version removes cache mounts for Railway compatibility while
+# maintaining all other optimizations.
 # ==============================================================================
 
 # Builder stage
@@ -24,14 +19,12 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml ./
 COPY svelte-app/package.json svelte-app/pnpm-lock.yaml svelte-app/pnpm-workspace.yaml ./svelte-app/
 
-# Install root dependencies with cache mount for faster rebuilds
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+# Install root dependencies
+RUN pnpm install --frozen-lockfile
 
-# Install svelte-app dependencies with cache mount
+# Install svelte-app dependencies
 WORKDIR /app/svelte-app
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy source code (only rebuilds when source changes)
 WORKDIR /app
@@ -59,9 +52,8 @@ COPY --from=builder /app/server ./server
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Install only production dependencies with cache mount
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --prod --frozen-lockfile
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
 
 # Environment configuration
 ENV NODE_ENV=production
