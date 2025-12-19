@@ -13,8 +13,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
-  KEEP_BETA_COUNT: 10
-  KEEP_EDGE_COUNT: 5
+  KEEP_BETA_COUNT: 8
+  KEEP_EDGE_COUNT: 3
 
 jobs:
   cleanup:
