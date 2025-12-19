@@ -1,6 +1,17 @@
+# ==============================================================================
+# Docker Compose Configuration (Development & Production)
+# ==============================================================================
+# Optimized configuration using corepack, BuildKit cache mounts, and heap limits.
+# For legacy version (npm install -g pnpm), use compose.legacy.yaml instead.
+#
+# Usage:
+#   Production: docker compose --profile production up -d
+#   Development: docker compose --profile dev up
+#   Build only:  docker compose --profile build up
+# ==============================================================================
+
 services:
-  # To run production: docker compose up
-  # To run development: docker compose --profile dev up
+  # Production service using optimized Dockerfile
   transit-tv-svelte:
     env_file:
       - .env.docker
@@ -27,7 +38,7 @@ services:
     profiles:
       - production
 
-  # Frontend build service - builds Svelte app independently
+  # Frontend builder service
   frontend-builder:
     image: node:24-alpine
     container_name: frontend-builder
@@ -37,14 +48,18 @@ services:
       - frontend_modules:/app/svelte-app/node_modules
     networks:
       - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             pnpm run build"
+    command:
+      - sh
+      - -c
+      - |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+        pnpm install
+        pnpm run build
     profiles:
       - build
 
-  # Backend build service - builds server independently
+  # Backend builder service
   backend-builder:
     image: node:24-alpine
     container_name: backend-builder
@@ -56,16 +71,17 @@ services:
       - backend_modules:/app/node_modules
     networks:
       - transit-network
-    command: >
-      sh -c "npm install -g pnpm && pnpm install --prod"
+    command:
+      - sh
+      - -c
+      - |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+        pnpm install --prod
     profiles:
       - build
 
   # Development service - Svelte with hot reload
-  # Note: For development, it's recommended to run locally:
-  #   Terminal 1: cd svelte-app && pnpm dev
-  #   Terminal 2: USE_SVELTE=true pnpm start
-  # This provides better performance and easier debugging than Docker.
   transit-tv-dev:
     image: node:24-alpine
     container_name: transit-tv-dev
@@ -83,14 +99,18 @@ services:
       - dev_svelte_modules:/app/svelte-app/node_modules
     networks:
       - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             pnpm run dev -- --host 0.0.0.0"
+    command:
+      - sh
+      - -c
+      - |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+        pnpm install
+        pnpm run dev -- --host 0.0.0.0
     profiles:
       - dev
 
-  # Backend service for development (pairs with transit-tv-dev)
+  # Backend service for development
   transit-tv-backend:
     image: node:24-alpine
     container_name: transit-tv-backend
@@ -109,10 +129,14 @@ services:
       - dev_modules:/app/node_modules
     networks:
       - transit-network
-    command: >
-      sh -c "npm install -g pnpm &&
-             pnpm install &&
-             node server/app.js"
+    command:
+      - sh
+      - -c
+      - |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+        pnpm install
+        node --max-old-space-size=400 server/app.js
     profiles:
       - dev
 
