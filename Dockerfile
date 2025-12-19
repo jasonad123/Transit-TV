@@ -70,6 +70,9 @@ ENV USE_SVELTE=true
 
 EXPOSE 8080
 
+# Change ownership to node user before switching
+RUN chown -R node:node /app
+
 # Run as non-root user for security (node user exists in alpine image)
 USER node
 

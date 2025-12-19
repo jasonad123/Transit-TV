@@ -92,7 +92,10 @@ jobs:
 
       - name: Test Docker image
         run: |
-          docker run --rm -d -p 8080:8080 --name test-container transit-tv-test:latest
+          docker run --rm -d -p 8080:8080 \
+            -e TRANSIT_API_KEY=test-key-for-ci \
+            -e SESSION_SECRET=test-secret-for-ci \
+            --name test-container transit-tv-test:latest
           sleep 10
           curl -f http://localhost:8080 || exit 1
           docker stop test-container
