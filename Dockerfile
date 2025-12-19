@@ -25,12 +25,12 @@ COPY package.json pnpm-lock.yaml ./
 COPY svelte-app/package.json svelte-app/pnpm-lock.yaml svelte-app/pnpm-workspace.yaml ./svelte-app/
 
 # Install root dependencies with cache mount for faster rebuilds
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 # Install svelte-app dependencies with cache mount
 WORKDIR /app/svelte-app
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 # Copy source code (only rebuilds when source changes)
@@ -60,7 +60,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install only production dependencies with cache mount
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --prod --frozen-lockfile
 
 # Environment configuration

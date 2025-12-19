@@ -31,7 +31,6 @@ UNATTENDED_SETUP=true
 
 # UNATTENDED_LOCATION: Latitude and longitude for demo location
 # Format: "latitude,longitude" (e.g., "40.7240,-74.0002" for New York City)
-# Default: Cleveland RTA (suggested by project inspiration)
 UNATTENDED_LOCATION=41.4993,-81.6944
 
 # UNATTENDED_TITLE: Display title
