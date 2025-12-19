@@ -44,6 +44,7 @@ RUN cd svelte-app && pnpm run build
 # ==============================================================================
 # Production stage - minimal runtime image
 # ==============================================================================
+
 FROM node:24-alpine
 
 WORKDIR /app
