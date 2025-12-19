@@ -49,6 +49,9 @@
 	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
 	let serverActionInProgress = $state(false);
 
+	// App version state
+	let appVersion = $state<string>('1.3.0'); // Fallback version
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
 	let currentPollingInterval = 20000; // Start at 20 seconds
@@ -279,6 +282,22 @@
 			resizeCleanup = () => {
 				window.removeEventListener('resize', handleResize);
 			};
+		}
+
+		// Fetch app version from server
+		try {
+			const apiBase = browser
+				? window.location.port === '5173'
+					? 'http://localhost:8080'
+					: ''
+				: '';
+			const healthResponse = await fetch(`${apiBase}/health`);
+			if (healthResponse.ok) {
+				const healthData = await healthResponse.json();
+				appVersion = healthData.version || '1.3.0';
+			}
+		} catch (err) {
+			console.log('Could not fetch version, using fallback');
 		}
 
 		// Check server status first, before starting polling
@@ -560,7 +579,7 @@
 							>{currentTime.toLocaleTimeString($config.language, {
 								hour: 'numeric',
 								minute: '2-digit',
-								hour12: $config.timeFormat === 'hh:mm A'
+								hour12: $config.timeFormat.startsWith('hh:mm')
 							})}</span
 						>
 					</td>
@@ -627,6 +646,7 @@
 					{$_('config.fields.timeFormat')}
 					<select bind:value={$config.timeFormat}>
 						<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
+						<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
 						<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
 					</select>
 				</label>
@@ -898,15 +918,27 @@
 
 				<div class="credits">
 					<h3>{$_('config.credits.title')}</h3>
-					<h4>{@html $_('config.credits.version')}</h4>
+					<h4>
+						Transit TV version <a
+							href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
+							target="_blank"
+							rel="noopener">{appVersion}</a
+						>
+					</h4>
 					<p class="help-text">
 						{@html $_('config.credits.madeWith')}
 					</p>
 					<p class="help-text">
 						{@html $_('config.credits.links')}
 					</p>
-					<a href="https://transitapp.com/partners/apis" target="_blank" rel="noopener noreferrer" class="api-badge-link">
-						<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a>
+					<a
+						href="https://transitapp.com/partners/apis"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="api-badge-link"
+					>
+						<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
+					>
 				</div>
 
 				<div class="modal-actions">

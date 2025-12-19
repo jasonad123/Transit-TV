@@ -12,9 +12,9 @@ export default defineConfig({
 					// Core Svelte libraries in separate chunk (rarely changes)
 					'svelte-core': ['svelte', 'svelte/internal'],
 					// I18n library in separate chunk
-					'i18n': ['svelte-i18n'],
+					i18n: ['svelte-i18n'],
 					// Font packages in separate chunk (large, rarely change)
-					'fonts': ['@fontsource-variable/overpass', '@fontsource/overpass']
+					fonts: ['@fontsource-variable/overpass', '@fontsource/overpass']
 				}
 			}
 		},

@@ -56,6 +56,7 @@ pnpm exec playwright show-report
 These tests require a Transit API key and a test location with routes that have multiple branches:
 
 1. **Set environment variables:**
+
    ```bash
    export TRANSIT_API_KEY=your_api_key_here
    export BASE_URL=http://localhost:8080
@@ -67,6 +68,7 @@ These tests require a Transit API key and a test location with routes that have 
    - Update `TEST_LOCATION.lat` and `TEST_LOCATION.lng`
 
 3. **Configure environment:**
+
    ```bash
    # In your .env file
    UNATTENDED_SETUP=true
@@ -90,6 +92,7 @@ These tests require a terminus/end-of-line station:
    - Update `TERMINUS_LOCATION.lat` and `TERMINUS_LOCATION.lng`
 
 3. **Configure environment:**
+
    ```bash
    # In your .env file
    UNATTENDED_FILTER_TERMINUS=true
@@ -108,17 +111,17 @@ Each test file follows this pattern:
 import { test, expect } from '@playwright/test';
 
 test.describe('Feature Name', () => {
-  test.describe('when feature is enabled', () => {
-    test('should do something', async ({ page }) => {
-      // Test implementation
-    });
-  });
+	test.describe('when feature is enabled', () => {
+		test('should do something', async ({ page }) => {
+			// Test implementation
+		});
+	});
 
-  test.describe('when feature is disabled', () => {
-    test('should do something else', async ({ page }) => {
-      // Test implementation
-    });
-  });
+	test.describe('when feature is disabled', () => {
+		test('should do something else', async ({ page }) => {
+			// Test implementation
+		});
+	});
 });
 ```
 
@@ -174,16 +177,19 @@ pnpm exec playwright show-trace trace.zip
 ## Common Issues
 
 ### "Cannot connect to server"
+
 - Make sure the server is running on http://localhost:8080
 - Check that `pnpm start` is running in another terminal
 - For SvelteKit dev mode, run `cd svelte-app && pnpm dev`
 
 ### "No routes found"
+
 - Verify TRANSIT_API_KEY is set correctly
 - Check that test coordinates have nearby transit
 - Ensure location is in a supported transit system
 
 ### "Test timeout"
+
 - Increase timeout in test: `test.setTimeout(60000)`
 - Check network connectivity
 - Verify Transit API is responding

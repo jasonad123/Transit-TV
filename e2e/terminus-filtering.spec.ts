@@ -18,7 +18,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 // TODO: Replace with actual terminus station coordinates
 // Should be an end-of-line station where filtering would apply
 const TERMINUS_LOCATION = {
-	lat: 45.5017,  // Example coordinates - update these
+	lat: 45.5017, // Example coordinates - update these
 	lng: -73.5673
 };
 
@@ -59,16 +59,12 @@ test.describe('Terminus Filtering Feature', () => {
 
 		test('should reduce visual clutter at terminus stations', async ({ page, context }) => {
 			// Compare number of displayed routes with and without filtering
-
 			// TODO: First, load with filtering disabled
 			// await context.addCookies([...]) or set via query param
-
 			// TODO: Count routes without filtering
 			// const routesWithoutFiltering = await page.locator('.direction').count();
-
 			// TODO: Reload with filtering enabled
 			// const routesWithFiltering = await page.locator('.direction').count();
-
 			// TODO: Verify filtering reduces route count
 			// expect(routesWithFiltering).toBeLessThan(routesWithoutFiltering);
 		});

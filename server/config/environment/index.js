@@ -124,9 +124,7 @@ function validateLocation(location) {
 	var parts = location.split(',');
 	if (parts.length !== 2) {
 		console.warn(
-			'Invalid UNATTENDED_LOCATION format: ' +
-				location +
-				'. Expected format: "latitude,longitude"'
+			'Invalid UNATTENDED_LOCATION format: ' + location + '. Expected format: "latitude,longitude"'
 		);
 		return '';
 	}
@@ -228,7 +226,9 @@ function validateEnvironment() {
 	if (process.env.REQUEST_TIMEOUT) {
 		var timeout = parseInt(process.env.REQUEST_TIMEOUT);
 		if (isNaN(timeout) || timeout < 1000 || timeout > 60000) {
-			warnings.push('REQUEST_TIMEOUT should be between 1000-60000ms, got: ' + process.env.REQUEST_TIMEOUT);
+			warnings.push(
+				'REQUEST_TIMEOUT should be between 1000-60000ms, got: ' + process.env.REQUEST_TIMEOUT
+			);
 		}
 	}
 

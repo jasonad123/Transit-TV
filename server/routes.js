@@ -3,6 +3,7 @@
 var errors = require('./components/errors');
 var path = require('path');
 var config = require('./config/environment');
+var packageJson = require('../package.json');
 
 module.exports = function (app) {
 	// Insert routes below
@@ -16,7 +17,7 @@ module.exports = function (app) {
 		res.status(200).json({
 			status: 'healthy',
 			timestamp: new Date().toISOString(),
-			version: '1.3.0',
+			version: packageJson.version,
 			uptime: process.uptime(),
 			environment: process.env.NODE_ENV || 'development'
 		});

@@ -21,6 +21,7 @@
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
+			"12hourNoAmPm": "12 horas (sin AM/PM)",
 			"24hour": "24 horas"
 		},
 		"languages": {

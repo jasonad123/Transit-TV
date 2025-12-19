@@ -176,13 +176,14 @@ curl http://localhost:8080/health
 ```
 
 **Response:**
+
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-12-18T16:00:00.000Z",
-  "version": "1.3.0",
-  "uptime": 3600,
-  "environment": "production"
+	"status": "healthy",
+	"timestamp": "2025-12-18T16:00:00.000Z",
+	"version": "1.3.0",
+	"uptime": 3600,
+	"environment": "production"
 }
 ```
 

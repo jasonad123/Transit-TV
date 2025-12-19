@@ -17,7 +17,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
 const TEST_LOCATION = {
 	// TODO: Replace with coordinates that have routes with multiple branches
 	// Example: A metro station with multiple route variants
-	lat: 45.5017,  // Example: Montreal
+	lat: 45.5017, // Example: Montreal
 	lng: -73.5673
 };
 
