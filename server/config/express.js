@@ -99,14 +99,17 @@ module.exports = function (app) {
 	// Error handling
 	app.use(function (err, req, res, next) {
 		const { logger } = require('../utils/logger');
-		logger.error({
-			error: err,
-			request: {
-				method: req.method,
-				url: req.url,
-				headers: req.headers
-			}
-		}, 'Unhandled server error');
+		logger.error(
+			{
+				error: err,
+				request: {
+					method: req.method,
+					url: req.url,
+					headers: req.headers
+				}
+			},
+			'Unhandled server error'
+		);
 
 		res.status(err.status || 500).send({
 			message: 'Server error',

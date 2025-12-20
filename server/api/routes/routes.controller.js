@@ -123,7 +123,7 @@ exports.nearby = async function (req, res) {
 			const maxAge = getCacheMaxAge(cached.freshness || 'fresh-schedule');
 			res.set({
 				'Cache-Control': `public, max-age=${maxAge}`,
-				'Vary': 'Accept-Encoding',
+				Vary: 'Accept-Encoding',
 				'X-Cache': 'HIT',
 				'X-Cache-Freshness': cached.freshness || 'unknown'
 			});
@@ -138,7 +138,7 @@ exports.nearby = async function (req, res) {
 				// Use conservative short TTL for in-flight (no freshness info yet)
 				res.set({
 					'Cache-Control': 'public, max-age=3',
-					'Vary': 'Accept-Encoding',
+					Vary: 'Accept-Encoding',
 					'X-Cache': 'HIT-INFLIGHT'
 				});
 				return res.status(200).json(data);
@@ -166,31 +166,37 @@ exports.nearby = async function (req, res) {
 			if (!response.ok) {
 				const body = await response.text();
 
-		// Handle rate limiting with more detail
-		if (response.status === 429) {
-			const retryAfter = response.headers.get('Retry-After');
-			logger.error({
-				message: 'Rate limited by Transit API',
-				status: 429,
-				retryAfter: retryAfter || 'not specified',
-				cacheKey
-			}, 'Rate limit exceeded');
+				// Handle rate limiting with more detail
+				if (response.status === 429) {
+					const retryAfter = response.headers.get('Retry-After');
+					logger.error(
+						{
+							message: 'Rate limited by Transit API',
+							status: 429,
+							retryAfter: retryAfter || 'not specified',
+							cacheKey
+						},
+						'Rate limit exceeded'
+					);
 
-			const error = new Error('Rate limit exceeded');
-			error.status = 429;
-			error.retryAfter = retryAfter ? parseInt(retryAfter) : 60;
-			throw error;
-		}
+					const error = new Error('Rate limit exceeded');
+					error.status = 429;
+					error.retryAfter = retryAfter ? parseInt(retryAfter) : 60;
+					throw error;
+				}
 
-		logger.error({
-			message: 'Error response from transit API',
-			status: response.status,
-			body: body.substring(0, 500), // Limit body size for logs
-			cacheKey
-		}, 'Transit API error');
-		const error = new Error('Transit API error');
-		error.status = response.status;
-		throw error;
+				logger.error(
+					{
+						message: 'Error response from transit API',
+						status: response.status,
+						body: body.substring(0, 500), // Limit body size for logs
+						cacheKey
+					},
+					'Transit API error'
+				);
+				const error = new Error('Transit API error');
+				error.status = response.status;
+				throw error;
 			}
 
 			const data = await response.json();
@@ -233,20 +239,24 @@ exports.nearby = async function (req, res) {
 
 		res.set({
 			'Cache-Control': `public, max-age=${maxAge}`,
-			'Vary': 'Accept-Encoding',
+			Vary: 'Accept-Encoding',
 			'X-Cache': CACHE_ENABLED ? 'MISS' : 'DISABLED',
 			'X-Cache-Freshness': freshness
 		});
 
 		res.status(200).json(data);
 	} catch (error) {
-		logger.error({
-			message: 'Error fetching nearby routes',
-			error: error,
-			lat, lon,
-			max_distance: distance,
-			cacheKey
-		}, 'Route fetch failed');
+		logger.error(
+			{
+				message: 'Error fetching nearby routes',
+				error: error,
+				lat,
+				lon,
+				max_distance: distance,
+				cacheKey
+			},
+			'Route fetch failed'
+		);
 
 		if (error.name === 'TimeoutError' || error.name === 'AbortError') {
 			return res.status(504).json({
