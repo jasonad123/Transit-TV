@@ -7,7 +7,8 @@ var path = require('path');
 
 // Check for Transit API key in production
 if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
-	console.error('ERROR: TRANSIT_API_KEY is not set. The application will not function correctly.');
+	const { logger } = require('../../utils/logger');
+	logger.error('ERROR: TRANSIT_API_KEY is not set. The application will not function correctly.');
 }
 
 // Configuration validation helpers
