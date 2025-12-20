@@ -45,7 +45,7 @@ const defaultConfig: Config = {
 	maxDistance: 500,
 	customLogo: null,
 	groupItinerariesByStop: false,
-	filterRedundantTerminus: true
+	filterRedundantTerminus: false
 };
 
 function createConfigStore() {
