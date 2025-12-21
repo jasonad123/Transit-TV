@@ -1,131 +1,138 @@
 {
-  "app": {
-    "title": "Transit-TV",
-    "nearbyRoutes": "Routen in der Nähe"
-  },
-  "config": {
-    "title": "Konfigurieren Transit-TV",
-    "fields": {
-      "title": "Titel:",
-      "location": "Location (lat, lng):",
-      "timeFormat": "Zeitformat:",
-      "language": "Sprache:",
-      "columns": "Rasterspalten:",
-      "theme": "Thema:",
-      "headerColor": "Kopfzeilenfarbe:",
-      "showQRCode": "QR-Code anzeigen",
-      "customLogo": "Logo-URL:",
-      "maxDistance": "Suchradius:"
-    },
-    "timeFormats": {
-      "12hour": "12 Stunden",
-      "24hour": "24 Stunden"
-    },
-    "languages": {
-      "english": "English",
-      "french": "Français",
-      "spanish": "Español",
-      "german": "Deutsch"
-    },
-    "columns": {
-      "auto": "Auto"
-    },
-    "theme": {
-      "light": "Hell",
-      "dark": "Dunkel",
-      "auto": "Auto"
-    },
-    "customLogo": {
-      "helpText": "Geben Sie die URL oder den lokalen Pfad zum Logo Ihrer Organisation ein (z. B., https://example.com/logo.png oder /assets/images/logo.png)",
-      "clear": "Logo entfernen",
-      "invalidUrl": "Logo-Bild konnte nicht geladen werden"
-    },
-    "hiddenRoutes": {
-      "title": "Versteckte Routen",
-      "helpText": "Zum Einblenden klicken"
-    },
-    "qrCode": {
-      "title": "QR-Code",
-      "helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
-      "scanPrompt": "Willst du diese Reisen mit dir nehmen?",
-      "scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
-    },
-    "buttons": {
-      "cancel": "Stornieren",
-      "save": "Speichern",
-      "reset": "Zurücksetzen",
-      "resetToDefault": "Auf Standard zurücksetzen"
-    },
-    "server": {
-      "title": "Serversteuerungen",
-      "status": {
-        "running": "Ausgeführt",
-        "shutdown": "Herunterfahren",
-        "restarting": "Neustarten..."
-      },
-      "actions": {
-        "shutdown": "Herunterfahren",
-        "start": "Anfangen",
-        "restart": "Neustart"
-      },
-      "confirmShutdown": "Möchten Sie das Abfragen der Transit-API stoppen? Dadurch werden Live-Updates pausiert.",
-      "confirmRestart": "Den Server neu starten? Dies wird den Dienst kurz unterbrechen.",
-      "helpText": "Verwenden Sie diese Steuerelemente, um den Server zur Fehlersuche zu verwalten oder die API-Nutzung zu reduzieren."
-    },
-    "location": {
-      "validating": "Standort wird überprüft...",
-      "validationSuccess": "Standort festgelegt - {count} Linien in der Nähe gefunden",
-      "validationNoRoutes": "An diesem Standort wurden keine Routen gefunden.",
-      "validationError": "Standort konnte nicht überprüft werden.",
-      "geolocationNotSupported": "Die Geolocation-Funktion wird von Ihrem Browser nicht unterstützt.",
-      "geolocationPermissionDenied": "Standortberechtigung verweigert",
-      "geolocationUnavailable": "Standortinformationen nicht verfügbar",
-      "geolocationTimeout": "Standortanfrage abgelaufen",
-      "geolocationError": "Es ist ein unbekannter Fehler aufgetreten."
-    }
-  },
-  "routes": {
-    "loading": "Routen werden geladen...",
-    "noRoutes": "Keine Routen gefunden in der Nähe",
-    "controls": {
-      "moveToTop": "Nach oben verschieben",
-      "moveUp": "Aufsteigen",
-      "moveDown": "Absteigen",
-      "hide": "Verstecken routen"
-    }
-  },
-  "aria": {
-    "transitApp": "Transit App",
-    "settings": "Einstellungen",
-    "moveRouteToTop": "Nach oben verschieben",
-    "moveRouteUp": "Aufsteigen",
-    "moveRouteDown": "Absteigen",
-    "hideRoute": "Verstecken routen"
-  },
-  "alerts": {
-    "default": "Störungsinformation",
-    "title": "Meldungen"
-  },
-  "time": {
-    "min": "min",
-    "now": "jetzt"
-  },
-  "screenWidth": {
-    "title": "Bildschirm zu schmal",
-    "message": "Diese Anwendung ist für grosse Bildschirme und Fernseher konzipiert. Um die Abfahrten des Öffis auf Ihrem Handy einzusehen, laden Sie bitte die Transit-App herunter.",
-    "minimumWidth": "Mindestbreite: 640 Pixel",
-    "developerMessage": "Webentwickler*innen: Verwenden Sie toggleWidthCheck() in der Konsole, um diese Meldung zu deaktivieren."
-  },
-  "errors": {
-    "rateLimit": "Überprüfung auf Updates. Erneuter Versuch in {seconds} Sekunden...",
-    "auth": "Verbindung zum Transit-datendienst nicht möglich.",
-    "timeout": "Überprüfung auf Updates...",
-    "backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
-    "generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."
-  },
-  "shutdown": {
-    "title": "Entschuldigung, Transit-TV hat eine Technische Störung",
-    "message": "Der Server wurde für Wartungsarbeiten pausiert.",
-    "subtitle": "Aktuelle Informationen zum Öffis sind vorübergehend nicht verfügbar."
-  }
+	"app": {
+		"title": "Transit-TV",
+		"nearbyRoutes": "Routen in der Nähe"
+	},
+	"config": {
+		"title": "Konfigurieren Transit-TV",
+		"fields": {
+			"title": "Titel:",
+			"location": "Location (lat, lng):",
+			"timeFormat": "Zeitformat:",
+			"language": "Sprache:",
+			"columns": "Rasterspalten:",
+			"theme": "Thema:",
+			"headerColor": "Kopfzeilenfarbe:",
+			"showQRCode": "Transit-Deep-Link-QR-Code anzeigen",
+			"customLogo": "Logo-URL:",
+			"maxDistance": "Suchradius:",
+			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
+			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden"
+		},
+		"timeFormats": {
+			"12hour": "12 Stunden",
+			"12hourNoAmPm": "12 Stunden (ohne AM/PM)",
+			"24hour": "24 Stunden"
+		},
+		"languages": {
+			"english": "English",
+			"french": "Français",
+			"spanish": "Español",
+			"german": "Deutsch"
+		},
+		"columns": {
+			"auto": "Auto"
+		},
+		"theme": {
+			"light": "Hell",
+			"dark": "Dunkel",
+			"auto": "Auto"
+		},
+		"customLogo": {
+			"helpText": "Geben Sie die URL oder den lokalen Pfad zum Logo Ihrer Organisation ein (z. B., https://example.com/logo.png oder /assets/images/logo.png)",
+			"clear": "Logo entfernen",
+			"invalidUrl": "Logo-Bild konnte nicht geladen werden"
+		},
+		"hiddenRoutes": {
+			"title": "Versteckte Routen",
+			"helpText": "Zum Einblenden klicken"
+		},
+		"qrCode": {
+			"title": "QR-Code",
+			"helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
+			"scanPrompt": "Willst du diese Reisen mit dir nehmen?",
+			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
+		},
+		"stopManagement": {
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte",
+			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
+		},
+		"buttons": {
+			"cancel": "Stornieren",
+			"save": "Speichern",
+			"reset": "Zurücksetzen",
+			"resetToDefault": "Auf Standard zurücksetzen"
+		},
+		"server": {
+			"title": "Serversteuerungen",
+			"status": {
+				"running": "Ausgeführt",
+				"shutdown": "Herunterfahren",
+				"restarting": "Neustarten..."
+			},
+			"actions": {
+				"shutdown": "Herunterfahren",
+				"start": "Anfangen",
+				"restart": "Neustart"
+			},
+			"confirmShutdown": "Möchten Sie das Abfragen der Transit-API stoppen? Dadurch werden Live-Updates pausiert.",
+			"confirmRestart": "Den Server neu starten? Dies wird den Dienst kurz unterbrechen.",
+			"helpText": "Verwenden Sie diese Steuerelemente, um den Server zur Fehlersuche zu verwalten oder die API-Nutzung zu reduzieren."
+		},
+		"location": {
+			"validating": "Standort wird überprüft...",
+			"validationSuccess": "Standort festgelegt - {count} Linien in der Nähe gefunden",
+			"validationNoRoutes": "An diesem Standort wurden keine Routen gefunden.",
+			"validationError": "Standort konnte nicht überprüft werden.",
+			"geolocationNotSupported": "Die Geolocation-Funktion wird von Ihrem Browser nicht unterstützt.",
+			"geolocationPermissionDenied": "Standortberechtigung verweigert",
+			"geolocationUnavailable": "Standortinformationen nicht verfügbar",
+			"geolocationTimeout": "Standortanfrage abgelaufen",
+			"geolocationError": "Es ist ein unbekannter Fehler aufgetreten."
+		}
+	},
+	"routes": {
+		"loading": "Routen werden geladen...",
+		"noRoutes": "Keine Routen gefunden in der Nähe",
+		"controls": {
+			"moveToTop": "Nach oben verschieben",
+			"moveUp": "Aufsteigen",
+			"moveDown": "Absteigen",
+			"hide": "Verstecken routen"
+		}
+	},
+	"aria": {
+		"transitApp": "Transit App",
+		"settings": "Einstellungen",
+		"moveRouteToTop": "Nach oben verschieben",
+		"moveRouteUp": "Aufsteigen",
+		"moveRouteDown": "Absteigen",
+		"hideRoute": "Verstecken routen"
+	},
+	"alerts": {
+		"default": "Störungsinformation",
+		"title": "Meldungen"
+	},
+	"time": {
+		"min": "min",
+		"now": "jetzt"
+	},
+	"screenWidth": {
+		"title": "Bildschirm zu schmal",
+		"message": "Diese Anwendung ist für grosse Bildschirme und Fernseher konzipiert. Um die Abfahrten des Öffis auf Ihrem Handy einzusehen, laden Sie bitte die Transit-App herunter.",
+		"minimumWidth": "Mindestbreite: 640 Pixel",
+		"developerMessage": "Webentwickler*innen: Verwenden Sie toggleWidthCheck() in der Konsole, um diese Meldung zu deaktivieren."
+	},
+	"errors": {
+		"rateLimit": "Überprüfung auf Updates. Erneuter Versuch in {seconds} Sekunden...",
+		"auth": "Verbindung zum Transit-datendienst nicht möglich.",
+		"timeout": "Überprüfung auf Updates...",
+		"backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
+		"generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."
+	},
+	"shutdown": {
+		"title": "Entschuldigung, Transit-TV hat eine Technische Störung",
+		"message": "Der Server wurde für Wartungsarbeiten pausiert.",
+		"subtitle": "Aktuelle Informationen zum Öffis sind vorübergehend nicht verfügbar."
+	}
 }

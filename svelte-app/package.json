@@ -1,11 +1,10 @@
 {
 	"name": "transit-tv",
 	"private": true,
-	"version": "1.0.0",
+	"version": "1.3.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"dev:backend": "cd .. && pnpm start",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",

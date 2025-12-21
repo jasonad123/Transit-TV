@@ -1,4 +1,6 @@
+import { get } from 'svelte/store';
 import { apiCache } from '$lib/utils/apiCache';
+import { config } from '$lib/stores/config';
 
 export interface Route {
 	global_route_id: string;
@@ -21,7 +23,7 @@ export interface Itinerary {
 	closest_stop?: {
 		stop_name: string;
 		global_stop_id?: string;
-        parent_station_global_stop_id?: string;
+		parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;
 	schedule_items?: ScheduleItem[];
@@ -79,79 +81,112 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 		max_distance: radius.toString()
 	};
 
-	return apiCache.fetch(
-		'/api/routes/nearby',
-		params,
-		async () => {
-			const urlParams = new URLSearchParams(params);
-			const response = await fetch(`/api/routes/nearby?${urlParams}`);
+	return apiCache
+		.fetch(
+			'/api/routes/nearby',
+			params,
+			async () => {
+				const urlParams = new URLSearchParams(params);
+				const response = await fetch(`/api/routes/nearby?${urlParams}`);
 
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
 
-				// Handle rate limiting
-				if (response.status === 429) {
-					const retryAfter = errorData.retryAfter || 60;
+					// Handle rate limiting
+					if (response.status === 429) {
+						const retryAfter = errorData.retryAfter || 60;
 
-					const error = new Error(
-						errorData.message || 'Rate limit exceeded. Please try again later.'
-					) as RateLimitError;
-					error.retryAfter = retryAfter;
-					error.isRateLimit = true;
+						const error = new Error(
+							errorData.message || 'Rate limit exceeded. Please try again later.'
+						) as RateLimitError;
+						error.retryAfter = retryAfter;
+						error.isRateLimit = true;
 
-					throw error;
+						throw error;
+					}
+
+					// Handle authentication errors
+					if (response.status === 401 || response.status === 403) {
+						const error = new Error(
+							'Authentication failed. Please check API credentials.'
+						) as AuthenticationError;
+						error.isAuthError = true;
+
+						throw error;
+					}
+
+					// Handle timeout errors
+					if (response.status === 504) {
+						const error = new Error('Request timed out. Please try again.') as TimeoutError;
+						error.isTimeout = true;
+
+						throw error;
+					}
+
+					// Handle backend unavailable
+					if (response.status === 503) {
+						const error = new Error(
+							'Service temporarily unavailable. Please try again.'
+						) as BackendError;
+						error.isBackendError = true;
+
+						throw error;
+					}
+
+					// Generic error for other status codes
+					throw new Error(errorData.message || errorData.error || 'Failed to fetch nearby routes');
 				}
 
-				// Handle authentication errors
-				if (response.status === 401 || response.status === 403) {
-					const error = new Error(
-						'Authentication failed. Please check API credentials.'
-					) as AuthenticationError;
-					error.isAuthError = true;
-
-					throw error;
-				}
-
-				// Handle timeout errors
-				if (response.status === 504) {
-					const error = new Error(
-						'Request timed out. Please try again.'
-					) as TimeoutError;
-					error.isTimeout = true;
-
-					throw error;
-				}
-
-				// Handle backend unavailable
-				if (response.status === 503) {
-					const error = new Error(
-						'Service temporarily unavailable. Please try again.'
-					) as BackendError;
-					error.isBackendError = true;
-
-					throw error;
-				}
-
-				// Generic error for other status codes
-				throw new Error(errorData.message || errorData.error || 'Failed to fetch nearby routes');
+				const data = await response.json();
+				return data.routes || [];
 			}
-
-			const data = await response.json();
-			return filterRoutes(data.routes || []);
-		},
-		20000 // 20 second cache (aligned with polling interval)
-	);
+			// Let cache determine TTL based on real-time vs schedule data (3s vs 120s)
+		)
+		.then((routes) => applyFilters(routes));
 }
 
-function filterRoutes(routes: Route[]): Route[] {
+// Helper function to check if an itinerary is a redundant terminus
+function isRedundantTerminus(itinerary: Itinerary): boolean {
+	if (!itinerary.closest_stop || !itinerary.merged_headsign) {
+		return false;
+	}
+
+	const stopName = itinerary.closest_stop.stop_name.toLowerCase().trim();
+	const destination = itinerary.merged_headsign.toLowerCase().trim();
+	const coreStopName = stopName.replace(/\s+station$/i, '').trim();
+	const destinationPattern = new RegExp(`^(\\w+\\s+to\\s+)?${coreStopName}(\\s+station)?$`, 'i');
+
+	return destinationPattern.test(destination);
+}
+
+// Apply filters based on current config (called after cache retrieval)
+function applyFilters(routes: Route[]): Route[] {
 	const seen = new Set<string>();
 	const result: Route[] = [];
+
+	// Get current config value for terminus filtering
+	const currentConfig = get(config);
+	const shouldFilterTerminus = currentConfig.filterRedundantTerminus;
 
 	for (const route of routes) {
 		const idStr = route.global_route_id.toString();
 		if (!seen.has(idStr)) {
 			seen.add(idStr);
-			result.push(route);
+
+			// Clone route to avoid mutating cached data
+			const routeCopy = {
+				...route,
+				itineraries: route.itineraries ? [...route.itineraries] : undefined
+			};
+
+			// Filter redundant terminus entries if enabled
+			if (shouldFilterTerminus && routeCopy.itineraries && Array.isArray(routeCopy.itineraries)) {
+				routeCopy.itineraries = routeCopy.itineraries.filter(
+					(itinerary) => !isRedundantTerminus(itinerary)
+				);
+			}
+
+			result.push(routeCopy);
 		}
 	}
 

@@ -5,10 +5,11 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
+	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import type { Route } from '$lib/services/nearby';
-	import "iconify-icon";
+	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
 	let intervalId: ReturnType<typeof setInterval>;
@@ -49,10 +50,14 @@
 	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
 	let serverActionInProgress = $state(false);
 
+	// App version state
+	let appVersion = $state<string>('1.3.0'); // Fallback version
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
-	let currentPollingInterval = 20000; // Start at 20 seconds
-	const MIN_POLLING_INTERVAL = 20000; // 20 seconds minimum
+	// Default 10s for free tier (5 calls/min), paid tier can use 5-7s via env var
+	const MIN_POLLING_INTERVAL = parseInt(import.meta.env.VITE_CLIENT_POLLING_INTERVAL || '10000'); // Default 10s
+	let currentPollingInterval = MIN_POLLING_INTERVAL; // Start at minimum
 	const MAX_POLLING_INTERVAL = 120000; // 2 minutes maximum
 	const BACKOFF_MULTIPLIER = 1.5;
 
@@ -67,10 +72,7 @@
 
 	function increasePollingInterval() {
 		consecutiveErrors++;
-		const newInterval = Math.min(
-			currentPollingInterval * BACKOFF_MULTIPLIER,
-			MAX_POLLING_INTERVAL
-		);
+		const newInterval = Math.min(currentPollingInterval * BACKOFF_MULTIPLIER, MAX_POLLING_INTERVAL);
 		if (newInterval !== currentPollingInterval) {
 			currentPollingInterval = newInterval;
 			console.log(`Increasing polling interval to ${currentPollingInterval}ms due to errors`);
@@ -84,6 +86,34 @@
 			currentPollingInterval = MIN_POLLING_INTERVAL;
 			console.log(`Resetting polling interval to ${currentPollingInterval}ms`);
 			resetPollingInterval();
+		}
+	}
+
+	// Helper function to format time based on configured format
+	function formatTime(date: Date, format: string, language: string): string {
+		if (format === 'hh:mm') {
+			// 12-hour format without AM/PM - manual formatting required
+			let hours = date.getHours();
+			const minutes = date.getMinutes();
+
+			// Convert to 12-hour format
+			if (hours === 0) {
+				hours = 12; // Midnight is 12:XX
+			} else if (hours > 12) {
+				hours = hours - 12;
+			}
+
+			// Pad minutes with leading zero
+			const minutesStr = minutes.toString().padStart(2, '0');
+
+			return `${hours}:${minutesStr}`;
+		} else {
+			// Use toLocaleTimeString for other formats
+			return date.toLocaleTimeString(language, {
+				hour: 'numeric',
+				minute: '2-digit',
+				hour12: format.startsWith('hh:mm')
+			});
 		}
 	}
 
@@ -282,6 +312,22 @@
 			resizeCleanup = () => {
 				window.removeEventListener('resize', handleResize);
 			};
+		}
+
+		// Fetch app version from server
+		try {
+			const apiBase = browser
+				? window.location.port === '5173'
+					? 'http://localhost:8080'
+					: ''
+				: '';
+			const healthResponse = await fetch(`${apiBase}/health`);
+			if (healthResponse.ok) {
+				const healthData = await healthResponse.json();
+				appVersion = healthData.version || '1.3.0';
+			}
+		} catch (err) {
+			console.log('Could not fetch version, using fallback');
 		}
 
 		// Check server status first, before starting polling
@@ -526,7 +572,6 @@
 	<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="Transit TV" />
 	<link rel="manifest" href="/assets/site.webmanifest" />
-
 </svelte:head>
 
 <div class="container" style="--bg-header: {$config.headerColor}">
@@ -537,28 +582,32 @@
 					<td id="logo">
 						<div class="logo-container">
 							<a href="https://transitapp.com" aria-label={$_('aria.transitApp')}>
-								<img src="/assets/images/transit.svg" alt="Powered by Transit" class="transit-logo" />
+								<img
+									src="/assets/images/transit.svg"
+									alt="Powered by Transit"
+									class="transit-logo"
+								/>
 							</a>
 							{#if $config.customLogo}
 								<img
 									src={$config.customLogo}
 									alt={$_('aria.customLogo')}
 									class="custom-logo"
-									onerror={(e) => e.currentTarget.style.display = 'none'}
+									onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
 								/>
 							{/if}
 						</div>
 					</td>
 					<td id="title">
 						<h1>{$config.title || $_('app.nearbyRoutes')}</h1>
-						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}><iconify-icon icon="ix:cogwheel-filled"></iconify-icon></button>
+						<button type="button" onclick={openConfig} aria-label={$_('aria.settings')}
+							><iconify-icon icon="ix:cogwheel-filled"></iconify-icon></button
+						>
 					</td>
 					<td id="utilities">
-						<span class="clock">{currentTime.toLocaleTimeString($config.language, {
-							hour: 'numeric',
-							minute: '2-digit',
-							hour12: $config.timeFormat === 'hh:mm A'
-						})}</span>
+						<span class="clock"
+							>{formatTime(currentTime, $config.timeFormat, $config.language)}</span
+						>
 					</td>
 				</tr>
 			</tbody>
@@ -579,7 +628,7 @@
 					<div class="location-input-group">
 						<input
 							type="text"
-							value={`${$config.latLng.latitude}, ${$config.latLng.longitude}`}
+							value={formatCoordinatesForDisplay($config.latLng.latitude, $config.latLng.longitude)}
 							oninput={(e) => {
 								config.setLatLngStr(e.currentTarget.value);
 								validationMessage = null;
@@ -596,7 +645,10 @@
 							title={gettingLocation ? 'Getting location...' : 'Use current location'}
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-								<path fill="currentColor" d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8" />
+								<path
+									fill="currentColor"
+									d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
+								/>
 							</svg>
 						</button>
 					</div>
@@ -606,7 +658,11 @@
 					{#if validatingLocation}
 						<span class="location-validating">{$_('config.location.validating')}</span>
 					{:else if validationMessage}
-						<span class="location-validation" class:success={validationSuccess} class:error={!validationSuccess}>
+						<span
+							class="location-validation"
+							class:success={validationSuccess}
+							class:error={!validationSuccess}
+						>
 							{validationMessage}
 						</span>
 					{/if}
@@ -616,6 +672,7 @@
 					{$_('config.fields.timeFormat')}
 					<select bind:value={$config.timeFormat}>
 						<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
+						<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
 						<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
 					</select>
 				</label>
@@ -655,7 +712,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 'auto'}
-							onclick={() => config.update(c => ({ ...c, columns: 'auto' }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
 						>
 							{$_('config.columns.auto')}
 						</button>
@@ -663,7 +720,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 1}
-							onclick={() => config.update(c => ({ ...c, columns: 1 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
 						>
 							1
 						</button>
@@ -671,7 +728,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 2}
-							onclick={() => config.update(c => ({ ...c, columns: 2 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
 						>
 							2
 						</button>
@@ -679,7 +736,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 3}
-							onclick={() => config.update(c => ({ ...c, columns: 3 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
 						>
 							3
 						</button>
@@ -687,7 +744,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 4}
-							onclick={() => config.update(c => ({ ...c, columns: 4 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
 						>
 							4
 						</button>
@@ -695,7 +752,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.columns === 5}
-							onclick={() => config.update(c => ({ ...c, columns: 5 }))}
+							onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
 						>
 							5
 						</button>
@@ -709,7 +766,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'light'}
-							onclick={() => config.update(c => ({ ...c, theme: 'light' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
 						>
 							{$_('config.theme.light')}
 						</button>
@@ -717,7 +774,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'auto'}
-							onclick={() => config.update(c => ({ ...c, theme: 'auto' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
 						>
 							{$_('config.theme.auto')}
 						</button>
@@ -725,7 +782,7 @@
 							type="button"
 							class="btn-option"
 							class:active={$config.theme === 'dark'}
-							onclick={() => config.update(c => ({ ...c, theme: 'dark' }))}
+							onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
 						>
 							{$_('config.theme.dark')}
 						</button>
@@ -735,16 +792,13 @@
 				<label>
 					{$_('config.fields.headerColor')}
 					<div style="display: flex; gap: 0.5em; align-items: center;">
-						<input
-							type="color"
-							bind:value={$config.headerColor}
-						/>
+						<input type="color" bind:value={$config.headerColor} />
 						<button
 							type="button"
 							class="btn-reset"
 							onclick={() => {
 								const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-								config.update(c => ({ ...c, headerColor: defaultColor }));
+								config.update((c) => ({ ...c, headerColor: defaultColor }));
 							}}
 							title={$_('config.buttons.resetToDefault')}
 						>
@@ -766,7 +820,7 @@
 							<button
 								type="button"
 								class="btn-reset"
-								onclick={() => config.update(c => ({ ...c, customLogo: null }))}
+								onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
 							>
 								{$_('config.customLogo.clear')}
 							</button>
@@ -776,32 +830,55 @@
 								src={$config.customLogo}
 								alt="Logo preview"
 								onerror={(e) => {
-									e.currentTarget.parentElement.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+									const parent = (e.currentTarget as HTMLImageElement).parentElement;
+									if (parent) {
+										parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+									}
 								}}
 							/>
 						</div>
 					{/if}
 				</label>
 
-				<label class="toggle-label">
-					<span>{$_('config.fields.showQRCode')} </span>
-					<label class="toggle-switch">
-						<input
-							type="checkbox"
-							bind:checked={$config.showQRCode}
-						/>
-						<span class="toggle-slider"></span>
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.showQRCode')} </span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.showQRCode} />
+							<span class="toggle-slider"></span>
+						</label>
 					</label>
-				</label>
-				<p class="help-text">{$_('config.qrCode.helpText')}</p>
+					<small class="help-text">{$_('config.qrCode.helpText')}</small>
+				</div>
 
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.groupItinerariesByStop')}</span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
+							<span class="toggle-slider"></span>
+						</label>
+					</label>
+					<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
+				</div>
+
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.filterRedundantTerminus')}</span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
+							<span class="toggle-slider"></span>
+						</label>
+					</label>
+					<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
+				</div>
 
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
 						<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
 						<div class="hidden-routes-list">
-							{#each allRoutes.filter(r => $config.hiddenRoutes.includes(r.global_route_id)) as route}
+							{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
 								<button
 									type="button"
 									class="hidden-route-item"
@@ -821,7 +898,12 @@
 
 					<div class="server-status">
 						<span class="status-label">Status:</span>
-						<span class="status-value" class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting} class:status-shutdown={serverStatus.isShutdown} class:status-restarting={serverStatus.isRestarting}>
+						<span
+							class="status-value"
+							class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
+							class:status-shutdown={serverStatus.isShutdown}
+							class:status-restarting={serverStatus.isRestarting}
+						>
 							{#if serverStatus.isRestarting}
 								{$_('config.server.status.restarting')}
 							{:else if serverStatus.isShutdown}
@@ -858,6 +940,31 @@
 							{$_('config.server.actions.restart')}
 						</button>
 					</div>
+				</div>
+
+				<div class="credits">
+					<h3>{$_('config.credits.title')}</h3>
+					<h4>
+						Transit TV version <a
+							href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
+							target="_blank"
+							rel="noopener">{appVersion}</a
+						>
+					</h4>
+					<p class="help-text">
+						{@html $_('config.credits.madeWith')}
+					</p>
+					<p class="help-text">
+						{@html $_('config.credits.links')}
+					</p>
+					<a
+						href="https://transitapp.com/partners/apis"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="api-badge-link"
+					>
+						<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
+					>
 				</div>
 
 				<div class="modal-actions">
@@ -901,8 +1008,14 @@
 			</div>
 		{:else}
 			{#if errorMessage}
-				<div class="error-banner" class:error-auth={errorType === 'auth'} class:error-timeout={errorType === 'timeout'} class:error-backend={errorType === 'backend'}>
-					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}></iconify-icon>
+				<div
+					class="error-banner"
+					class:error-auth={errorType === 'auth'}
+					class:error-timeout={errorType === 'timeout'}
+					class:error-backend={errorType === 'backend'}
+				>
+					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
+					></iconify-icon>
 					{errorMessage}
 				</div>
 			{/if}
@@ -911,57 +1024,64 @@
 			{:else if routes.length === 0}
 				<div class="no-routes">{$_('routes.noRoutes')}</div>
 			{:else}
-			<section id="routes" class:cols-1={$config.columns === 1} class:cols-2={$config.columns === 2} class:cols-3={$config.columns === 3} class:cols-4={$config.columns === 4} class:cols-5={$config.columns === 5}>
-				{#each routes as route, index (route.global_route_id)}
-					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} />
-						<div class="route-controls">
-							{#if index > 0}
+				<section
+					id="routes"
+					class:cols-1={$config.columns === 1}
+					class:cols-2={$config.columns === 2}
+					class:cols-3={$config.columns === 3}
+					class:cols-4={$config.columns === 4}
+					class:cols-5={$config.columns === 5}
+				>
+					{#each routes as route, index (route.global_route_id)}
+						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+							<RouteItem {route} />
+							<div class="route-controls">
+								{#if index > 0}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRouteToTop(index)}
+										aria-label={$_('aria.moveRouteToTop')}
+										title={$_('routes.controls.moveToTop')}
+									>
+										<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+									</button>
+								{/if}
+								{#if index > 0}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRoute(index, 'up')}
+										aria-label={$_('aria.moveRouteUp')}
+										title={$_('routes.controls.moveUp')}
+									>
+										<iconify-icon icon="ix:arrow-up"></iconify-icon>
+									</button>
+								{/if}
+								{#if index < routes.length - 1}
+									<button
+										type="button"
+										class="btn-route-control"
+										onclick={() => moveRoute(index, 'down')}
+										aria-label={$_('aria.moveRouteDown')}
+										title={$_('routes.controls.moveDown')}
+									>
+										<iconify-icon icon="ix:arrow-down"></iconify-icon>
+									</button>
+								{/if}
 								<button
 									type="button"
 									class="btn-route-control"
-									onclick={() => moveRouteToTop(index)}
-									aria-label={$_('aria.moveRouteToTop')}
-									title={$_('routes.controls.moveToTop')}
+									onclick={() => toggleRouteHidden(route.global_route_id)}
+									aria-label={$_('aria.hideRoute')}
+									title={$_('routes.controls.hide')}
 								>
-									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 								</button>
-							{/if}
-							{#if index > 0}
-								<button
-									type="button"
-									class="btn-route-control"
-									onclick={() => moveRoute(index, 'up')}
-									aria-label={$_('aria.moveRouteUp')}
-									title={$_('routes.controls.moveUp')}
-								>
-									<iconify-icon icon="ix:arrow-up"></iconify-icon>
-								</button>
-							{/if}
-							{#if index < routes.length - 1}
-								<button
-									type="button"
-									class="btn-route-control"
-									onclick={() => moveRoute(index, 'down')}
-									aria-label={$_('aria.moveRouteDown')}
-									title={$_('routes.controls.moveDown')}
-								>
-									<iconify-icon icon="ix:arrow-down"></iconify-icon>
-								</button>
-							{/if}
-							<button
-								type="button"
-								class="btn-route-control"
-								onclick={() => toggleRouteHidden(route.global_route_id)}
-								aria-label={$_('aria.hideRoute')}
-								title={$_('routes.controls.hide')}
-							>
-								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-							</button>
+							</div>
 						</div>
-					</div>
-				{/each}
-			</section>
+					{/each}
+				</section>
 			{/if}
 		{/if}
 	</div>
@@ -969,8 +1089,8 @@
 	{#if $config.showQRCode && !$config.isEditing}
 		<div class="floating-qr">
 			<p class="qr-label">
-				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br/></span>
-				<span class= "qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
+				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
+				<span class="qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
 			</p>
 			<QRCode latitude={$config.latLng.latitude} longitude={$config.latLng.longitude} size={100} />
 		</div>
@@ -978,11 +1098,10 @@
 </div>
 
 <style>
-
-    iconify-icon {
-    	display: inline-block;
-    	width: 1em;
-    	height: 1em;
+	iconify-icon {
+		display: inline-block;
+		width: 1em;
+		height: 1em;
 	}
 
 	.container {
@@ -1061,7 +1180,7 @@
 		display: inline-block;
 		line-height: 1.5em;
 		margin-bottom: -0.1em;
-		white-space:nowrap;
+		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
@@ -1168,7 +1287,8 @@
 	.help-text {
 		display: block;
 		margin-top: 0.25em;
-		font-size: 0.85em;
+		margin-bottom: 0;
+		font-size: 0.95em;
 		color: var(--text-secondary);
 		word-wrap: break-word;
 		overflow-wrap: break-word;
@@ -1197,11 +1317,17 @@
 	}
 
 	.config-modal button {
-		padding: 0.5em 1em;
+		padding: 0.65em 1.5em 0.55em 1.5em;
 		border: none;
-		border-radius: 4px;
+		border-radius: 6px;
 		cursor: pointer;
 		font-size: 1em;
+		font-family: 'Overpass Variable', Helvetica, Arial, serif;
+		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
 	}
 
 	.btn-save {
@@ -1238,12 +1364,19 @@
 		border-color: #999;
 	}
 
+	.toggle-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+	}
+
 	.toggle-label {
 		display: flex;
 		flex-direction: row !important;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1em;
+		margin-bottom: 0;
 	}
 
 	.toggle-switch {
@@ -1274,7 +1407,7 @@
 
 	.toggle-slider:before {
 		position: absolute;
-		content: "";
+		content: '';
 		height: 1.2em;
 		width: 1.2em;
 		left: 0.2em;
@@ -1374,7 +1507,7 @@
 	}
 
 	.route-management {
-		margin-top: 1.5em;
+		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
 	}
@@ -1384,12 +1517,6 @@
 		margin-bottom: 0.5em;
 		font-size: 1.2em;
 		color: var(--text-primary);
-	}
-
-	.help-text {
-		margin: 0 0 1em 0;
-		font-size: 0.9em;
-		color: var(--text-secondary);
 	}
 
 	.hidden-routes-list {
@@ -1414,6 +1541,8 @@
 		cursor: pointer;
 		transition: background 0.2s;
 		text-align: left;
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	.hidden-route-item:hover {
@@ -1422,11 +1551,18 @@
 
 	.hidden-route-item iconify-icon {
 		color: var(--text-secondary);
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		flex-shrink: 0;
+		font-size: 1.2em;
 	}
 
 	.hidden-route-item span {
 		font-weight: 500;
 		color: var(--text-primary);
+		display: flex;
+		align-items: center;
 	}
 
 	.loading,
@@ -1457,7 +1593,7 @@
 	}
 
 	.btn-option:hover {
-		border-color: var(--bg-header); 
+		border-color: var(--bg-header);
 		background: var(--bg-primary);
 	}
 
@@ -1472,7 +1608,7 @@
 	.floating-qr {
 		position: fixed;
 		bottom: 1.5em;
-		right: 1.5em;
+		right: 0.75em;
 		z-index: 100;
 		background: var(--bg-header);
 		padding: 1em;
@@ -1518,16 +1654,13 @@
 		flex: 1;
 		overflow-wrap: break-word;
 		line-height: 1.5;
-
 	}
 	.qr-label-1 {
 		font-weight: 400;
-
 	}
 	.qr-label-2 {
 		font-weight: bold;
 	}
-
 
 	/* .qr-section {
 		margin-top: 1em;
@@ -1734,7 +1867,13 @@
 	.distance-slider::-webkit-slider-runnable-track {
 		width: 100%;
 		height: 4px;
-		background: linear-gradient(to right, var(--bg-header) 0%, var(--bg-header) var(--slider-progress, 0%), var(--border-color) var(--slider-progress, 0%), var(--border-color) 100%);
+		background: linear-gradient(
+			to right,
+			var(--bg-header) 0%,
+			var(--bg-header) var(--slider-progress, 0%),
+			var(--border-color) var(--slider-progress, 0%),
+			var(--border-color) 100%
+		);
 		border-radius: 10px;
 	}
 
@@ -1761,7 +1900,7 @@
 
 	/* Server Management Styles */
 	.server-management {
-		margin-top: 1.5em;
+		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
 		max-width: 500px;
@@ -1885,7 +2024,7 @@
 
 	.shutdown-icon-stack .bus-icon {
 		font-size: 8em;
-		color: var(--text-secondary);;
+		color: var(--text-secondary);
 		display: block;
 	}
 
@@ -1904,7 +2043,7 @@
 		font-size: 3em;
 		margin: 0.3em 0;
 		color: var(--text-primary);
-		text-wrap: wrap; 
+		text-wrap: wrap;
 		overflow-wrap: normal;
 	}
 
@@ -1918,5 +2057,57 @@
 		font-size: 1.4em;
 		font-style: italic;
 		opacity: 0.8;
+	}
+
+	/* Credits Styles */
+	.credits {
+		margin-top: 0;
+		padding-top: 1em;
+		border-top: 1px solid var(--border-color);
+		text-align: left;
+	}
+
+	.credits h3 {
+		margin-top: 0;
+		margin-bottom: 0.5em;
+		font-size: 1.2em;
+		color: var(--text-primary);
+	}
+
+	.credits h4 {
+		margin-bottom: 0.2em;
+		font-size: 1em;
+		color: var(--text-secondary);
+		font-weight: 400;
+	}
+
+	.credits .help-text {
+		text-align: left;
+		line-height: 1.5;
+		font-size: 0.85em;
+	}
+
+	:global(.credits iconify-icon) {
+		display: inline-block !important;
+		vertical-align: middle !important;
+		font-size: 1.3em !important;
+		transform: translateY(-1px);
+	}
+
+	.credits-logo {
+		margin-top: 0.5em;
+		height: 40px;
+		width: auto;
+		display: block;
+	}
+
+	:global(.credits a) {
+		color: var(--bg-header);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	:global(.credits a:hover) {
+		text-decoration: underline;
 	}
 </style>

@@ -1,6 +1,7 @@
 # Git
 .git
 .gitignore
+.github
 
 # Node.js
 node_modules
@@ -33,3 +34,22 @@ logs
 # OS files
 .DS_Store
 Thumbs.db
+
+# Testing
+e2e/
+playwright.config.ts
+.playwright/
+test-results/
+playwright-report/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Docker Compose
+compose*.yaml
+
+# CI/CD
+.railway-env-template
+railway.json

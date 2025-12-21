@@ -53,7 +53,8 @@ function isAlertRelevant(
 		}
 
 		const routeMatches = !hasRouteId || entity.global_route_id === routeId;
-		const stopMatches = !hasStopId || (entity.global_stop_id ? globalStopIds.has(entity.global_stop_id) : false);
+		const stopMatches =
+			!hasStopId || (entity.global_stop_id ? globalStopIds.has(entity.global_stop_id) : false);
 
 		return routeMatches && stopMatches;
 	});

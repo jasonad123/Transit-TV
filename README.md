@@ -11,15 +11,15 @@ A real-time transit display application that shows arrival times for nearby publ
 </div>
 
 > [!IMPORTANT]
-> This is a *rewrite* of the original Transit TV application in a more up-to-date stack.
-> If you're looking for *my fork* of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
+> This is a _rewrite_ of the original Transit TV application in a more up-to-date stack.
+> If you're looking for _my fork_ of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
 > If you're looking for the original project, have a look over at [Transit App's account](https://github.com/TransitApp/Transit-TV)
 
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
 
 > [!IMPORTANT]
-> Just as the original Transit TV was built by the Transit team as a fun project, ***this*** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
+> Just as the original Transit TV was built by the Transit team as a fun project, **_this_** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
 
@@ -30,29 +30,22 @@ A real-time transit display application that shows arrival times for nearby publ
 
 ## Getting started
 
+> [!TIP]
+> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page. TL;DR you'll still need a Transit API key but
+
 1. Request API access
 
-Go to the [Transit API page](https://transitapp.com/apis) and request access to the API. When you have the API key, you can place it in your environment file.
+Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment file.
 
-  > `.env` for local development using `pnpm`
-  > `.env.docker` for deployment using docker
+> `.env` for local development using `pnpm`
 
 2. Create your `.env` files
 
-Depending on if you're deploying using `pnpm` or if you're using Docker, create your `.env` file from an example.
-
-For testing/deployment with `pnpm`:
+For testing/deployment with `pnpm` or Docker:
 
 ```bash
-# create .env for local deployment with pnpm
+# create .env for local deployment with pnpm or Docker
 cp .env.example .env
-```
-
-For testing/deployment with Docker:
-
-```bash
-# create .env for local deployment with docker
-cp .env.docker.example .env.docker
 ```
 
 ## Local testing/deployment
@@ -76,9 +69,11 @@ cd svelte-app && pnpm build && cd ..
 # Start the server with SvelteKit
 USE_SVELTE=true pnpm start
 ```
+
 The application will be available at http://localhost:8080
 
 For development with hot reload:
+
 ```bash
 # Terminal 1: Start SvelteKit dev server
 cd svelte-app && pnpm dev
@@ -162,40 +157,37 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
 
 ### Unattended Setup
 
-This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, and clock setting. You'll still be able to change the settings at any time.
+This feature allows you to skip the configuration popup on first launch - automatically setting your location, title, language, clock format, and other preferences. You'll still be able to change the settings at any time through the UI.
 
-To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method (modify them in `.env` for local deployment, `.env.docker` for Docker deployments)
+To use unattended setup, simply modify your relevant `.env` file or environment variables depending on your deployment method.
 
-Please review the `.env` examples for an overview of all unattended variables available.
+Please review the `.env.example` file and the [Unattended Setup documentation](https://github.com/jasonad123/Transit-TV/wiki/Unattended-Setup) for more information on all available options.
 
 ### Custom Logo
 
 Transit TV supports displaying your organization's logo alongside the "Powered by Transit" logo in the header. This feature works with both external URLs and local file paths.
 
-**Using external URLs:**
+### Health Check Endpoint (v1.3.0+)
 
-Set the `UNATTENDED_CUSTOM_LOGO` environment variable to your logo URL:
+Transit TV now includes a `/health` endpoint for monitoring and container orchestration:
 
 ```bash
-UNATTENDED_CUSTOM_LOGO=https://example.com/logo.png
+curl http://localhost:8080/health
 ```
 
-**Using local files with Docker:**
+**Response:**
 
-1. Mount your logo file to the container's static assets directory:
+```json
+{
+	"status": "healthy",
+	"timestamp": "2025-12-18T16:00:00.000Z",
+	"version": "1.3.0",
+	"uptime": 3600,
+	"environment": "production"
+}
+```
 
-   ```yaml
-   volumes:
-     - ./path/to/your/logo.png:/app/svelte-app/static/assets/images/logo.png:ro
-   ```
-
-2. Set the environment variable to the mounted path:
-
-   ```bash
-   UNATTENDED_CUSTOM_LOGO=/assets/images/logo.png
-   ```
-
-See [compose.yaml](compose.yaml) for volume mount examples.
+This endpoint is used by Docker Compose health checks and can be integrated with monitoring tools like Prometheus, Datadog, or your cloud provider's health check system.
 
 ## Project structure
 
@@ -227,4 +219,4 @@ See the [LICENSE](LICENSE) file for details.
 ## Additional Disclaimers
 
 > [!NOTE]
-> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been *lovingly* reviewed and tested, users should validate results independently before use in production environments.
+> **Generative AI:** The code for this project was developed with the help of generative AI tools, including Claude and Claude Code. While all outputs have been _lovingly_ reviewed and tested, users should validate results independently before use in production environments.

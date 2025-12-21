@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { getAllActiveAlerts, formatAlertText, parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import {
+		getAllActiveAlerts,
+		formatAlertText,
+		parseAlertContent,
+		extractImageId,
+		getAlertIcon
+	} from '$lib/services/alerts';
 	import type { Route } from '$lib/services/nearby';
 
 	export let routes: Route[] = [];

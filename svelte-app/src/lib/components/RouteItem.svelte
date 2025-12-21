@@ -2,7 +2,8 @@
 	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import type { Route, ScheduleItem} from '$lib/services/nearby';
+	import { config } from '$lib/stores/config';
+	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 
 	let { route }: { route: Route } = $props();
@@ -45,11 +46,13 @@
 		// Check if route name is numeric and mode_name doesn't contain Train/Subway/Metro
 		if (routeName && /^\d+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
-			if (!modeName.includes('train') &&
+			if (
+				!modeName.includes('train') &&
 				!modeName.includes('subway') &&
-					!modeName.includes('metro') &&
-						!modeName.includes('streetcar') &&
-							!modeName.includes('light rail')) {
+				!modeName.includes('metro') &&
+				!modeName.includes('streetcar') &&
+				!modeName.includes('light rail')
+			) {
 				return `Route ${routeName}`;
 			}
 		}
@@ -80,7 +83,11 @@
 		if (routeName && /^\d+$/.test(routeName)) {
 			const modeName = route.mode_name?.toLowerCase() || '';
 			const ttsName = route.tts_short_name?.toLowerCase() || '';
-			if (modeName.includes('subway') && ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+			if (
+				modeName.includes('subway') &&
+				ttsName.startsWith('line') &&
+				route.route_network_name === 'TTC'
+			) {
 				return ''; // Pairs with line 125: returns "Line 2"
 			}
 		}
@@ -106,27 +113,27 @@
 
 		// Hide mode name if route long name already contains "Line"
 		if (route.route_long_name?.includes('Line')) {
-			return "";
+			return '';
 		}
 
 		// LIRR: Hide mode name (full branch name shown in alertRouteName)
 		if (route.route_network_name === 'Long Island Rail Road') {
-			return ""; // Pairs with line 30: returns route_long_name
+			return ''; // Pairs with line 30: returns route_long_name
 		}
 
 		// ACE: Branded service, hide mode name (just show "ACE")
 		if (route.route_network_name === 'ACE') {
-			return ""; // Returns just "ACE" without "Line"
+			return ''; // Returns just "ACE" without "Line"
 		}
 
 		// Capitol Corridor: Branded corridor name, hide mode name
 		if (route.route_network_name === 'Capitol Corridor') {
-			return ""; // Pairs with line 40: returns "Capitol Corridor"
+			return ''; // Pairs with line 40: returns "Capitol Corridor"
 		}
 
 		// Hide mode name when it matches the route name (e.g., Caltrain)
 		if (modeName && (modeName === shortName || modeName === route.route_long_name)) {
-			return ""; // Prevents "Caltrain Caltrain"
+			return ''; // Prevents "Caltrain Caltrain"
 		}
 
 		// SF Muni-specific: Combine short name + long name (e.g., "N Judah", "K Ingleside")
@@ -137,16 +144,16 @@
 		// Generic replacements for common mode types
 		// If Metro or Light Rail, generically return "Line"
 		if (modeName?.includes('Metro') || modeName?.includes('Light Rail')) {
-			return "Line";
+			return 'Line';
 		}
 
 		// Canadian systems - brand name already in route name
 		if (modeName?.includes('MAX') || modeName?.includes('REM')) {
-			return "";
+			return '';
 		}
 
 		if (shortName?.includes('SeaBus')) {
-			return "";
+			return '';
 		}
 
 		// Subway route differentiation using tts_short_name and route_network_name
@@ -163,18 +170,18 @@
 			// BART: Color-based lines with TTS ending with "line" (e.g., "yellow line")
 			// No inversion needed, generic "Line" suffix
 			if (ttsName.endsWith('line') && route.route_network_name === 'BART') {
-				return "Line";
+				return 'Line';
 			}
 
 			// NYC MTA: routes with "train" in TTS name (both letters like "Q train" and numbers like "7 train")
 			if (ttsName.includes('train') && route.route_network_name === 'NYC Subway') {
-				return "Train";
+				return 'Train';
 			}
 		}
 
 		// Hide generic "Bus" mode name (route number is sufficient)
 		if (modeName?.includes('Bus')) {
-			return "";
+			return '';
 		}
 
 		// Name inversion for branded routes - Part 2: Prepend brand to route name
@@ -234,7 +241,9 @@
 				const element = entry.target as HTMLElement;
 
 				// Check if this is a destination element
-				const destIndex = Array.from(destinationElements.entries()).find(([_, el]) => el === element)?.[0];
+				const destIndex = Array.from(destinationElements.entries()).find(
+					([_, el]) => el === element
+				)?.[0];
 				if (destIndex !== undefined) {
 					checkDestinationOverflow(destIndex, element);
 					return;
@@ -265,7 +274,7 @@
 			sharedResizeObserver = null;
 		}
 		// Clear any pending timeouts
-		destinationCheckTimeouts.forEach(timeout => clearTimeout(timeout));
+		destinationCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
 		destinationCheckTimeouts.clear();
 		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
 	});
@@ -278,7 +287,7 @@
 		const b = (rgb & 0xff) / 255;
 
 		// Convert to linear RGB
-		const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+		const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
 		const rLinear = toLinear(r);
 		const gLinear = toLinear(g);
 		const bLinear = toLinear(b);
@@ -293,14 +302,12 @@
 	// But avoids medium-dark colors like #a81c22 (0.09), #005b95 (0.10), etc.
 	let shouldInvertInDarkMode = $derived(
 		getRelativeLuminance(route.route_color) < 0.05 &&
-		getRelativeLuminance(route.route_text_color) > 0.5
+			getRelativeLuminance(route.route_text_color) > 0.5
 	);
 
 	// Check if route has light colors (for wave icon selection in dark mode)
 	// Light colored routes like Orange (#f9461c) or Silver (#a7a9ac) need dark waves in dark mode
-	let hasLightColor = $derived(
-		getRelativeLuminance(route.route_color) > 0.3
-	);
+	let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
 
 	// Complex logos that should not be recolored (contain their own internal colors)
 	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
@@ -310,11 +317,14 @@
 	//   - alwaysUseDarkModeColor: boolean - Always use the dark mode color calculation
 	//   - alwaysUseLightModeColor: boolean - Always use the light mode color calculation
 	//   - color: string - Always use this specific hex color (e.g., 'FF0000')
-	const COLOR_OVERRIDES = new Map<string, {
-		alwaysUseDarkModeColor?: boolean;
-		alwaysUseLightModeColor?: boolean;
-		color?: string;
-	}>([
+	const COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseDarkModeColor?: boolean;
+			alwaysUseLightModeColor?: boolean;
+			color?: string;
+		}
+	>([
 		// Example: Always use dark mode color (even in light mode)
 		// ['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
 		// ['mla-j', { alwaysUseDarkModeColor: true }],
@@ -337,14 +347,17 @@
 	// Options:
 	//   - alwaysUseLightModeColors: boolean - Use light mode colors even in dark mode
 	//   - alwaysUseDarkModeColors: boolean - Use dark mode colors even in light mode
-	const ROUTE_COLOR_OVERRIDES = new Map<string, {
-		alwaysUseLightModeColors?: boolean;
-		alwaysUseDarkModeColors?: boolean;
-	}>([
+	const ROUTE_COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseLightModeColors?: boolean;
+			alwaysUseDarkModeColors?: boolean;
+		}
+	>([
 		// Certain routes with orange backgrounds need to keep black text in dark mode
 		// ['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
 		// ['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
-		['MUNI:4578', { alwaysUseDarkModeColors: true }], // Route 27
+		['MUNI:4578', { alwaysUseDarkModeColors: true }] // Route 27
 	]);
 
 	function getImageUrl(index: number): string | null {
@@ -365,14 +378,18 @@
 			let useLightMode: boolean;
 			if (iconOverride) {
 				// Icon-specific overrides take precedence
-				useLightMode = iconOverride.alwaysUseLightModeColor ? true :
-				               iconOverride.alwaysUseDarkModeColor ? false :
-				               !isDarkMode;
+				useLightMode = iconOverride.alwaysUseLightModeColor
+					? true
+					: iconOverride.alwaysUseDarkModeColor
+						? false
+						: !isDarkMode;
 			} else if (routeOverride) {
 				// Route-level overrides
-				useLightMode = routeOverride.alwaysUseLightModeColors ? true :
-				               routeOverride.alwaysUseDarkModeColors ? false :
-				               !isDarkMode;
+				useLightMode = routeOverride.alwaysUseLightModeColors
+					? true
+					: routeOverride.alwaysUseDarkModeColors
+						? false
+						: !isDarkMode;
 			} else {
 				// No overrides - use actual mode
 				useLightMode = !isDarkMode;
@@ -386,7 +403,7 @@
 				// Light mode calculation
 				// Use route color if vibrant enough (luminance > 0.15), otherwise black
 				const routeLuminance = getRelativeLuminance(route.route_color);
-				hex = (useBlackText && routeLuminance < 0.15) ? '000000' : route.route_color;
+				hex = useBlackText && routeLuminance < 0.15 ? '000000' : route.route_color;
 			} else {
 				// Dark mode calculation
 				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
@@ -402,16 +419,18 @@
 		const override = ROUTE_COLOR_OVERRIDES.get(route.global_route_id);
 
 		// Determine which mode's color logic to use
-		const useLightMode = override?.alwaysUseLightModeColors ? true :
-		                     override?.alwaysUseDarkModeColors ? false :
-		                     !isDarkMode;
+		const useLightMode = override?.alwaysUseLightModeColors
+			? true
+			: override?.alwaysUseDarkModeColors
+				? false
+				: !isDarkMode;
 
 		if (useLightMode) {
 			// Light mode: use route color if vibrant enough, otherwise black
 			// Bright/vibrant colors (luminance > 0.15) should display in their color even with black text
 			// Very dark colors with black text should render as black
 			const routeLuminance = getRelativeLuminance(route.route_color);
-			return (useBlackText && routeLuminance < 0.15) ? '#000000' : `#${route.route_color}`;
+			return useBlackText && routeLuminance < 0.15 ? '#000000' : `#${route.route_color}`;
 		} else {
 			// Dark mode: invert if very dark bg + light text, otherwise use route color
 			return shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`;
@@ -528,10 +547,10 @@
 		if (!alerts.length) return 'info';
 
 		// Check for severe first, then warning, then info
-		if (alerts.some(a => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 			return 'severe';
 		}
-		if (alerts.some(a => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 			return 'warning';
 		}
 		return 'info';
@@ -547,7 +566,9 @@
 
 	let alertElement: HTMLElement | null = null;
 	let isAlertOverflowing = $state(false);
-	let shouldScrollAlert = $derived(relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing));
+	let shouldScrollAlert = $derived(
+		relevantAlertCount > 1 || (relevantAlertCount === 1 && isAlertOverflowing)
+	);
 
 	let alertHeaderElement: HTMLElement | null = null;
 	let isAlertHeaderOverflowing = $state(false);
@@ -566,7 +587,7 @@
 		const timeout = setTimeout(() => {
 			requestAnimationFrame(() => {
 				// Add 5px threshold to trigger scrolling slightly before actual overflow
-				const isOverflowing = element.scrollWidth > (parent.clientWidth - 5);
+				const isOverflowing = element.scrollWidth > parent.clientWidth - 5;
 				const newSet = new Set(overflowingDestinations);
 				if (isOverflowing) {
 					newSet.add(index);
@@ -612,7 +633,7 @@
 				// Check if content width exceeds element's actual width (not parent)
 				// Using element.offsetWidth gives us the constrained flex width
 				// Add 2px threshold to account for sub-pixel rendering
-				isAlertHeaderOverflowing = element.scrollWidth > (element.offsetWidth + 2);
+				isAlertHeaderOverflowing = element.scrollWidth > element.offsetWidth + 2;
 			});
 		}, 150);
 	}
@@ -682,68 +703,143 @@
 			}
 		};
 	}
+
+	// Group itineraries by parent station
+	interface ItineraryGroup {
+		stopId: string;
+		stopName: string;
+		itineraries: Itinerary[];
+	}
+
+	function groupItinerariesByStop(): ItineraryGroup[] {
+		if (!route.itineraries) return [];
+
+		const groups = new Map<string, ItineraryGroup>();
+
+		route.itineraries.forEach((itinerary) => {
+			const stopId =
+				itinerary.closest_stop?.parent_station_global_stop_id ||
+				itinerary.closest_stop?.global_stop_id ||
+				'unknown';
+			const stopName = itinerary.closest_stop?.stop_name || 'Unknown stop';
+
+			if (!groups.has(stopId)) {
+				groups.set(stopId, {
+					stopId,
+					stopName,
+					itineraries: []
+				});
+			}
+
+			groups.get(stopId)!.itineraries.push(itinerary);
+		});
+
+		return Array.from(groups.values());
+	}
+
+	let itineraryGroups = $derived(
+		$config.groupItinerariesByStop
+			? groupItinerariesByStop()
+			: route.itineraries?.map((itinerary) => ({
+					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
+					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
+					itineraries: [itinerary]
+				})) || []
+	);
 </script>
 
-<div class="route" class:white={useBlackText && !isDarkMode} class:light-in-dark={isDarkMode && hasLightColor} style="color: {routeDisplayColor}">
-	<h2><span class="route-icon">{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
-				class="img{imageSize}"
-				src={getImageUrl(0)}
-				alt="Route icon"
-			/>{/if}<span
-			>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
-		>{#if getImageUrl(2)}<img
-				class="img{imageSize}"
-				src={getImageUrl(2)}
-				alt="Route icon"
-			/>{/if}{/if}</span></h2>
+<div
+	class="route"
+	class:white={useBlackText && !isDarkMode}
+	class:light-in-dark={isDarkMode && hasLightColor}
+	style="color: {routeDisplayColor}"
+>
+	<h2>
+		<span class="route-icon"
+			>{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
+						class="img{imageSize}"
+						src={getImageUrl(0)}
+						alt="Route icon"
+					/>{/if}<span
+					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
+				>{#if getImageUrl(2)}<img
+						class="img{imageSize}"
+						src={getImageUrl(2)}
+						alt="Route icon"
+					/>{/if}{/if}</span
+		>
+	</h2>
 
-		{#if route.itineraries}
-			{#each route.itineraries as dir, index}
-				{#if dir}
-					<div class="content">
-						<div class="stop_name" style="color: {stopNameColor}">
-							<iconify-icon icon="ix:location-filled"></iconify-icon> {dir.closest_stop?.stop_name || 'Unknown stop'}
-						</div>
-						<div class="direction" style={cellStyle}>
-							<h3>
-								<span
+	{#if itineraryGroups.length > 0}
+		{#each itineraryGroups as group}
+			<div class="content">
+				<div class="stop_name" style="color: {stopNameColor}">
+					<iconify-icon icon="ix:location-filled"></iconify-icon>
+					{group.stopName}
+				</div>
+				{#each group.itineraries as dir, index}
+					<div
+						class="direction"
+						style={cellStyle}
+						class:first-branch={index === 0}
+						class:multi-branch={group.itineraries.length > 1}
+					>
+						<h3>
+							<span
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-							>{dir.merged_headsign || 'Unknown destination'}</span></h3>
+								>{dir.merged_headsign || 'Unknown destination'}</span
+							>
+						</h3>
 
-							<div class="time">
-								{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
-									<h4>
-										<span>{getMinutesUntil(item.departure_time)}</span>
-										{#if item.is_real_time}
-											<i class="realtime"></i>
-										{/if}
-										<small class:last={item.is_last}
-											>{item.is_last ? 'last' : 'min'}</small
-										>
-									</h4>
-								{/each}
-								{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
-									<h4>
-										<span class="inactive">&nbsp;</span>
-										<small>&nbsp;</small>
-									</h4>
-								{/each}
-							</div>
+						<div class="time">
+							{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
+								<h4>
+									<span>{getMinutesUntil(item.departure_time)}</span>
+									{#if item.is_real_time}
+										<i class="realtime"></i>
+									{/if}
+									<small class:last={item.is_last}>{item.is_last ? 'last' : 'min'}</small>
+								</h4>
+							{/each}
+							{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
+								<h4>
+									<span class="inactive">&nbsp;</span>
+									<small>&nbsp;</small>
+								</h4>
+							{/each}
 						</div>
 					</div>
-				{/if}
-			{/each}
-		{/if}
+				{/each}
+			</div>
+		{/each}
+	{/if}
 
 	{#if hasRelevantAlerts()}
 		<div>
-			<div class="route-alert-header" class:severe={getMostSevereAlertLevel() === 'severe'} class:warning={getMostSevereAlertLevel() === 'warning'} class:info={getMostSevereAlertLevel() === 'info'} style={getMostSevereAlertLevel() === 'info' ? `${cellStyle}; --alert-bg-color: #${route.route_color}` : ''}>
+			<div
+				class="route-alert-header"
+				class:severe={getMostSevereAlertLevel() === 'severe'}
+				class:warning={getMostSevereAlertLevel() === 'warning'}
+				class:info={getMostSevereAlertLevel() === 'info'}
+				style={getMostSevereAlertLevel() === 'info'
+					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+					: ''}
+			>
 				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
-				<span class="alert-header-text" class:scrolling={isAlertHeaderOverflowing} use:bindAlertHeaderElement>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span>
+				<span
+					class="alert-header-text"
+					class:scrolling={isAlertHeaderOverflowing}
+					use:bindAlertHeaderElement
+					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
+				>
 			</div>
-			<div class="route-alert-ticker" style={cellStyle}>
+			<div
+				class="route-alert-ticker"
+				class:grouped-alerts={$config.groupItinerariesByStop}
+				style={cellStyle}
+			>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
 					{#each parseAlertContent(getAlertText()) as content}
 						{#if content.type === 'text'}
@@ -763,7 +859,6 @@
 </div>
 
 <style>
-
 	.route {
 		width: 100%;
 		box-sizing: border-box;
@@ -774,7 +869,7 @@
 	}
 
 	.route > div {
-		padding: 0.5em .25em 0.5em;
+		padding: 0.5em 0.25em 0.5em;
 		border-radius: 0.5em;
 	}
 
@@ -785,24 +880,22 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
-		padding: 0 .25em 0;
+		padding: 0 0.25em 0;
 	}
 
 	.route h2 {
 		position: relative;
-		padding-left: 0.26em;
-		margin-bottom: 0em;
-		padding-bottom: 0em;
+		padding-left: 0.15em;
+		padding-bottom: -0.2em;
 		padding-top: 0.25em;
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0.5em;
-		line-height: .81;
+		line-height: 0.82em;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
-		font-weight: 800;
 	}
 
 	.route h2 .route-icon {
@@ -832,12 +925,12 @@
 	}
 
 	.route-alert-header.severe {
-		background-color: #E30613;
-		color: #FFFFFF;
+		background-color: #e30613;
+		color: #ffffff;
 	}
 
 	.route-alert-header.warning {
-		background-color: #FFA700;
+		background-color: #ffa700;
 		color: #000000;
 	}
 
@@ -878,15 +971,20 @@
 	}
 
 	.route-alert-header.severe iconify-icon {
-		background: linear-gradient(to right, #E30613 0%, #E30613 70%, transparent 100%);
+		background: linear-gradient(to right, #e30613 0%, #e30613 70%, transparent 100%);
 	}
 
 	.route-alert-header.warning iconify-icon {
-		background: linear-gradient(to right, #FFA700 0%, #FFA700 70%, transparent 100%);
+		background: linear-gradient(to right, #ffa700 0%, #ffa700 70%, transparent 100%);
 	}
 
 	.route-alert-header.info iconify-icon {
-		background: linear-gradient(to right, var(--alert-bg-color, transparent) 0%, var(--alert-bg-color, transparent) 70%, transparent 100%);
+		background: linear-gradient(
+			to right,
+			var(--alert-bg-color, transparent) 0%,
+			var(--alert-bg-color, transparent) 70%,
+			transparent 100%
+		);
 	}
 
 	.route.white .route-alert-header {
@@ -910,6 +1008,18 @@
 	@media (orientation: portrait) {
 		.route-alert-ticker {
 			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	/* Grouping saves space by consolidating cards, so give that space to alerts */
+	.route-alert-ticker.grouped-alerts {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-ticker.grouped-alerts {
+			height: clamp(5em, 10vh, 15em);
 		}
 	}
 
@@ -1000,12 +1110,12 @@
 	}
 
 	.route .img28 {
-		height: 0.82em;
+		height: 0.875em;
 		display: block;
 	}
 
 	.route .img34 {
-		height: 0.82em;
+		height: 0.875em;
 		display: block;
 	}
 
@@ -1029,6 +1139,34 @@
 		margin-bottom: 0.2em;
 	}
 
+	/* Styling for multi-branch routes */
+	.route .direction.multi-branch {
+		margin-bottom: 0.15em;
+	}
+
+	.route .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(255, 255, 255, 0.15);
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+	}
+
+	.route.white .direction.multi-branch:not(.first-branch) {
+		border-top: 1px solid rgba(0, 0, 0, 0.15);
+	}
+
+	.route .direction.multi-branch.first-branch {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.route .direction.multi-branch:not(:last-child) {
+		margin-bottom: 0;
+	}
+
+	.route .direction.multi-branch:last-child {
+		margin-bottom: 0.25em;
+	}
+
 	/* .direction iconify-icon {
 		transform: translateY(20%);
 		width: 1em;
@@ -1050,7 +1188,7 @@
 		box-sizing: border-box;
 	}
 
-	.route .time h4:nth-child(n+4) {
+	.route .time h4:nth-child(n + 4) {
 		display: none;
 	}
 

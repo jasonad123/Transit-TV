@@ -52,3 +52,6 @@ pnpm-debug.log*
 .playwright-mcp/
 svelte-app/static/fonts/
 Screenshot*.png
+renovate.json
+
+.github/

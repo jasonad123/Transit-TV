@@ -9,43 +9,43 @@ on:
 jobs:
   verify-railway-template:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      
-    - name: Verify Railway template files
-      run: |
-        echo "Checking for Railway deployment files..."
-        
-        # Check for required files
-        if [ ! -f "railway.json" ]; then
-          echo "Warning: railway.json not found"
-          exit 1
-        fi
-        
-        if [ ! -f ".railway-env-template" ]; then
-          echo "Warning: .railway-env-template not found"
-          exit 1
-        fi
-        
-        echo "Railway template files verified"
-        
-    - name: Validate railway.json
-      run: |
-        # Basic JSON validation
-        if ! jq empty railway.json 2>/dev/null; then
-          echo "Error: railway.json is not valid JSON"
-          exit 1
-        fi
-        
-        echo "railway.json is valid JSON"
-        
-    - name: Generate deployment summary
-      run: |
-        echo "## Railway Deployment Verification" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Railway template files validated" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Deploy Button URL:**" >> $GITHUB_STEP_SUMMARY
-        echo "https://railway.com/deploy/kYRHes" >> $GITHUB_STEP_SUMMARY
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Verify Railway template files
+        run: |
+          echo "Checking for Railway deployment files..."
+
+          # Check for required files
+          if [ ! -f "railway.json" ]; then
+            echo "Warning: railway.json not found"
+            exit 1
+          fi
+
+          if [ ! -f ".railway-env-template" ]; then
+            echo "Warning: .railway-env-template not found"
+            exit 1
+          fi
+
+          echo "Railway template files verified"
+
+      - name: Validate railway.json
+        run: |
+          # Basic JSON validation
+          if ! jq empty railway.json 2>/dev/null; then
+            echo "Error: railway.json is not valid JSON"
+            exit 1
+          fi
+
+          echo "railway.json is valid JSON"
+
+      - name: Generate deployment summary
+        run: |
+          echo "## Railway Deployment Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Railway template files validated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy Button URL:**" >> $GITHUB_STEP_SUMMARY
+          echo "https://railway.com/deploy/kYRHes" >> $GITHUB_STEP_SUMMARY

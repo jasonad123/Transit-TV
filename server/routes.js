@@ -3,63 +3,79 @@
 var errors = require('./components/errors');
 var path = require('path');
 var config = require('./config/environment');
+var packageJson = require('../package.json');
 
-module.exports = function(app) {
-  // Insert routes below
-  app.use('/api/images', require('./api/image'));
-  app.use('/api/routes', require('./api/routes'));
-  app.use('/api/config', require('./api/config'));
-  app.use('/api/server', require('./api/server'));
+module.exports = function (app) {
+	// Insert routes below
+	app.use('/api/images', require('./api/image'));
+	app.use('/api/routes', require('./api/routes'));
+	app.use('/api/config', require('./api/config'));
+	app.use('/api/server', require('./api/server'));
 
-  // All undefined asset or api routes should return a 404
-  app.get([
-    '/api/*splat',
-    '/auth/*splat',
-    '/components/*splat',
-    '/app/*splat',
-    '/assets/*splat'
-  ], errors[404]);
+	// Health check endpoint for monitoring and orchestration
+	// Always allow CORS for health endpoint to support dev mode version fetching
+	app.get('/health', function (req, res) {
+		// Allow cross-origin requests for health check (always, even in production)
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
-  // SvelteKit handler for all other routes
-  var buildPath = path.join(config.root, 'svelte-app/build');
-  var handlerPath = buildPath + '/handler.js';
+		res.status(200).json({
+			status: 'healthy',
+			timestamp: new Date().toISOString(),
+			version: packageJson.version,
+			uptime: process.uptime(),
+			environment: process.env.NODE_ENV || 'development'
+		});
+	});
 
-  console.log('Loading SvelteKit handler from:', buildPath);
+	// All undefined asset or api routes should return a 404
+	app.get(
+		['/api/*splat', '/auth/*splat', '/components/*splat', '/app/*splat', '/assets/*splat'],
+		errors[404]
+	);
 
-  // Load handler once and cache it
-  var handlerCache = null;
-  var handlerLoadError = null;
+	// SvelteKit handler for all other routes
+	var buildPath = path.join(config.root, 'svelte-app/build');
+	var handlerPath = buildPath + '/handler.js';
 
-  // Middleware that loads handler on first request or retries if failed
-  app.use(function(req, res, next) {
-    // If handler is already loaded, use it
-    if (handlerCache) {
-      return handlerCache(req, res, next);
-    }
+	console.log('Loading SvelteKit handler from:', buildPath);
 
-    // If previous load attempt failed, return error
-    if (handlerLoadError) {
-      console.error('SvelteKit handler not available:', handlerLoadError.message);
-      return res.status(500).send({
-        error: 'Application not available',
-        message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'
-      });
-    }
+	// Load handler once and cache it
+	var handlerCache = null;
+	var handlerLoadError = null;
 
-    // Load handler on first request
-    import(handlerPath).then(function(module) {
-      console.log('SvelteKit handler loaded successfully');
-      handlerCache = module.handler;
-      handlerCache(req, res, next);
-    }).catch(function(err) {
-      console.error('Failed to load SvelteKit handler:', err.message);
-      console.error('Make sure to build the SvelteKit app first:');
-      console.error('  cd svelte-app && pnpm build');
-      handlerLoadError = err;
-      res.status(500).send({
-        error: 'Application not available',
-        message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'
-      });
-    });
-  });
+	// Middleware that loads handler on first request or retries if failed
+	app.use(function (req, res, next) {
+		// If handler is already loaded, use it
+		if (handlerCache) {
+			return handlerCache(req, res, next);
+		}
+
+		// If previous load attempt failed, return error
+		if (handlerLoadError) {
+			console.error('SvelteKit handler not available:', handlerLoadError.message);
+			return res.status(500).send({
+				error: 'Application not available',
+				message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'
+			});
+		}
+
+		// Load handler on first request
+		import(handlerPath)
+			.then(function (module) {
+				console.log('SvelteKit handler loaded successfully');
+				handlerCache = module.handler;
+				handlerCache(req, res, next);
+			})
+			.catch(function (err) {
+				console.error('Failed to load SvelteKit handler:', err.message);
+				console.error('Make sure to build the SvelteKit app first:');
+				console.error('  cd svelte-app && pnpm build');
+				handlerLoadError = err;
+				res.status(500).send({
+					error: 'Application not available',
+					message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'
+				});
+			});
+	});
 };
