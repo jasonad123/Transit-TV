@@ -6,13 +6,13 @@
 
 <!-- Please delete options that are not relevant -->
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Code refactoring
-- [ ] Performance improvement
-- [ ] Other (please describe):
+- Bug fix (non-breaking change which fixes an issue)
+- New feature (non-breaking change which adds functionality)
+- Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- Documentation update
+- Code refactoring
+- Performance improvement
+- Other (please describe):
 
 ## Related Issues
 
@@ -62,7 +62,6 @@ Relates to #
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] Any dependent changes have been merged and published
 - [ ] I have run `pnpm lint` and `pnpm format` before committing
-- [ ] I have run `pnpm check` for type checking
 - [ ] I have tested the Docker build if applicable
 
 ## Breaking Changes

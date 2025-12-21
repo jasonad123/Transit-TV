@@ -44,11 +44,12 @@ playwright-report/
 
 # Documentation
 docs/
+assets/
 *.md
 !README.md
 
-# Docker Compose
-compose*.yaml
+# Docker
+**/compose*.yaml
 
 # CI/CD
 .railway-env-template

@@ -2,11 +2,11 @@
 
 A real-time transit display application that shows arrival times for nearby public transit.
 
-![Screenshot](transit-tv-reloaded-3.png)
+![Screenshot](/assets/transit-tv-reloaded-3.png)
 
-<div style="text-align: center;">
+<div style="text-align:center">
 
-[![Powered by Transit API logo](/transit-api-badge.png 'Powered by Transit API logo')](https://transitapp.com)
+<img src="https://github.com/jasonad123/Transit-TV/blob/main/assets/transit-api-badge.png?raw=true" width="25%" />
 
 </div>
 
