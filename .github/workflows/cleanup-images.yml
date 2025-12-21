@@ -13,8 +13,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
-  KEEP_BETA_COUNT: 10
-  KEEP_EDGE_COUNT: 5
+  KEEP_BETA_COUNT: 6
+  KEEP_EDGE_COUNT: 4
 
 jobs:
   cleanup:
@@ -42,10 +42,28 @@ jobs:
           # Fetch all package versions
           echo "Fetching package versions..."
           VERSIONS=$(gh api --paginate \
-            "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions" \
-            --jq '.[] | {id: .id, name: .name, tags: .metadata.container.tags, created_at: .created_at}')
+            "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions")
 
-          TOTAL_COUNT=$(echo "$VERSIONS" | jq -s 'length')
+          # Debug: Show raw API response structure
+          echo "DEBUG: Raw API response (first 500 chars):"
+          echo "$VERSIONS" | head -c 500
+          echo ""
+          echo ""
+
+          # Process versions to extract needed fields
+          VERSIONS=$(echo "$VERSIONS" | jq -s 'flatten | [.[] | {
+            id: .id,
+            name: .name,
+            tags: (.metadata?.container?.tags // []),
+            created_at: .created_at
+          }]')
+
+          # Debug: Show processed version structure
+          echo "DEBUG: Processed first version structure:"
+          echo "$VERSIONS" | jq -r '.[0]'
+          echo ""
+
+          TOTAL_COUNT=$(echo "$VERSIONS" | jq 'length')
           echo "Total versions found: $TOTAL_COUNT"
           echo ""
 
@@ -78,7 +96,7 @@ jobs:
           echo "Processing Beta Versions"
           echo "================================="
 
-          BETA_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags[]? | select(. != null and startswith("beta-")))] |
+          BETA_VERSIONS=$(echo "$VERSIONS" | jq '[.[] | select(.tags | any(. != null and startswith("beta-")))] |
             unique_by(.id) |
             sort_by(.created_at) |
             reverse')
@@ -91,7 +109,7 @@ jobs:
             echo "Keeping ${{ env.KEEP_BETA_COUNT }} most recent, deleting $TO_DELETE_COUNT oldest"
             echo ""
 
-            echo "$BETA_VERSIONS" | jq -r ".[${{ env.KEEP_BETA_COUNT }}:] | .[]" | while IFS= read -r version; do
+            echo "$BETA_VERSIONS" | jq -c ".[${{ env.KEEP_BETA_COUNT }}:][]" | while IFS= read -r version; do
               VERSION_ID=$(echo "$version" | jq -r '.id')
               VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
               VERSION_DATE=$(echo "$version" | jq -r '.created_at')
@@ -124,7 +142,7 @@ jobs:
           echo "Processing Edge Versions"
           echo "================================="
 
-          EDGE_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags[]? | select(. != null and startswith("edge-")))] |
+          EDGE_VERSIONS=$(echo "$VERSIONS" | jq '[.[] | select(.tags | any(. != null and startswith("edge-")))] |
             unique_by(.id) |
             sort_by(.created_at) |
             reverse')
@@ -137,7 +155,7 @@ jobs:
             echo "Keeping ${{ env.KEEP_EDGE_COUNT }} most recent, deleting $TO_DELETE_COUNT oldest"
             echo ""
 
-            echo "$EDGE_VERSIONS" | jq -r ".[${{ env.KEEP_EDGE_COUNT }}:] | .[]" | while IFS= read -r version; do
+            echo "$EDGE_VERSIONS" | jq -c ".[${{ env.KEEP_EDGE_COUNT }}:][]" | while IFS= read -r version; do
               VERSION_ID=$(echo "$version" | jq -r '.id')
               VERSION_TAGS=$(echo "$version" | jq -r '.tags[]?' | tr '\n' ' ')
               VERSION_DATE=$(echo "$version" | jq -r '.created_at')
@@ -171,13 +189,13 @@ jobs:
           echo "================================="
 
           # Find versions with tags that don't match beta-*, edge-*, or protected patterns
-          BRANCH_TEST_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] |
+          BRANCH_TEST_VERSIONS=$(echo "$VERSIONS" | jq '[.[] |
             select(.tags | length > 0) |
-            select(.tags[] |
+            select(.tags | any(
               (startswith("beta-") or startswith("edge-") or
                . == "latest" or . == "beta" or . == "edge" or . == "pre-release" or
-               test("^v?[0-9]+\\.[0-9]+\\.[0-9]+")) | not) |
-            select(.tags[] | test("-[a-f0-9]{7}$"))] |
+               test("^v?[0-9]+\\.[0-9]+\\.[0-9]+")) | not)) |
+            select(.tags | any(test("-[a-f0-9]{7}$"))) |
             unique_by(.id)')
 
           BRANCH_TEST_COUNT=$(echo "$BRANCH_TEST_VERSIONS" | jq 'length')
@@ -218,7 +236,7 @@ jobs:
           echo "Processing Untagged Versions"
           echo "================================="
 
-          UNTAGGED_VERSIONS=$(echo "$VERSIONS" | jq -s '[.[] | select(.tags | length == 0)] | sort_by(.created_at) | reverse')
+          UNTAGGED_VERSIONS=$(echo "$VERSIONS" | jq '[.[] | select(.tags | length == 0)] | sort_by(.created_at) | reverse')
           UNTAGGED_COUNT=$(echo "$UNTAGGED_VERSIONS" | jq 'length')
           echo "Found $UNTAGGED_COUNT untagged versions (sha256 digests, platform manifests)"
 
