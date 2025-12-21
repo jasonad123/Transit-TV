@@ -8,7 +8,8 @@
   "minimumReleaseAge" : "7 days",
   "ignorePaths": [
     "compose.yaml",
-    "railway.json"
+    "railway.json",
+    "Dockerfile.dhi"
   ],
   "packageRules": [
     {
