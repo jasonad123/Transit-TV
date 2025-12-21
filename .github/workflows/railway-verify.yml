@@ -24,8 +24,8 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f ".railway-env-template" ]; then
-            echo "Warning: .railway-env-template not found"
+          if [ ! -f ".env.railway" ]; then
+            echo "Warning: .env.railway not found"
             exit 1
           fi
 
