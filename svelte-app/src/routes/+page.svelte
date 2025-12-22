@@ -873,6 +873,17 @@
 					<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
 				</div>
 
+				<div class="toggle-container">
+					<label class="toggle-label">
+						<span>{$_('config.fields.showRouteLongName')}</span>
+						<label class="toggle-switch">
+							<input type="checkbox" bind:checked={$config.showRouteLongName} />
+							<span class="toggle-slider"></span>
+						</label>
+					</label>
+					<small class="help-text">{$_('config.routeDisplay.showRouteLongNameHelpText')}</small>
+				</div>
+
 				{#if $config.hiddenRoutes.length > 0}
 					<div class="route-management">
 						<h3>{$_('config.hiddenRoutes.title')}</h3>
@@ -1034,7 +1045,7 @@
 				>
 					{#each routes as route, index (route.global_route_id)}
 						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-							<RouteItem {route} />
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
 							<div class="route-controls">
 								{#if index > 0}
 									<button

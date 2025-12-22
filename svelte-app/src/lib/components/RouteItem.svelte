@@ -6,7 +6,7 @@
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 
-	let { route }: { route: Route } = $props();
+	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
@@ -308,6 +308,27 @@
 	// Check if route has light colors (for wave icon selection in dark mode)
 	// Light colored routes like Orange (#f9461c) or Silver (#a7a9ac) need dark waves in dark mode
 	let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
+
+	// Helper function to check if route icon is an image (not text)
+	function isRouteIconImage(): boolean {
+		// Check if first element is an image (has getImageUrl)
+		return !!getImageUrl(0);
+	}
+
+	// Helper function to check if there's adjacent text next to route icon
+	function hasAdjacentText(): boolean {
+		// Check if there are multiple elements and the second one is text
+		return (route.route_display_short_name?.elements?.length || 0) > 1 &&
+			   !!route.route_display_short_name?.elements?.[1]?.trim();
+	}
+
+	// Determine if we should show the route long name based on targeted conditions
+	let shouldShowRouteLongName = $derived(
+		showLongName &&
+		!!route.route_long_name &&
+		isRouteIconImage() &&
+		!hasAdjacentText()
+	);
 
 	// Complex logos that should not be recolored (contain their own internal colors)
 	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
@@ -755,19 +776,20 @@
 	style="color: {routeDisplayColor}"
 >
 	<h2>
-		<span class="route-icon"
-			>{#if route.route_display_short_name?.elements}{#if getImageUrl(0)}<img
-						class="img{imageSize}"
-						src={getImageUrl(0)}
-						alt="Route icon"
-					/>{/if}<span
-					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
-				>{#if getImageUrl(2)}<img
-						class="img{imageSize}"
-						src={getImageUrl(2)}
-						alt="Route icon"
-					/>{/if}{/if}</span
-		>
+		<span class="route-icon">
+			{#if route.route_display_short_name?.elements}
+				{#if getImageUrl(0)}
+					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
+				{/if}
+				<span>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span>
+				{#if getImageUrl(2)}
+					<img class="img{imageSize}" src={getImageUrl(2)} alt="Route icon" />
+				{/if}
+			{/if}
+		</span>
+		{#if shouldShowRouteLongName}
+			<span class="route-long-name" style={cellStyle}>{route.route_short_name}</span>
+		{/if}
 	</h2>
 
 	{#if itineraryGroups.length > 0}
@@ -891,7 +913,7 @@
 		display: flex;
 		align-items: center;
 		flex-wrap: nowrap;
-		gap: 0.5em;
+		gap: 0;
 		line-height: 0.82em;
 		flex-shrink: 0;
 		font-weight: 700;
@@ -906,6 +928,24 @@
 		gap: 0.1em;
 	}
 
+	.route h2 .route-long-name {
+		font-size: 0.5em;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 10em;
+		margin-left: 0;
+		align-self: center;
+		padding: 0.25em 0.35em 0.1em;
+		border-radius: 0.2em;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		line-height: 1.1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
 	.route-alert-header {
 		font-size: 1.5em;
 		font-weight: bold;
