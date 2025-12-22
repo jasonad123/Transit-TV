@@ -18,7 +18,7 @@
 			"maxDistance": "Suchradius:",
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
-			"showRouteLongName": "Linienfarbnamen anzeigen"
+			"showRouteLongName": "Linienfarben und -namen anzeigen"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -59,7 +59,7 @@
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Linienfarbnamen (z. B. 'Rote Linie') neben Linien-Symbolen anzeigen, wenn kein benachbarter Text vorhanden ist"
+			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden."
 		},
 		"buttons": {
 			"cancel": "Stornieren",

@@ -18,7 +18,7 @@
 			"maxDistance": "Radio de búsqueda:",
 			"groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
-			"showRouteLongName": "Mostrar nombres de colores de línea"
+			"showRouteLongName": "Mostrar nombres y colores de línea"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -59,7 +59,7 @@
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Mostrar nombres de colores de línea (ej: 'Línea Roja') junto a los iconos de línea cuando no hay texto adyacente"
+			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
 		},
 		"buttons": {
 			"cancel": "Cancelar",

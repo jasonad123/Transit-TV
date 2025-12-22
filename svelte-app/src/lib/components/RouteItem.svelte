@@ -101,6 +101,8 @@
 		return routeName;
 	});
 
+
+
 	// Smart mode name for alerts
 	let alertModeName = $derived.by(() => {
 		const modeName = route.mode_name;
@@ -213,6 +215,52 @@
 		return modeName;
 	});
 
+	const MAJOR_COLOURS = new Set([
+		"Red", "Blue", "Green", "Yellow", "Orange", "Purple", 
+		"Pink", "Brown", "Black", "White", "Grey", "Gray", 
+		"Silver", "Gold", "Violet", "Indigo", "Cyan", "Magenta"
+	]);
+
+	const MAX_LONG_NAME_LENGTH = 12;
+
+	let miniRouteName = $derived.by(() => {
+		const boxedText = route.route_display_short_name?.boxed_text;
+		const shortName = route.route_short_name || '';
+		let longName = route.route_long_name || '';
+
+		// 1. Priority: Boxed Text
+		if (boxedText) return boxedText;
+
+		// 2. Priority: Recognized Major Color
+		if (shortName && MAJOR_COLOURS.has(shortName)) {
+			return shortName;
+		}
+
+		// 3. Process Long Name
+		if (longName) {
+			// A. Strip " Line"
+			if (longName.endsWith(" Line")) {
+				longName = longName.slice(0, -5);
+			}
+
+			// // B. Handle Hyphenated names (e.g., "Azusa - Long Beach" -> "Azusa")
+			// if (longName.includes(" - ")) {
+			// 	longName = longName.split(" - ")[0];
+			// }
+
+			// C. Length Validation
+			if (longName.length <= MAX_LONG_NAME_LENGTH) {
+				return longName;
+			}
+		}
+
+		// 4. Final Fallback: 
+		// If the long name is still too long after processing, 
+		// use the shortName (even if it's 1-3 chars), because "A" is better than 
+		// a giant string that breaks the UI.
+		return shortName || longName || '';
+	});
+
 	let destinationElements: Map<number, HTMLElement> = new Map();
 	let overflowingDestinations = $state<Set<number>>(new Set());
 	let sharedResizeObserver: ResizeObserver | null = null;
@@ -323,9 +371,14 @@
 	}
 
 	// Determine if we should show the route long name based on targeted conditions
+	// TODO: add logic to account for showLongName prop logic - needs to handle single character route short names
+
+	const routeShortTooShort = $derived((route.route_short_name?.length || 0) < 2);
+
 	let shouldShowRouteLongName = $derived(
 		showLongName &&
-		!!route.route_long_name &&
+		!routeShortTooShort &&
+		(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
 		isRouteIconImage() &&
 		!hasAdjacentText()
 	);
@@ -775,6 +828,7 @@
 	class:light-in-dark={isDarkMode && hasLightColor}
 	style="color: {routeDisplayColor}"
 >
+
 	<h2>
 		<span class="route-icon">
 			{#if route.route_display_short_name?.elements}
@@ -788,7 +842,7 @@
 			{/if}
 		</span>
 		{#if shouldShowRouteLongName}
-			<span class="route-long-name" style={cellStyle}>{route.route_short_name}</span>
+			<span class="route-long-name" style={cellStyle}>{miniRouteName}</span>
 		{/if}
 	</h2>
 
@@ -929,7 +983,7 @@
 	}
 
 	.route h2 .route-long-name {
-		font-size: 0.5em;
+		font-size: 0.45em;
 		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
@@ -938,7 +992,7 @@
 		margin-left: 0;
 		align-self: center;
 		padding: 0.25em 0.35em 0.1em;
-		border-radius: 0.2em;
+		border-radius: 1em;
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		line-height: 1.1;
 		display: flex;

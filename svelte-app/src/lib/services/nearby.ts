@@ -11,6 +11,7 @@ export interface Route {
 	route_text_color: string;
 	route_display_short_name?: {
 		elements: string[];
+		boxed_text?: string;
 	};
 	tts_short_name?: string;
 	branch_code?: string;
