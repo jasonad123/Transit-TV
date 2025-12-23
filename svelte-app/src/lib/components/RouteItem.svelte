@@ -101,8 +101,6 @@
 		return routeName;
 	});
 
-
-
 	// Smart mode name for alerts
 	let alertModeName = $derived.by(() => {
 		const modeName = route.mode_name;
@@ -216,9 +214,24 @@
 	});
 
 	const MAJOR_COLOURS = new Set([
-		"Red", "Blue", "Green", "Yellow", "Orange", "Purple", 
-		"Pink", "Brown", "Black", "White", "Grey", "Gray", 
-		"Silver", "Gold", "Violet", "Indigo", "Cyan", "Magenta"
+		'Red',
+		'Blue',
+		'Green',
+		'Yellow',
+		'Orange',
+		'Purple',
+		'Pink',
+		'Brown',
+		'Black',
+		'White',
+		'Grey',
+		'Gray',
+		'Silver',
+		'Gold',
+		'Violet',
+		'Indigo',
+		'Cyan',
+		'Magenta'
 	]);
 
 	const MAX_LONG_NAME_LENGTH = 12;
@@ -239,7 +252,7 @@
 		// 3. Process Long Name
 		if (longName) {
 			// A. Strip " Line"
-			if (longName.endsWith(" Line")) {
+			if (longName.endsWith(' Line')) {
 				longName = longName.slice(0, -5);
 			}
 
@@ -254,9 +267,9 @@
 			}
 		}
 
-		// 4. Final Fallback: 
-		// If the long name is still too long after processing, 
-		// use the shortName (even if it's 1-3 chars), because "A" is better than 
+		// 4. Final Fallback:
+		// If the long name is still too long after processing,
+		// use the shortName (even if it's 1-3 chars), because "A" is better than
 		// a giant string that breaks the UI.
 		return shortName || longName || '';
 	});
@@ -366,8 +379,10 @@
 	// Helper function to check if there's adjacent text next to route icon
 	function hasAdjacentText(): boolean {
 		// Check if there are multiple elements and the second one is text
-		return (route.route_display_short_name?.elements?.length || 0) > 1 &&
-			   !!route.route_display_short_name?.elements?.[1]?.trim();
+		return (
+			(route.route_display_short_name?.elements?.length || 0) > 1 &&
+			!!route.route_display_short_name?.elements?.[1]?.trim()
+		);
 	}
 
 	// Determine if we should show the route long name based on targeted conditions
@@ -377,10 +392,10 @@
 
 	let shouldShowRouteLongName = $derived(
 		showLongName &&
-		!routeShortTooShort &&
-		(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
-		isRouteIconImage() &&
-		!hasAdjacentText()
+			!routeShortTooShort &&
+			(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
+			isRouteIconImage() &&
+			!hasAdjacentText()
 	);
 
 	// Complex logos that should not be recolored (contain their own internal colors)
@@ -828,14 +843,15 @@
 	class:light-in-dark={isDarkMode && hasLightColor}
 	style="color: {routeDisplayColor}"
 >
-
 	<h2>
 		<span class="route-icon">
 			{#if route.route_display_short_name?.elements}
 				{#if getImageUrl(0)}
 					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
 				{/if}
-				<span>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span>
+				<span
+					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
+				>
 				{#if getImageUrl(2)}
 					<img class="img{imageSize}" src={getImageUrl(2)} alt="Route icon" />
 				{/if}
@@ -999,7 +1015,7 @@
 		align-items: center;
 		justify-content: center;
 	}
-	
+
 	.route-alert-header {
 		font-size: 1.5em;
 		font-weight: bold;
