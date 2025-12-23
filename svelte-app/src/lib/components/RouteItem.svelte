@@ -390,10 +390,20 @@
 
 	const routeShortTooShort = $derived((route.route_short_name?.length || 0) < 2);
 
+	// let shouldShowRouteLongName = $derived(
+	// 	showLongName &&
+	// 		!routeShortTooShort &&
+	// 		(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
+	// 		isRouteIconImage() &&
+	// 		!hasAdjacentText()
+	// );
+
+	// Test: using value route_name_redundancy to determine if we should show the route long name
+
 	let shouldShowRouteLongName = $derived(
 		showLongName &&
 			!routeShortTooShort &&
-			(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
+			!route.compact_display_short_name?.route_name_redundancy &&
 			isRouteIconImage() &&
 			!hasAdjacentText()
 	);
