@@ -33,6 +33,7 @@ export interface Itinerary {
 export interface ScheduleItem {
 	departure_time: number;
 	is_real_time?: boolean;
+	is_cancelled?: boolean;
 	is_last?: boolean;
 }
 

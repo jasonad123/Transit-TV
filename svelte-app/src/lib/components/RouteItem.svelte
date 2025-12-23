@@ -888,7 +888,7 @@
 						<div class="time">
 							{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
 								<h4>
-									<span>{getMinutesUntil(item.departure_time)}</span>
+									<span class:cancelled={item.is_cancelled}>{getMinutesUntil(item.departure_time)}</span>
 									{#if item.is_real_time}
 										<i class="realtime"></i>
 									{/if}
@@ -999,16 +999,16 @@
 	}
 
 	.route h2 .route-long-name {
-		font-size: 0.45em;
+		font-size: 0.4em;
 		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: 10em;
+		max-width: 12em;
 		margin-left: 0;
 		align-self: center;
 		padding: 0.25em 0.35em 0.1em;
-		border-radius: 1em;
+		border-radius: 0.5em;
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		line-height: 1.1;
 		display: flex;
@@ -1169,7 +1169,7 @@
 
 	.route h3 {
 		font-size: 1.75em;
-		padding: 0.4em 0.35em 0.3em 0.35em;
+		padding: 0.4em 0.35em 0.15em 0.35em;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		overflow: hidden;
 		position: relative;
@@ -1298,6 +1298,25 @@
 		box-sizing: border-box;
 	}
 
+	.route .time h4 span.cancelled {
+		/* position: relative;
+    	display: inline;  */
+		text-decoration: strikethrough;
+		opacity: 0.8;
+		}
+
+	/* .route .time h4 span.cancelled::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 50%;
+		right: 0;
+		border-top: 2px solid inherit;
+		transform: rotate(45deg); 
+		pointer-events: none; 
+	} */
+
+
 	.route .time h4:nth-child(n + 4) {
 		display: none;
 	}
@@ -1411,6 +1430,7 @@
 	.route.light-in-dark .realtime::after {
 		background-image: url('/assets/images/real_time_wave_big@2x.png');
 	}
+
 
 	.route .inactive {
 		display: block;

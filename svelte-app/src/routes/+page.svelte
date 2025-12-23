@@ -1744,7 +1744,7 @@
 		top: 5.5em;
 		left: 50%;
 		transform: translateX(-50%);
-		background: #e30022;
+		background: #e30079;
 		color: white;
 		padding: 1em 2em;
 		border-radius: 8px;
