@@ -1205,7 +1205,7 @@
 		font-size: 2em;
 		vertical-align: middle;
 		display: inline-block;
-		line-height: 1.5em;
+		line-height: 1.4em;
 		margin-bottom: -0.1em;
 		white-space: nowrap;
 		overflow: hidden;
@@ -1253,7 +1253,7 @@
 	.clock {
 		font-size: 1.8em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		line-height: 2.2em;
+		line-height: 2.1em;
 		font-weight: 500;
 		display: inline-block;
 		margin-left: 3em;
