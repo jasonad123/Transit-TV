@@ -13,8 +13,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
-  KEEP_BETA_COUNT: 6
-  KEEP_EDGE_COUNT: 4
+  KEEP_BETA_COUNT: 3
+  KEEP_EDGE_COUNT: 2
 
 jobs:
   cleanup:
@@ -41,8 +41,11 @@ jobs:
 
           # Fetch all package versions
           echo "Fetching package versions..."
+          # Note: --paginate returns each page as a separate JSON array
+          # We need to combine them properly
           VERSIONS=$(gh api --paginate \
-            "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions")
+            "/users/${{ github.repository_owner }}/packages/container/transit-tv/versions" | \
+            jq -s 'add // []')
 
           # Debug: Show raw API response structure
           echo "DEBUG: Raw API response (first 500 chars):"
@@ -50,11 +53,11 @@ jobs:
           echo ""
           echo ""
 
-          # Process versions to extract needed fields
-          VERSIONS=$(echo "$VERSIONS" | jq -s 'flatten | [.[] | {
+          # Process versions to extract needed fields with safe navigation
+          VERSIONS=$(echo "$VERSIONS" | jq '[.[] | {
             id: .id,
             name: .name,
-            tags: (.metadata?.container?.tags // []),
+            tags: (try (.metadata.container.tags // []) catch []),
             created_at: .created_at
           }]')
 
