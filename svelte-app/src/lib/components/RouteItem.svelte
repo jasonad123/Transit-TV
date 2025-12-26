@@ -284,6 +284,8 @@
 	let routeHeaderShouldWrap = $state(false);
 	let routeHeaderIconScale = $state(1);
 	let headerCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	let headerCheckTimeouts: Array<ReturnType<typeof setTimeout>> = [];
+	let headerCheckVersion = 0; // Track current check version to prevent race conditions
 
 	// Track dark mode state
 	let isDarkMode = $state(false);
@@ -352,6 +354,8 @@
 		destinationCheckTimeouts.clear();
 		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
 		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
+		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+		headerCheckTimeouts = [];
 	});
 
 	// Calculate relative luminance (0-1) from hex color
@@ -400,10 +404,10 @@
 	}
 
 	// Determine if we should show the route long name based on targeted conditions
-	// TODO: add logic to account for showLongName prop logic - needs to handle single character route short names
 
 	const routeShortTooShort = $derived((route.route_short_name?.length || 0) < 3);
 
+	// Original test: show long name if boxed text or long name exists
 	// let shouldShowRouteLongName = $derived(
 	// 	showLongName &&
 	// 		!routeShortTooShort &&
@@ -748,11 +752,20 @@
 	function checkRouteHeaderOverflow(headerElement: HTMLElement) {
 		if (!headerElement) return;
 
-		// Debounce resize checks
+		// Clear previous check cycle to prevent race conditions
 		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
+		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+		headerCheckTimeouts = [];
+
+		// Increment version to invalidate any in-flight checks
+		headerCheckVersion++;
+		const currentVersion = headerCheckVersion;
 
 		headerCheckTimeout = setTimeout(() => {
 			requestAnimationFrame(() => {
+				// Verify we're still the current check
+				if (currentVersion !== headerCheckVersion) return;
+
 				const routeIconElement = headerElement.querySelector('.route-icon') as HTMLElement;
 				if (!routeIconElement) return;
 
@@ -778,8 +791,11 @@
 					routeHeaderTextScale = textScale;
 
 					// Re-measure after text scaling (need to wait for next frame)
-					setTimeout(() => {
+					const timeout1 = setTimeout(() => {
 						requestAnimationFrame(() => {
+							// Verify we're still the current check and element still exists
+							if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected) return;
+
 							const newWidth = routeIconElement.scrollWidth;
 							if (newWidth <= containerWidth) {
 								// Text scaling worked!
@@ -792,8 +808,11 @@
 							routeHeaderTextScale = 1; // Reset text scale
 							routeHeaderShouldWrap = true;
 
-							setTimeout(() => {
+							const timeout2 = setTimeout(() => {
 								requestAnimationFrame(() => {
+									// Verify we're still the current check and element still exists
+									if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected) return;
+
 									const wrappedWidth = routeIconElement.scrollWidth;
 									if (wrappedWidth <= containerWidth) {
 										// Wrapping worked!
@@ -807,8 +826,10 @@
 									routeHeaderIconScale = iconScale;
 								});
 							}, 10);
+							headerCheckTimeouts.push(timeout2);
 						});
 					}, 10);
+					headerCheckTimeouts.push(timeout1);
 				} else {
 					// No text span found - just scale the whole icon
 					const iconScale = Math.max(0.65, (containerWidth - 4) / iconWrapperWidth);
@@ -1440,21 +1461,9 @@
 	.route .time h4 span.cancelled {
 		/* position: relative;
     	display: inline;  */
-		text-decoration: strikethrough;
+		text-decoration: line-through;
 		opacity: 0.8;
 		}
-
-	/* .route .time h4 span.cancelled::before {
-		content: "";
-		position: absolute;
-		left: 0;
-		top: 50%;
-		right: 0;
-		border-top: 2px solid inherit;
-		transform: rotate(45deg); 
-		pointer-events: none; 
-	} */
-
 
 	.route .time h4:nth-child(n + 4) {
 		display: none;
