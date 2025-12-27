@@ -173,6 +173,9 @@ var all = {
 	// API request timeout in milliseconds
 	requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 10000,
 
+	// Logging configuration
+	logLevel: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+
 	// Cache TTL configuration
 	cache: {
 		realtimeTTL: parseInt(process.env.REALTIME_CACHE_TTL) || 5000,
