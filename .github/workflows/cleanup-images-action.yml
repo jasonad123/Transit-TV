@@ -77,17 +77,17 @@ jobs:
           delete-tags: .*-[a-f0-9]{7}$
           exclude-tags: ^(latest|beta|edge|rc|alpha|beta-.*|edge-.*|[0-9]+\.[0-9]+\.[0-9]+.*)$
 
-  cleanup-untagged:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
+  # cleanup-untagged:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     packages: write
 
-    steps:
-      - name: Delete untagged images
-        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
-        with:
-          dry-run: ${{ inputs.dry_run == true }}
-          delete-untagged: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
-          owner: ${{ github.repository_owner }}
+  #   steps:
+  #     - name: Delete untagged images
+  #       uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+  #       with:
+  #         dry-run: ${{ inputs.dry_run == true }}
+  #         delete-untagged: true
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         package: transit-tv
+  #         owner: ${{ github.repository_owner }}
