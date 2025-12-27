@@ -122,6 +122,7 @@ exports.nearby = async function (req, res) {
 			const maxAge = getCacheMaxAge(cached.freshness || 'fresh-schedule');
 			res.set({
 				'Cache-Control': `public, max-age=${maxAge}`,
+				//prettier-ignore
 				'Vary': 'Accept-Encoding',
 				'X-Cache': 'HIT',
 				'X-Cache-Freshness': cached.freshness || 'unknown'
@@ -137,6 +138,7 @@ exports.nearby = async function (req, res) {
 				// Use conservative short TTL for in-flight (no freshness info yet)
 				res.set({
 					'Cache-Control': 'public, max-age=3',
+					//prettier-ignore
 					'Vary': 'Accept-Encoding',
 					'X-Cache': 'HIT-INFLIGHT'
 				});
@@ -226,6 +228,7 @@ exports.nearby = async function (req, res) {
 
 		res.set({
 			'Cache-Control': `public, max-age=${maxAge}`,
+			//prettier-ignore
 			'Vary': 'Accept-Encoding',
 			'X-Cache': CACHE_ENABLED ? 'MISS' : 'DISABLED',
 			'X-Cache-Freshness': freshness

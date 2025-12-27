@@ -278,6 +278,15 @@
 	let overflowingDestinations = $state<Set<number>>(new Set());
 	let sharedResizeObserver: ResizeObserver | null = null;
 
+	// Route header overflow handling
+	let routeHeaderElement: HTMLElement | null = null;
+	let routeHeaderTextScale = $state(1);
+	let routeHeaderShouldWrap = $state(false);
+	let routeHeaderIconScale = $state(1);
+	let headerCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	let headerCheckTimeouts: Array<ReturnType<typeof setTimeout>> = [];
+	let headerCheckVersion = 0; // Track current check version to prevent race conditions
+
 	// Track dark mode state
 	let isDarkMode = $state(false);
 	let themeObserver: MutationObserver | null = null;
@@ -300,6 +309,12 @@
 		sharedResizeObserver = new ResizeObserver((entries) => {
 			entries.forEach((entry) => {
 				const element = entry.target as HTMLElement;
+
+				// Check if this is the route header element
+				if (element === routeHeaderElement) {
+					checkRouteHeaderOverflow(element);
+					return;
+				}
 
 				// Check if this is a destination element
 				const destIndex = Array.from(destinationElements.entries()).find(
@@ -338,6 +353,9 @@
 		destinationCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
 		destinationCheckTimeouts.clear();
 		if (alertCheckTimeout) clearTimeout(alertCheckTimeout);
+		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
+		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+		headerCheckTimeouts = [];
 	});
 
 	// Calculate relative luminance (0-1) from hex color
@@ -386,14 +404,24 @@
 	}
 
 	// Determine if we should show the route long name based on targeted conditions
-	// TODO: add logic to account for showLongName prop logic - needs to handle single character route short names
 
-	const routeShortTooShort = $derived((route.route_short_name?.length || 0) < 2);
+	const routeShortTooShort = $derived((route.route_short_name?.length || 0) < 3);
+
+	// Original test: show long name if boxed text or long name exists
+	// let shouldShowRouteLongName = $derived(
+	// 	showLongName &&
+	// 		!routeShortTooShort &&
+	// 		(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
+	// 		isRouteIconImage() &&
+	// 		!hasAdjacentText()
+	// );
+
+	// Test: using value route_name_redundancy to determine if we should show the route long name
 
 	let shouldShowRouteLongName = $derived(
 		showLongName &&
 			!routeShortTooShort &&
-			(!!route.route_display_short_name?.boxed_text || !!route.route_long_name) &&
+			!route.compact_display_short_name?.route_name_redundancy &&
 			isRouteIconImage() &&
 			!hasAdjacentText()
 	);
@@ -420,12 +448,6 @@
 		// ['bart-y', { alwaysUseDarkModeColor: true }],
 		// ['mta-subway-n', { alwaysUseDarkModeColor: true }],
 		// ['stm-metro', { alwaysUseDarkModeColor: true }],
-		// ['stm-metro-4', { alwaysUseDarkModeColor: true }],
-		// ['muni-cablecar', { alwaysUseDarkModeColor: true }],
-		// ['san-diego-trolley', { alwaysUseDarkModeColor: true }],
-		// ['septa-metro-badge-g', { alwaysUseDarkModeColor: true }],
-		// ['vehicle-rail-coradialint', { alwaysUseDarkModeColor: true }],
-		// ['pstafl-sunrunner-wordmark', { alwaysUseDarkModeColor: true }]
 		// Example: Always use light mode color (even in dark mode)
 		// ['another-logo', { alwaysUseLightModeColor: true }],
 		// Example: Always use a specific color
@@ -727,6 +749,99 @@
 		}, 150);
 	}
 
+	function checkRouteHeaderOverflow(headerElement: HTMLElement) {
+		if (!headerElement) return;
+
+		// Clear previous check cycle to prevent race conditions
+		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
+		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+		headerCheckTimeouts = [];
+
+		// Increment version to invalidate any in-flight checks
+		headerCheckVersion++;
+		const currentVersion = headerCheckVersion;
+
+		headerCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				// Verify we're still the current check
+				if (currentVersion !== headerCheckVersion) return;
+
+				const routeIconElement = headerElement.querySelector('.route-icon') as HTMLElement;
+				if (!routeIconElement) return;
+
+				// Get the available width (h2 container width minus padding)
+				const containerWidth = headerElement.clientWidth;
+				const iconWrapperWidth = routeIconElement.scrollWidth;
+
+				// Check if content overflows
+				if (iconWrapperWidth <= containerWidth) {
+					// No overflow - reset all scaling
+					routeHeaderTextScale = 1;
+					routeHeaderShouldWrap = false;
+					routeHeaderIconScale = 1;
+					return;
+				}
+
+				// Strategy 1: Scale text only (within the route-icon span)
+				// Find the text span element (second child)
+				const textSpan = routeIconElement.querySelector(
+					'span:not(.route-long-name)'
+				) as HTMLElement;
+				if (textSpan) {
+					// Try scaling text from 1.0 down to 0.65
+					const textScale = Math.max(0.65, containerWidth / iconWrapperWidth);
+					routeHeaderTextScale = textScale;
+
+					// Re-measure after text scaling (need to wait for next frame)
+					const timeout1 = setTimeout(() => {
+						requestAnimationFrame(() => {
+							// Verify we're still the current check and element still exists
+							if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected) return;
+
+							const newWidth = routeIconElement.scrollWidth;
+							if (newWidth <= containerWidth) {
+								// Text scaling worked!
+								routeHeaderShouldWrap = false;
+								routeHeaderIconScale = 1;
+								return;
+							}
+
+							// Strategy 2: Allow text to wrap
+							routeHeaderTextScale = 1; // Reset text scale
+							routeHeaderShouldWrap = true;
+
+							const timeout2 = setTimeout(() => {
+								requestAnimationFrame(() => {
+									// Verify we're still the current check and element still exists
+									if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected)
+										return;
+
+									const wrappedWidth = routeIconElement.scrollWidth;
+									if (wrappedWidth <= containerWidth) {
+										// Wrapping worked!
+										routeHeaderIconScale = 1;
+										return;
+									}
+
+									// Strategy 3: Scale entire icon container (icons + text)
+									routeHeaderShouldWrap = false; // Reset wrap
+									const iconScale = Math.max(0.65, (containerWidth - 4) / iconWrapperWidth);
+									routeHeaderIconScale = iconScale;
+								});
+							}, 10);
+							headerCheckTimeouts.push(timeout2);
+						});
+					}, 10);
+					headerCheckTimeouts.push(timeout1);
+				} else {
+					// No text span found - just scale the whole icon
+					const iconScale = Math.max(0.65, (containerWidth - 4) / iconWrapperWidth);
+					routeHeaderIconScale = iconScale;
+				}
+			});
+		}, 150);
+	}
+
 	function bindDestinationElement(node: HTMLElement, index: number) {
 		destinationElements.set(index, node);
 
@@ -793,6 +908,28 @@
 		};
 	}
 
+	function bindRouteHeaderElement(node: HTMLElement) {
+		routeHeaderElement = node;
+
+		// Wait for layout to settle before checking overflow
+		setTimeout(() => {
+			checkRouteHeaderOverflow(node);
+		}, 100);
+
+		if (sharedResizeObserver) {
+			sharedResizeObserver.observe(node);
+		}
+
+		return {
+			destroy() {
+				if (sharedResizeObserver) {
+					sharedResizeObserver.unobserve(node);
+				}
+				routeHeaderElement = null;
+			}
+		};
+	}
+
 	// Group itineraries by parent station
 	interface ItineraryGroup {
 		stopId: string;
@@ -843,13 +980,24 @@
 	class:light-in-dark={isDarkMode && hasLightColor}
 	style="color: {routeDisplayColor}"
 >
-	<h2>
-		<span class="route-icon">
+	<h2 use:bindRouteHeaderElement>
+		<span
+			class="route-icon"
+			class:icon-scaled={routeHeaderIconScale !== 1}
+			class:allow-wrap={routeHeaderShouldWrap}
+			style:transform={routeHeaderIconScale !== 1 ? `scale(${routeHeaderIconScale})` : ''}
+			style:transform-origin="left center"
+		>
 			{#if route.route_display_short_name?.elements}
 				{#if getImageUrl(0)}
 					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
 				{/if}
 				<span
+					class="route-icon-text"
+					class:text-scaled={routeHeaderTextScale !== 1}
+					class:text-wrapped={routeHeaderShouldWrap}
+					style:transform={routeHeaderTextScale !== 1 ? `scale(${routeHeaderTextScale})` : ''}
+					style:transform-origin="left center"
 					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
 				>
 				{#if getImageUrl(2)}
@@ -888,7 +1036,9 @@
 						<div class="time">
 							{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
 								<h4>
-									<span>{getMinutesUntil(item.departure_time)}</span>
+									<span class:cancelled={item.is_cancelled}
+										>{getMinutesUntil(item.departure_time)}</span
+									>
 									{#if item.is_real_time}
 										<i class="realtime"></i>
 									{/if}
@@ -961,7 +1111,7 @@
 	}
 
 	.route > div {
-		padding: 0.5em 0.25em 0.5em;
+		padding: 0.25em 0.25em 0.5em;
 		border-radius: 0.5em;
 	}
 
@@ -972,7 +1122,7 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
-		padding: 0 0.25em 0;
+		/* padding: 0 0.25em 0; */
 	}
 
 	.route h2 {
@@ -998,17 +1148,32 @@
 		gap: 0.1em;
 	}
 
+	.route h2 .route-icon.allow-wrap {
+		white-space: normal;
+		flex-wrap: wrap;
+	}
+
+	.route h2 .route-icon-text {
+		display: inline-block;
+	}
+
+	.route h2 .route-icon-text.text-wrapped {
+		white-space: normal;
+		word-break: break-word;
+		max-width: 15em;
+	}
+
 	.route h2 .route-long-name {
-		font-size: 0.45em;
+		font-size: 0.4em;
 		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: 10em;
+		max-width: 12em;
 		margin-left: 0;
 		align-self: center;
 		padding: 0.25em 0.35em 0.1em;
-		border-radius: 1em;
+		border-radius: 0.5em;
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 		line-height: 1.1;
 		display: flex;
@@ -1169,7 +1334,7 @@
 
 	.route h3 {
 		font-size: 1.75em;
-		padding: 0.4em 0.35em 0.3em 0.35em;
+		padding: 0.4em 0.35em 0.15em 0.35em;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		overflow: hidden;
 		position: relative;
@@ -1296,6 +1461,13 @@
 		padding: 0.4em 0;
 		text-align: center;
 		box-sizing: border-box;
+	}
+
+	.route .time h4 span.cancelled {
+		/* position: relative;
+    	display: inline;  */
+		text-decoration: line-through;
+		opacity: 0.8;
 	}
 
 	.route .time h4:nth-child(n + 4) {
