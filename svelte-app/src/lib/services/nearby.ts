@@ -33,7 +33,7 @@ export interface Itinerary {
 		global_stop_id?: string;
 		parent_station?: {
 			global_stop_id?: string;
-		}
+		};
 		parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;

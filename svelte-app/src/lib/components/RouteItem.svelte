@@ -784,7 +784,9 @@
 
 				// Strategy 1: Scale text only (within the route-icon span)
 				// Find the text span element (second child)
-				const textSpan = routeIconElement.querySelector('span:not(.route-long-name)') as HTMLElement;
+				const textSpan = routeIconElement.querySelector(
+					'span:not(.route-long-name)'
+				) as HTMLElement;
 				if (textSpan) {
 					// Try scaling text from 1.0 down to 0.65
 					const textScale = Math.max(0.65, containerWidth / iconWrapperWidth);
@@ -811,7 +813,8 @@
 							const timeout2 = setTimeout(() => {
 								requestAnimationFrame(() => {
 									// Verify we're still the current check and element still exists
-									if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected) return;
+									if (currentVersion !== headerCheckVersion || !routeIconElement.isConnected)
+										return;
 
 									const wrappedWidth = routeIconElement.scrollWidth;
 									if (wrappedWidth <= containerWidth) {
@@ -1033,7 +1036,9 @@
 						<div class="time">
 							{#each dir.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [] as item}
 								<h4>
-									<span class:cancelled={item.is_cancelled}>{getMinutesUntil(item.departure_time)}</span>
+									<span class:cancelled={item.is_cancelled}
+										>{getMinutesUntil(item.departure_time)}</span
+									>
 									{#if item.is_real_time}
 										<i class="realtime"></i>
 									{/if}
@@ -1463,7 +1468,7 @@
     	display: inline;  */
 		text-decoration: line-through;
 		opacity: 0.8;
-		}
+	}
 
 	.route .time h4:nth-child(n + 4) {
 		display: none;
@@ -1578,7 +1583,6 @@
 	.route.light-in-dark .realtime::after {
 		background-image: url('/assets/images/real_time_wave_big@2x.png');
 	}
-
 
 	.route .inactive {
 		display: block;

@@ -83,6 +83,7 @@ exports.getUnattendedConfig = function (req, res) {
 		maxDistance: config.unattendedSetup.maxDistance || 500,
 		customLogo: config.unattendedSetup.customLogo,
 		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
-		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus
+		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus,
+		showRouteLongName: config.unattendedSetup.showRouteLongName
 	});
 };

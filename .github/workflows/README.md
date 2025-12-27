@@ -17,7 +17,7 @@ Builds and publishes multi-architecture (amd64, arm64) Docker images to GitHub C
 
 ### cleanup-images.yml
 
-Cleans up old Docker images to manage storage costs.
+Cleans up old Docker images to manage storage costs using bash/jq scripts.
 
 **Schedule**: Weekly on Sunday at 2 AM UTC
 
@@ -28,6 +28,33 @@ Cleans up old Docker images to manage storage costs.
 - Untagged manifests: Deleted
 
 **Manual Run**: Can be triggered manually with dry run option
+
+**Status**: Has experienced persistent JSON parsing errors. Consider using cleanup-images-action.yml instead.
+
+### cleanup-images-action.yml
+
+Reliable Docker image cleanup using the proven dataaxiom/ghcr-cleanup-action (v1.0.16).
+
+**Schedule**: Weekly on Sunday at 2 AM UTC
+
+**Features**:
+
+- Handles multi-architecture images and BuildKit attestations correctly
+- Regex-based tag filtering
+- Enhanced error handling for 404s and permission issues
+- Parallel job execution for beta, edge, branch-test, and untagged cleanup
+
+**Retention Policy**:
+
+- Beta builds (beta-*): Keep last 3
+- Edge builds (edge-*): Keep last 2
+- Branch-test builds: Delete all
+- Stable releases (semantic versions): Always retained
+- Untagged manifests: Deleted
+
+**Manual Run**: Can be triggered manually with dry_run option (defaults to true)
+
+**Important**: Requires Admin role access to the transit-tv package in GitHub Settings.
 
 ### cleanup-untagged.yml
 

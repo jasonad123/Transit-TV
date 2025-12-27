@@ -1,0 +1,93 @@
+name: Cleanup Old Docker Images (Action-based)
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview deletions without executing'
+        type: boolean
+        default: true
+
+env:
+  KEEP_BETA_COUNT: 3
+  KEEP_EDGE_COUNT: 2
+
+# Prevent parallel execution on same package (per action documentation)
+concurrency:
+  group: ghcr-cleanup-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup-beta:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete old beta images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          keep-n-tagged: ${{ env.KEEP_BETA_COUNT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+          use-regex: true
+          # Delete images with tags starting with "beta-" but exclude floating tags
+          delete-tags: ^beta-.*
+          exclude-tags: ^(latest|beta|edge|rc|alpha|[0-9]+\.[0-9]+\.[0-9]+.*)$
+
+  cleanup-edge:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete old edge images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          keep-n-tagged: ${{ env.KEEP_EDGE_COUNT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+          use-regex: true
+          # Delete images with tags starting with "edge-" but exclude floating tag
+          delete-tags: ^edge-.*
+          exclude-tags: ^(latest|beta|edge|rc|alpha|[0-9]+\.[0-9]+\.[0-9]+.*)$
+
+  cleanup-branch-test:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete branch-test images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          keep-n-tagged: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+          use-regex: true
+          # Delete all branch-test images (tags ending with 7-char SHA but not beta/edge)
+          delete-tags: .*-[a-f0-9]{7}$
+          exclude-tags: ^(latest|beta|edge|rc|alpha|beta-.*|edge-.*|[0-9]+\.[0-9]+\.[0-9]+.*)$
+
+  cleanup-untagged:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete untagged images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          delete-untagged: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
