@@ -81,7 +81,14 @@ exports.shutdown = function (req, res) {
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
 
 	if (!isLocalhost && process.env.NODE_ENV === 'production') {
-		console.warn('Shutdown attempt from non-localhost IP:', clientIp);
+		req.log.warn(
+			{
+				action: 'shutdown',
+				requestedFrom: clientIp,
+				blocked: true
+			},
+			'Shutdown attempt from non-localhost IP'
+		);
 		return res.status(403).json({
 			error: 'Shutdown can only be triggered from localhost in production'
 		});
@@ -95,7 +102,7 @@ exports.shutdown = function (req, res) {
 		});
 	}
 
-	console.log('Shutdown requested from IP:', clientIp);
+	req.log.info({ action: 'shutdown', requestedFrom: clientIp }, 'Shutdown initiated');
 
 	// Send response before shutting down
 	res.json({
@@ -106,9 +113,10 @@ exports.shutdown = function (req, res) {
 
 	// Shutdown after response is sent
 	setTimeout(function () {
+		var logger = require('../../config/logger');
 		shutdown.gracefulShutdown(function (err) {
 			if (err) {
-				console.error('Error during graceful shutdown:', err);
+				logger.error({ err: err }, 'Error during graceful shutdown');
 			}
 		});
 	}, 100);
@@ -121,7 +129,14 @@ exports.start = function (req, res) {
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
 
 	if (!isLocalhost && process.env.NODE_ENV === 'production') {
-		console.warn('Start attempt from non-localhost IP:', clientIp);
+		req.log.warn(
+			{
+				action: 'start',
+				requestedFrom: clientIp,
+				blocked: true
+			},
+			'Start attempt from non-localhost IP'
+		);
 		return res.status(403).json({
 			error: 'Server start can only be triggered from localhost in production'
 		});
@@ -134,14 +149,15 @@ exports.start = function (req, res) {
 		});
 	}
 
-	console.log('Server start requested from IP:', clientIp);
+	req.log.info({ action: 'start', requestedFrom: clientIp }, 'Server start initiated');
 
 	serverState.isRestarting = true;
 
+	var logger = require('../../config/logger');
 	shutdown.restartServer(function (err) {
 		serverState.isRestarting = false;
 		if (err) {
-			console.error('Error restarting server:', err);
+			logger.error({ err: err }, 'Error restarting server');
 		}
 	});
 
@@ -159,13 +175,20 @@ exports.restart = function (req, res) {
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
 
 	if (!isLocalhost && process.env.NODE_ENV === 'production') {
-		console.warn('Restart attempt from non-localhost IP:', clientIp);
+		req.log.warn(
+			{
+				action: 'restart',
+				requestedFrom: clientIp,
+				blocked: true
+			},
+			'Restart attempt from non-localhost IP'
+		);
 		return res.status(403).json({
 			error: 'Server restart can only be triggered from localhost in production'
 		});
 	}
 
-	console.log('Server restart requested from IP:', clientIp);
+	req.log.info({ action: 'restart', requestedFrom: clientIp }, 'Server restart initiated');
 
 	serverState.isRestarting = true;
 
@@ -178,16 +201,17 @@ exports.restart = function (req, res) {
 	// Pause then resume after response is sent
 	setTimeout(function () {
 		// Set to shutdown state
+		var logger = require('../../config/logger');
 		serverState.isShutdown = true;
 		serverState.shutdownTime = new Date().toISOString();
-		console.log('Server paused for restart...');
+		logger.info('Server paused for restart');
 
 		// Wait 2 seconds before resuming
 		setTimeout(function () {
 			serverState.isShutdown = false;
 			serverState.shutdownTime = null;
 			serverState.isRestarting = false;
-			console.log('Server restart completed successfully');
+			logger.info('Server restart completed successfully');
 		}, 2000);
 	}, 100);
 };

@@ -39,14 +39,22 @@ exports.show = async function (req, res) {
 		});
 
 		if (!response.ok) {
-			console.error('Error response from image API:', response.status);
-			return handleError(res, 'Image not found or unavailable', response.status);
+			req.log.error(
+				{
+					api: 'image',
+					status: response.status,
+					url: url,
+					imageName: imageName
+				},
+				'Error response from image API'
+			);
+			return handleError(req, res, 'Image not found or unavailable', response.status);
 		}
 
 		let data = await response.text();
 
 		if (!data) {
-			return handleError(res, 'Empty response from image server');
+			return handleError(req, res, 'Empty response from image server');
 		}
 
 		try {
@@ -54,8 +62,8 @@ exports.show = async function (req, res) {
 				.replace(new RegExp(`#010101`, 'gi'), `#${primaryColor}`)
 				.replace(new RegExp(`#EFEFEF`, 'gi'), `#${secondaryColor}`);
 		} catch (err) {
-			console.error('Error processing image data:', err);
-			return handleError(res, 'Failed to process image data');
+			req.log.error({ err: err, imageName: imageName }, 'Error processing image data');
+			return handleError(req, res, 'Failed to process image data');
 		}
 
 		// Set content type for SVG
@@ -65,12 +73,12 @@ exports.show = async function (req, res) {
 			.set('Cache-Control', 'public, max-age=86400')
 			.send(data);
 	} catch (err) {
-		console.error('Error fetching image:', err);
-		return handleError(res, 'Failed to fetch image');
+		req.log.error({ err: err, url: url, imageName: imageName }, 'Error fetching image');
+		return handleError(req, res, 'Failed to fetch image');
 	}
 };
 
-function handleError(res, err, statusCode) {
-	console.error('Image API error:', err);
+function handleError(req, res, err, statusCode) {
+	req.log.error({ error: err, statusCode: statusCode || 500 }, 'Image API error');
 	return res.status(statusCode || 500).json({ error: err });
 }

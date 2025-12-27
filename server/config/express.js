@@ -92,57 +92,76 @@ module.exports = function (app) {
 	);
 
 	// HTTP request logging with pino
-	app.use(
-		pinoHttp({
-			logger: logger,
+	// Note: Create pino-http's own logger instance to avoid transport worker thread issues
+	var pinoHttpOptions = {
+		// Use base config without transport for compatibility
+		level: logger.baseConfig.level,
+		timestamp: logger.baseConfig.timestamp,
+		base: logger.baseConfig.base,
+		redact: logger.baseConfig.redact,
+		serializers: logger.baseConfig.serializers,
 
-			// Custom log levels based on response status
-			customLogLevel: function (req, res, err) {
-				if (res.statusCode >= 500 || err) return 'error';
-				if (res.statusCode >= 400) return 'warn';
-				if (res.statusCode >= 300) return 'silent'; // Don't log redirects
-				return 'info';
-			},
+		// Custom log levels based on response status
+		customLogLevel: function (req, res, err) {
+			if (res.statusCode >= 500 || err) return 'error';
+			if (res.statusCode >= 400) return 'warn';
+			if (res.statusCode >= 300) return 'silent'; // Don't log redirects
+			return 'info';
+		},
 
-			// Apache-style message format inside JSON
-			customSuccessMessage: function (req, res) {
-				return req.method + ' ' + req.url + ' ' + res.statusCode + ' ' + res.responseTime + 'ms';
-			},
+		// Apache-style message format inside JSON
+		customSuccessMessage: function (req, res) {
+			var duration = res.responseTime !== undefined ? res.responseTime + 'ms' : '';
+			return req.method + ' ' + req.url + ' ' + res.statusCode + (duration ? ' ' + duration : '');
+		},
 
-			customErrorMessage: function (req, res, err) {
+		customErrorMessage: function (req, res, err) {
+			var duration = res.responseTime !== undefined ? res.responseTime + 'ms' : '';
+			return req.method + ' ' + req.url + ' ' + res.statusCode + (duration ? ' ' + duration : '') + ' - ' + (err.message || 'Error');
+		},
+
+		// Custom attribute keys for Railway filtering
+		customAttributeKeys: {
+			req: 'request',
+			res: 'response',
+			err: 'error',
+			responseTime: 'duration_ms'
+		},
+
+		// Add custom properties to each log
+		customProps: function (req, res) {
+			return {
+				userAgent: req.headers['user-agent'],
+				ip: req.ip || req.connection.remoteAddress
+			};
+		},
+
+		// Skip logging for health checks and static assets
+		autoLogging: {
+			ignore: function (req) {
 				return (
-					req.method + ' ' + req.url + ' ' + res.statusCode + ' - ' + (err.message || 'Error')
+					req.path === '/health' ||
+					req.path === '/favicon.ico' ||
+					req.path.startsWith('/_app/immutable/')
 				);
-			},
-
-			// Custom attribute keys for Railway filtering
-			customAttributeKeys: {
-				req: 'request',
-				res: 'response',
-				err: 'error',
-				responseTime: 'duration_ms'
-			},
-
-			// Add custom properties to each log
-			customProps: function (req, res) {
-				return {
-					userAgent: req.headers['user-agent'],
-					ip: req.ip || req.connection.remoteAddress
-				};
-			},
-
-			// Skip logging for health checks and static assets
-			autoLogging: {
-				ignore: function (req) {
-					return (
-						req.path === '/health' ||
-						req.path === '/favicon.ico' ||
-						req.path.startsWith('/_app/immutable/')
-					);
-				}
 			}
-		})
-	);
+		}
+	};
+
+	// Add pino-pretty transport for development
+	if (logger.isDevelopment) {
+		pinoHttpOptions.transport = {
+			target: 'pino-pretty',
+			options: {
+				colorize: true,
+				translateTime: 'SYS:standard',
+				ignore: 'pid,hostname',
+				levelFirst: true
+			}
+		};
+	}
+
+	app.use(pinoHttp(pinoHttpOptions));
 
 	if (env !== 'production') {
 		app.use(errorHandler());

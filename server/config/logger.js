@@ -61,7 +61,19 @@ if (isDevelopment) {
 	};
 }
 
-// Create and export logger instance
+// Create logger instance
 const logger = pino(loggerConfig);
 
+// Export both the logger and the base config (without transport) for pino-http
+// pino-http needs a non-transported logger to work properly
+const baseConfig = {
+	level: loggerConfig.level,
+	timestamp: loggerConfig.timestamp,
+	base: loggerConfig.base,
+	redact: loggerConfig.redact,
+	serializers: loggerConfig.serializers
+};
+
 module.exports = logger;
+module.exports.baseConfig = baseConfig;
+module.exports.isDevelopment = isDevelopment;
