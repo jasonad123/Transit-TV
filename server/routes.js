@@ -3,6 +3,7 @@
 var errors = require('./components/errors');
 var path = require('path');
 var config = require('./config/environment');
+var logger = require('./config/logger');
 var packageJson = require('../package.json');
 
 module.exports = function (app) {
@@ -38,7 +39,7 @@ module.exports = function (app) {
 	var buildPath = path.join(config.root, 'svelte-app/build');
 	var handlerPath = buildPath + '/handler.js';
 
-	console.log('Loading SvelteKit handler from:', buildPath);
+	logger.info({ path: buildPath }, 'Loading SvelteKit handler');
 
 	// Load handler once and cache it
 	var handlerCache = null;
@@ -53,7 +54,10 @@ module.exports = function (app) {
 
 		// If previous load attempt failed, return error
 		if (handlerLoadError) {
-			console.error('SvelteKit handler not available:', handlerLoadError.message);
+			logger.error(
+				{ err: handlerLoadError },
+				'SvelteKit handler not available'
+			);
 			return res.status(500).send({
 				error: 'Application not available',
 				message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'
@@ -63,14 +67,15 @@ module.exports = function (app) {
 		// Load handler on first request
 		import(handlerPath)
 			.then(function (module) {
-				console.log('SvelteKit handler loaded successfully');
+				logger.info('SvelteKit handler loaded successfully');
 				handlerCache = module.handler;
 				handlerCache(req, res, next);
 			})
 			.catch(function (err) {
-				console.error('Failed to load SvelteKit handler:', err.message);
-				console.error('Make sure to build the SvelteKit app first:');
-				console.error('  cd svelte-app && pnpm build');
+				logger.error(
+					{ err: err },
+					'Failed to load SvelteKit handler - run: cd svelte-app && pnpm build'
+				);
 				handlerLoadError = err;
 				res.status(500).send({
 					error: 'Application not available',
