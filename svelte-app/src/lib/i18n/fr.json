@@ -17,7 +17,8 @@
 			"showQRCode": "Afficher code QR deeplink Transit",
 			"maxDistance": "Rayon de recherche :",
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
-			"filterRedundantTerminus": "Masquer le terminus à proximité"
+			"filterRedundantTerminus": "Masquer le terminus à proximité",
+			"showRouteLongName": "Afficher les noms et couleurs de ligne"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -56,6 +57,9 @@
 		"stopManagement": {
 			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d’arrêt en une seule carte",
 			"filterTerminushelpText": "Aux stations terminus, afficher uniquement les directions opposées ou sortantes"
+		},
+		"routeDisplay": {
+			"showRouteLongNameHelpText": "Afficher les noms de couleur de ligne (ex: 'Ligne Rouge') à côté des icônes de ligne lorsqu'il n'y a pas de texte adjacent."
 		},
 		"buttons": {
 			"cancel": "Annuler",

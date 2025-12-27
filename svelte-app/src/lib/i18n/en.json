@@ -17,7 +17,8 @@
 			"showQRCode": "Show Transit deeplink QR Code",
 			"maxDistance": "Search Radius:",
 			"groupItinerariesByStop": "Group destinations with shared stop names?",
-			"filterRedundantTerminus": "Hide nearby terminus"
+			"filterRedundantTerminus": "Hide nearby terminus",
+			"showRouteLongName": "Show line colours and names"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -57,6 +58,9 @@
 			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card",
 			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
 		},
+		"routeDisplay": {
+			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name."
+		},
 		"buttons": {
 			"cancel": "Cancel",
 			"save": "Save",
@@ -91,7 +95,7 @@
 			"geolocationError": "An unknown error occurred"
 		},
 		"credits": {
-			"version": "Transit TV version <a href=\"https://github.com/jasonad123/Transit-TV/releases/tag/v1.3.0\" target=\"_blank\" rel=\"noopener\">1.3.0</a>",
+			"version": "Transit TV version <a href=\"https://github.com/jasonad123/Transit-TV/releases\" target=\"_blank\" rel=\"noopener\">1.3.0</a>",
 			"title": "Credits",
 			"madeWith": "Made with <iconify-icon icon=\"ix:heart-filled\" style=\"color: #e30022; vertical-align: -0.1em;\"></iconify-icon> in Washington, DC by Jason A </br> Originally developed by <a href=\"https://transitapp.com/\" target=\"_blank\" rel=\"noopener\">Transit</a> in <iconify-icon icon=\"fluent-emoji-flat:maple-leaf\" style=\"color: #b53054; vertical-align: -0.2em;\"></iconify-icon> Montreal, QC",
 			"links": "<a href=\"https://github.com/jasonad123/Transit-TV\" target=\"_blank\" rel=\"noopener\">View on GitHub</a> &vert; Powered by the Transit API"

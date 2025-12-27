@@ -11,7 +11,15 @@ export interface Route {
 	route_text_color: string;
 	route_display_short_name?: {
 		elements: string[];
+		route_name_redundancy?: boolean;
+		boxed_text?: string;
 	};
+	compact_display_short_name?: {
+		elements: string[];
+		route_name_redundancy?: boolean;
+		boxed_text?: string;
+	};
+	sorting_key?: string;
 	tts_short_name?: string;
 	branch_code?: string;
 	route_network_name?: string;
@@ -23,6 +31,9 @@ export interface Itinerary {
 	closest_stop?: {
 		stop_name: string;
 		global_stop_id?: string;
+		parent_station?: {
+			global_stop_id?: string;
+		};
 		parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;
@@ -32,6 +43,8 @@ export interface Itinerary {
 export interface ScheduleItem {
 	departure_time: number;
 	is_real_time?: boolean;
+	is_cancelled?: boolean;
+	trip_search_key?: string;
 	is_last?: boolean;
 }
 

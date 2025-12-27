@@ -51,7 +51,7 @@
 	let serverActionInProgress = $state(false);
 
 	// App version state
-	let appVersion = $state<string>('1.3.0'); // Fallback version
+	let appVersion = $state<string>('1.3.1'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -324,7 +324,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.0';
+				appVersion = healthData.version || '1.3.1';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
@@ -392,6 +392,19 @@
 
 	function openConfig() {
 		config.update((c) => ({ ...c, isEditing: true }));
+	}
+
+	function closeConfig() {
+		// Cancel any changes by reloading or just hiding?
+		// Existing cancel button just hides. Save button saves then hides.
+		// Clicking outside usually implies cancel/dismiss.
+		config.update((c) => ({ ...c, isEditing: false }));
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if ($config.isEditing && e.key === 'Escape') {
+			closeConfig();
+		}
 	}
 
 	async function validateLocation(latitude: number, longitude: number) {
@@ -574,6 +587,8 @@
 	<link rel="manifest" href="/assets/site.webmanifest" />
 </svelte:head>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <div class="container" style="--bg-header: {$config.headerColor}">
 	<header>
 		<table cellpadding="0" cellspacing="0" border="0">
@@ -615,383 +630,395 @@
 	</header>
 
 	{#if $config.isEditing}
-		<div class="config-modal">
-			<h2>{$_('config.title')}</h2>
-			<form onsubmit={(e) => e.preventDefault()}>
-				<label>
-					{$_('config.fields.title')}
-					<input type="text" bind:value={$config.title} />
-				</label>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={closeConfig}>
+			<div class="config-modal" onclick={(e) => e.stopPropagation()}>
+				<h2>{$_('config.title')}</h2>
+				<form onsubmit={(e) => e.preventDefault()}>
+					<label>
+						{$_('config.fields.title')}
+						<input type="text" bind:value={$config.title} />
+					</label>
 
-				<label>
-					{$_('config.fields.location')}
-					<div class="location-input-group">
-						<input
-							type="text"
-							value={formatCoordinatesForDisplay($config.latLng.latitude, $config.latLng.longitude)}
-							oninput={(e) => {
-								config.setLatLngStr(e.currentTarget.value);
-								validationMessage = null;
-								validationSuccess = null;
-							}}
-							onblur={handleLocationInputBlur}
-							placeholder="latitude, longitude"
-						/>
-						<button
-							type="button"
-							class="btn-location"
-							onclick={useCurrentLocation}
-							disabled={gettingLocation}
-							title={gettingLocation ? 'Getting location...' : 'Use current location'}
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-								<path
-									fill="currentColor"
-									d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
-								/>
-							</svg>
-						</button>
-					</div>
-					{#if locationError}
-						<span class="location-error">{locationError}</span>
-					{/if}
-					{#if validatingLocation}
-						<span class="location-validating">{$_('config.location.validating')}</span>
-					{:else if validationMessage}
-						<span
-							class="location-validation"
-							class:success={validationSuccess}
-							class:error={!validationSuccess}
-						>
-							{validationMessage}
-						</span>
-					{/if}
-				</label>
-
-				<label>
-					{$_('config.fields.timeFormat')}
-					<select bind:value={$config.timeFormat}>
-						<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
-						<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
-						<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
-					</select>
-				</label>
-
-				<label>
-					{$_('config.fields.language')}
-					<select bind:value={$config.language}>
-						<option value="en">{$_('config.languages.english')}</option>
-						<option value="fr">{$_('config.languages.french')}</option>
-						<option value="es">{$_('config.languages.spanish')}</option>
-						<option value="de">{$_('config.languages.german')}</option>
-					</select>
-				</label>
-
-				<label>
-					{$_('config.fields.maxDistance')}
-					<div class="slider-container">
-						<input
-							type="range"
-							min="250"
-							max="1500"
-							step="250"
-							bind:value={$config.maxDistance}
-							class="distance-slider"
-							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-						/>
-						<div class="slider-labels">
-							<span>{$config.maxDistance}m</span>
+					<label>
+						{$_('config.fields.location')}
+						<div class="location-input-group">
+							<input
+								type="text"
+								value={formatCoordinatesForDisplay(
+									$config.latLng.latitude,
+									$config.latLng.longitude
+								)}
+								oninput={(e) => {
+									config.setLatLngStr(e.currentTarget.value);
+									validationMessage = null;
+									validationSuccess = null;
+								}}
+								onblur={handleLocationInputBlur}
+								placeholder="latitude, longitude"
+							/>
+							<button
+								type="button"
+								class="btn-location"
+								onclick={useCurrentLocation}
+								disabled={gettingLocation}
+								title={gettingLocation ? 'Getting location...' : 'Use current location'}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+									<path
+										fill="currentColor"
+										d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
+									/>
+								</svg>
+							</button>
 						</div>
-					</div>
-				</label>
+						{#if locationError}
+							<span class="location-error">{locationError}</span>
+						{/if}
+						{#if validatingLocation}
+							<span class="location-validating">{$_('config.location.validating')}</span>
+						{:else if validationMessage}
+							<span
+								class="location-validation"
+								class:success={validationSuccess}
+								class:error={!validationSuccess}
+							>
+								{validationMessage}
+							</span>
+						{/if}
+					</label>
 
-				<label>
-					{$_('config.fields.columns')}
-					<div class="button-group">
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 'auto'}
-							onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-						>
-							{$_('config.columns.auto')}
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 1}
-							onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-						>
-							1
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 2}
-							onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-						>
-							2
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 3}
-							onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-						>
-							3
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 4}
-							onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-						>
-							4
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.columns === 5}
-							onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-						>
-							5
-						</button>
-					</div>
-				</label>
+					<label>
+						{$_('config.fields.timeFormat')}
+						<select bind:value={$config.timeFormat}>
+							<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
+							<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
+							<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
+						</select>
+					</label>
 
-				<label>
-					{$_('config.fields.theme')}
-					<div class="button-group">
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.theme === 'light'}
-							onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
-						>
-							{$_('config.theme.light')}
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.theme === 'auto'}
-							onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
-						>
-							{$_('config.theme.auto')}
-						</button>
-						<button
-							type="button"
-							class="btn-option"
-							class:active={$config.theme === 'dark'}
-							onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
-						>
-							{$_('config.theme.dark')}
-						</button>
-					</div>
-				</label>
+					<label>
+						{$_('config.fields.language')}
+						<select bind:value={$config.language}>
+							<option value="en">{$_('config.languages.english')}</option>
+							<option value="fr">{$_('config.languages.french')}</option>
+							<option value="es">{$_('config.languages.spanish')}</option>
+							<option value="de">{$_('config.languages.german')}</option>
+						</select>
+					</label>
 
-				<label>
-					{$_('config.fields.headerColor')}
-					<div style="display: flex; gap: 0.5em; align-items: center;">
-						<input type="color" bind:value={$config.headerColor} />
-						<button
-							type="button"
-							class="btn-reset"
-							onclick={() => {
-								const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-								config.update((c) => ({ ...c, headerColor: defaultColor }));
-							}}
-							title={$_('config.buttons.resetToDefault')}
-						>
-							{$_('config.buttons.reset')}
-						</button>
-					</div>
-				</label>
+					<label>
+						{$_('config.fields.maxDistance')}
+						<div class="slider-container">
+							<input
+								type="range"
+								min="250"
+								max="1500"
+								step="250"
+								bind:value={$config.maxDistance}
+								class="distance-slider"
+								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+							/>
+							<div class="slider-labels">
+								<span>{$config.maxDistance}m</span>
+							</div>
+						</div>
+					</label>
 
-				<label>
-					{$_('config.fields.customLogo')}
-					<input
-						type="text"
-						bind:value={$config.customLogo}
-						placeholder="https://example.com/logo.png or /assets/images/logo.png"
-					/>
-					<small class="help-text">{$_('config.customLogo.helpText')}</small>
-					{#if $config.customLogo}
-						<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
+					<label>
+						{$_('config.fields.columns')}
+						<div class="button-group">
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 'auto'}
+								onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
+							>
+								{$_('config.columns.auto')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 1}
+								onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
+							>
+								1
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 2}
+								onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
+							>
+								2
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 3}
+								onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
+							>
+								3
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 4}
+								onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
+							>
+								4
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.columns === 5}
+								onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
+							>
+								5
+							</button>
+						</div>
+					</label>
+
+					<label>
+						{$_('config.fields.theme')}
+						<div class="button-group">
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.theme === 'light'}
+								onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
+							>
+								{$_('config.theme.light')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.theme === 'auto'}
+								onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
+							>
+								{$_('config.theme.auto')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.theme === 'dark'}
+								onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
+							>
+								{$_('config.theme.dark')}
+							</button>
+						</div>
+					</label>
+
+					<label>
+						{$_('config.fields.headerColor')}
+						<div style="display: flex; gap: 0.5em; align-items: center;">
+							<input type="color" bind:value={$config.headerColor} />
 							<button
 								type="button"
 								class="btn-reset"
-								onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
+								onclick={() => {
+									const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
+									config.update((c) => ({ ...c, headerColor: defaultColor }));
+								}}
+								title={$_('config.buttons.resetToDefault')}
 							>
-								{$_('config.customLogo.clear')}
+								{$_('config.buttons.reset')}
 							</button>
 						</div>
-						<div class="logo-preview">
-							<img
-								src={$config.customLogo}
-								alt="Logo preview"
-								onerror={(e) => {
-									const parent = (e.currentTarget as HTMLImageElement).parentElement;
-									if (parent) {
-										parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
-									}
-								}}
-							/>
-						</div>
-					{/if}
-				</label>
-
-				<div class="toggle-container">
-					<label class="toggle-label">
-						<span>{$_('config.fields.showQRCode')} </span>
-						<label class="toggle-switch">
-							<input type="checkbox" bind:checked={$config.showQRCode} />
-							<span class="toggle-slider"></span>
-						</label>
 					</label>
-					<small class="help-text">{$_('config.qrCode.helpText')}</small>
-				</div>
 
-				<div class="toggle-container">
-					<label class="toggle-label">
-						<span>{$_('config.fields.groupItinerariesByStop')}</span>
-						<label class="toggle-switch">
-							<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
-							<span class="toggle-slider"></span>
-						</label>
-					</label>
-					<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
-				</div>
-
-				<div class="toggle-container">
-					<label class="toggle-label">
-						<span>{$_('config.fields.filterRedundantTerminus')}</span>
-						<label class="toggle-switch">
-							<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
-							<span class="toggle-slider"></span>
-						</label>
-					</label>
-					<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
-				</div>
-
-				{#if $config.hiddenRoutes.length > 0}
-					<div class="route-management">
-						<h3>{$_('config.hiddenRoutes.title')}</h3>
-						<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
-						<div class="hidden-routes-list">
-							{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+					<label>
+						{$_('config.fields.customLogo')}
+						<input
+							type="text"
+							bind:value={$config.customLogo}
+							placeholder="https://example.com/logo.png or /assets/images/logo.png"
+						/>
+						<small class="help-text">{$_('config.customLogo.helpText')}</small>
+						{#if $config.customLogo}
+							<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
 								<button
 									type="button"
-									class="hidden-route-item"
-									onclick={() => toggleRouteHidden(route.global_route_id)}
+									class="btn-reset"
+									onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
 								>
-									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-									<span>{route.route_short_name || route.route_long_name}</span>
+									{$_('config.customLogo.clear')}
 								</button>
-							{/each}
+							</div>
+							<div class="logo-preview">
+								<img
+									src={$config.customLogo}
+									alt="Logo preview"
+									onerror={(e) => {
+										const parent = (e.currentTarget as HTMLImageElement).parentElement;
+										if (parent) {
+											parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+										}
+									}}
+								/>
+							</div>
+						{/if}
+					</label>
+
+					<div class="toggle-container">
+						<label class="toggle-label">
+							<span>{$_('config.fields.showQRCode')} </span>
+							<label class="toggle-switch">
+								<input type="checkbox" bind:checked={$config.showQRCode} />
+								<span class="toggle-slider"></span>
+							</label>
+						</label>
+						<small class="help-text">{$_('config.qrCode.helpText')}</small>
+					</div>
+
+					<div class="toggle-container">
+						<label class="toggle-label">
+							<span>{$_('config.fields.groupItinerariesByStop')}</span>
+							<label class="toggle-switch">
+								<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
+								<span class="toggle-slider"></span>
+							</label>
+						</label>
+						<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
+					</div>
+
+					<div class="toggle-container">
+						<label class="toggle-label">
+							<span>{$_('config.fields.filterRedundantTerminus')}</span>
+							<label class="toggle-switch">
+								<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
+								<span class="toggle-slider"></span>
+							</label>
+						</label>
+						<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
+					</div>
+
+					<div class="toggle-container">
+						<label class="toggle-label">
+							<span>{$_('config.fields.showRouteLongName')}</span>
+							<label class="toggle-switch">
+								<input type="checkbox" bind:checked={$config.showRouteLongName} />
+								<span class="toggle-slider"></span>
+							</label>
+						</label>
+						<small class="help-text">{$_('config.routeDisplay.showRouteLongNameHelpText')}</small>
+					</div>
+
+					{#if $config.hiddenRoutes.length > 0}
+						<div class="route-management">
+							<h3>{$_('config.hiddenRoutes.title')}</h3>
+							<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
+							<div class="hidden-routes-list">
+								{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+									<button
+										type="button"
+										class="hidden-route-item"
+										onclick={() => toggleRouteHidden(route.global_route_id)}
+									>
+										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+										<span>{route.route_short_name || route.route_long_name}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<div class="server-management">
+						<h3>{$_('config.server.title')}</h3>
+						<p class="help-text">{$_('config.server.helpText')}</p>
+
+						<div class="server-status">
+							<span class="status-label">Status:</span>
+							<span
+								class="status-value"
+								class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
+								class:status-shutdown={serverStatus.isShutdown}
+								class:status-restarting={serverStatus.isRestarting}
+							>
+								{#if serverStatus.isRestarting}
+									{$_('config.server.status.restarting')}
+								{:else if serverStatus.isShutdown}
+									{$_('config.server.status.shutdown')}
+								{:else}
+									{$_('config.server.status.running')}
+								{/if}
+							</span>
+						</div>
+
+						<div class="button-group server-controls-buttons">
+							<button
+								type="button"
+								class="btn-server-control btn-shutdown"
+								onclick={shutdownServer}
+								disabled={serverStatus.isShutdown || serverActionInProgress}
+							>
+								{$_('config.server.actions.shutdown')}
+							</button>
+							<button
+								type="button"
+								class="btn-server-control btn-start"
+								onclick={startServer}
+								disabled={!serverStatus.isShutdown || serverActionInProgress}
+							>
+								{$_('config.server.actions.start')}
+							</button>
+							<button
+								type="button"
+								class="btn-server-control btn-restart"
+								onclick={restartServer}
+								disabled={serverStatus.isShutdown || serverActionInProgress}
+							>
+								{$_('config.server.actions.restart')}
+							</button>
 						</div>
 					</div>
-				{/if}
 
-				<div class="server-management">
-					<h3>{$_('config.server.title')}</h3>
-					<p class="help-text">{$_('config.server.helpText')}</p>
-
-					<div class="server-status">
-						<span class="status-label">Status:</span>
-						<span
-							class="status-value"
-							class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
-							class:status-shutdown={serverStatus.isShutdown}
-							class:status-restarting={serverStatus.isRestarting}
-						>
-							{#if serverStatus.isRestarting}
-								{$_('config.server.status.restarting')}
-							{:else if serverStatus.isShutdown}
-								{$_('config.server.status.shutdown')}
-							{:else}
-								{$_('config.server.status.running')}
-							{/if}
-						</span>
-					</div>
-
-					<div class="button-group server-controls-buttons">
-						<button
-							type="button"
-							class="btn-server-control btn-shutdown"
-							onclick={shutdownServer}
-							disabled={serverStatus.isShutdown || serverActionInProgress}
-						>
-							{$_('config.server.actions.shutdown')}
-						</button>
-						<button
-							type="button"
-							class="btn-server-control btn-start"
-							onclick={startServer}
-							disabled={!serverStatus.isShutdown || serverActionInProgress}
-						>
-							{$_('config.server.actions.start')}
-						</button>
-						<button
-							type="button"
-							class="btn-server-control btn-restart"
-							onclick={restartServer}
-							disabled={serverStatus.isShutdown || serverActionInProgress}
-						>
-							{$_('config.server.actions.restart')}
-						</button>
-					</div>
-				</div>
-
-				<div class="credits">
-					<h3>{$_('config.credits.title')}</h3>
-					<h4>
-						Transit TV version <a
-							href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
+					<div class="credits">
+						<h3>{$_('config.credits.title')}</h3>
+						<h4>
+							Transit TV version <a
+								href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
+								target="_blank"
+								rel="noopener">{appVersion}</a
+							>
+						</h4>
+						<p class="help-text">
+							{@html $_('config.credits.madeWith')}
+						</p>
+						<p class="help-text">
+							{@html $_('config.credits.links')}
+						</p>
+						<a
+							href="https://transitapp.com/partners/apis"
 							target="_blank"
-							rel="noopener">{appVersion}</a
+							rel="noopener noreferrer"
+							class="api-badge-link"
 						>
-					</h4>
-					<p class="help-text">
-						{@html $_('config.credits.madeWith')}
-					</p>
-					<p class="help-text">
-						{@html $_('config.credits.links')}
-					</p>
-					<a
-						href="https://transitapp.com/partners/apis"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="api-badge-link"
-					>
-						<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
-					>
-				</div>
+							<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
+						>
+					</div>
 
-				<div class="modal-actions">
-					<button
-						type="button"
-						class="btn-cancel"
-						onclick={() => {
-							config.update((c) => ({ ...c, isEditing: false }));
-						}}
-					>
-						{$_('config.buttons.cancel')}
-					</button>
-					<button
-						type="button"
-						class="btn-save"
-						onclick={() => {
-							config.save();
-							config.update((c) => ({ ...c, isEditing: false }));
-							loadNearby();
-							// Reset to current polling interval
-							intervalId = setInterval(loadNearby, currentPollingInterval);
-						}}
-					>
-						{$_('config.buttons.save')}
-					</button>
-				</div>
-			</form>
+					<div class="modal-actions">
+						<button type="button" class="btn-cancel" onclick={closeConfig}>
+							{$_('config.buttons.cancel')}
+						</button>
+						<button
+							type="button"
+							class="btn-save"
+							onclick={() => {
+								config.save();
+								config.update((c) => ({ ...c, isEditing: false }));
+								loadNearby();
+								// Reset to current polling interval
+								intervalId = setInterval(loadNearby, currentPollingInterval);
+							}}
+						>
+							{$_('config.buttons.save')}
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	{/if}
 
@@ -1034,7 +1061,7 @@
 				>
 					{#each routes as route, index (route.global_route_id)}
 						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-							<RouteItem {route} />
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
 							<div class="route-controls">
 								{#if index > 0}
 									<button
@@ -1178,7 +1205,7 @@
 		font-size: 2em;
 		vertical-align: middle;
 		display: inline-block;
-		line-height: 1.5em;
+		line-height: 1.4em;
 		margin-bottom: -0.1em;
 		white-space: nowrap;
 		overflow: hidden;
@@ -1226,7 +1253,7 @@
 	.clock {
 		font-size: 1.8em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		line-height: 2.2em;
+		line-height: 2.1em;
 		font-weight: 500;
 		display: inline-block;
 		margin-left: 3em;
@@ -1234,21 +1261,32 @@
 		vertical-align: middle;
 	}
 
-	.config-modal {
+	.modal-backdrop {
 		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.1);
+		backdrop-filter: blur(1px);
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.config-modal {
 		background: var(--bg-secondary);
 		color: var(--text-primary);
 		padding: 2em;
 		border-radius: 8px;
 		box-shadow: 0 4px 6px var(--shadow-color);
-		z-index: 1000;
-		min-width: 400px;
 		max-width: 30vw;
+		min-width: 400px;
 		max-height: 80vh;
 		overflow-y: auto;
+		/* Reset fixed positioning since we are using flex in parent */
+		position: relative;
 	}
 
 	.config-modal h2 {
@@ -1706,7 +1744,7 @@
 		top: 5.5em;
 		left: 50%;
 		transform: translateX(-50%);
-		background: #e30022;
+		background: #e30079;
 		color: white;
 		padding: 1em 2em;
 		border-radius: 8px;

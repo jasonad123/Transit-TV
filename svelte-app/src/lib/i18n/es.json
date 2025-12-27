@@ -17,7 +17,8 @@
 			"showQRCode": "Mostrar código QR deeplink de Transit",
 			"maxDistance": "Radio de búsqueda:",
 			"groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?",
-			"filterRedundantTerminus": "Ocultar terminal cercano"
+			"filterRedundantTerminus": "Ocultar terminal cercano",
+			"showRouteLongName": "Mostrar nombres y colores de línea"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -56,6 +57,9 @@
 		"stopManagement": {
 			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
+		},
+		"routeDisplay": {
+			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
 		},
 		"buttons": {
 			"cancel": "Cancelar",

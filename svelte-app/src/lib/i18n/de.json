@@ -17,7 +17,8 @@
 			"customLogo": "Logo-URL:",
 			"maxDistance": "Suchradius:",
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
-			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden"
+			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
+			"showRouteLongName": "Linienfarben und -namen anzeigen"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -56,6 +57,9 @@
 		"stopManagement": {
 			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte",
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
+		},
+		"routeDisplay": {
+			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden."
 		},
 		"buttons": {
 			"cancel": "Stornieren",
