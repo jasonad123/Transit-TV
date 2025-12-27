@@ -170,11 +170,16 @@ exports.nearby = async function (req, res) {
 				// Handle rate limiting with more detail
 				if (response.status === 429) {
 					const retryAfter = response.headers.get('Retry-After');
-					console.error('Rate limited by Transit API:', {
-						status: 429,
-						retryAfter: retryAfter || 'not specified',
-						timestamp: new Date().toISOString()
-					});
+					req.log.warn(
+						{
+							api: 'transit',
+							endpoint: 'nearby_routes',
+							status: 429,
+							retryAfter: retryAfter || 'not specified',
+							cacheKey
+						},
+						'Rate limited by Transit API'
+					);
 
 					const error = new Error('Rate limit exceeded');
 					error.status = 429;
@@ -182,7 +187,15 @@ exports.nearby = async function (req, res) {
 					throw error;
 				}
 
-				console.error('Error response from transit API:', response.status, body);
+				req.log.error(
+					{
+						api: 'transit',
+						endpoint: 'nearby_routes',
+						status: response.status,
+						body: body.substring(0, 500)
+					},
+					'Error response from Transit API'
+				);
 				const error = new Error('Transit API error');
 				error.status = response.status;
 				throw error;
@@ -236,7 +249,15 @@ exports.nearby = async function (req, res) {
 
 		res.status(200).json(data);
 	} catch (error) {
-		console.error('Error fetching nearby routes:', error);
+		req.log.error(
+			{
+				api: 'transit',
+				endpoint: 'nearby_routes',
+				err: error,
+				cacheKey
+			},
+			'Error fetching nearby routes'
+		);
 
 		if (error.name === 'TimeoutError' || error.name === 'AbortError') {
 			return res.status(504).json({

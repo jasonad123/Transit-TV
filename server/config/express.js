@@ -5,13 +5,14 @@
 'use strict';
 
 var express = require('express');
-var morgan = require('morgan');
+var pinoHttp = require('pino-http');
 var compression = require('compression');
 var cookieParser = require('cookie-parser');
 var errorHandler = require('errorhandler');
 var path = require('path');
 var config = require('./environment');
 var helmet = require('helmet');
+var logger = require('./logger');
 
 module.exports = function (app) {
 	var env = app.get('env');
@@ -90,7 +91,58 @@ module.exports = function (app) {
 		})
 	);
 
-	app.use(morgan(env === 'production' ? 'combined' : 'dev'));
+	// HTTP request logging with pino
+	app.use(
+		pinoHttp({
+			logger: logger,
+
+			// Custom log levels based on response status
+			customLogLevel: function (req, res, err) {
+				if (res.statusCode >= 500 || err) return 'error';
+				if (res.statusCode >= 400) return 'warn';
+				if (res.statusCode >= 300) return 'silent'; // Don't log redirects
+				return 'info';
+			},
+
+			// Apache-style message format inside JSON
+			customSuccessMessage: function (req, res) {
+				return req.method + ' ' + req.url + ' ' + res.statusCode + ' ' + res.responseTime + 'ms';
+			},
+
+			customErrorMessage: function (req, res, err) {
+				return (
+					req.method + ' ' + req.url + ' ' + res.statusCode + ' - ' + (err.message || 'Error')
+				);
+			},
+
+			// Custom attribute keys for Railway filtering
+			customAttributeKeys: {
+				req: 'request',
+				res: 'response',
+				err: 'error',
+				responseTime: 'duration_ms'
+			},
+
+			// Add custom properties to each log
+			customProps: function (req, res) {
+				return {
+					userAgent: req.headers['user-agent'],
+					ip: req.ip || req.connection.remoteAddress
+				};
+			},
+
+			// Skip logging for health checks and static assets
+			autoLogging: {
+				ignore: function (req) {
+					return (
+						req.path === '/health' ||
+						req.path === '/favicon.ico' ||
+						req.path.startsWith('/_app/immutable/')
+					);
+				}
+			}
+		})
+	);
 
 	if (env !== 'production') {
 		app.use(errorHandler());
@@ -98,7 +150,12 @@ module.exports = function (app) {
 
 	// Error handling
 	app.use(function (err, req, res, next) {
-		console.error(err);
+		// Use pino logger if available, fallback to console
+		if (req.log) {
+			req.log.error({ err: err }, 'Unhandled request error');
+		} else {
+			logger.error({ err: err }, 'Unhandled request error');
+		}
 		res.status(err.status || 500).send({
 			message: 'Server error',
 			error: {}
