@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
-	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import { parseAlertContent, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
@@ -198,12 +198,12 @@
 	{#if hasRelevantAlerts()}
 		<div class="route-alert-ticker">
 			{#each route.alerts || [] as alert}
-				{@const parsedContent = parseAlertContent(alert)}
-				{@const imageId = extractImageId(parsedContent.title)}
+				{@const parsedContent = parseAlertContent(alert.title)}
+				{@const firstContent = parsedContent[0]}
 				<div class="alert-item">
-					{#if imageId}
+					{#if firstContent && firstContent.type === 'image'}
 						<img
-							src="/api/images/{imageId}"
+							src="/api/images/{firstContent.value}"
 							alt="Alert icon"
 							class="alert-icon"
 							style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.3em;"
@@ -214,7 +214,7 @@
 							style="font-size: 1.2em; margin-right: 0.3em; vertical-align: middle;"
 						></iconify-icon>
 					{/if}
-					<span>{parsedContent.title}</span>
+					<span>{alert.title || 'Alert'}</span>
 				</div>
 			{/each}
 		</div>
