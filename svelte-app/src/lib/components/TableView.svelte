@@ -14,6 +14,84 @@
 
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
+	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
+
+	// Major color names for route display
+	const MAJOR_COLOURS = new Set([
+		'Red',
+		'Blue',
+		'Green',
+		'Yellow',
+		'Orange',
+		'Purple',
+		'Pink',
+		'Brown',
+		'Black',
+		'White',
+		'Grey',
+		'Gray',
+		'Silver',
+		'Gold',
+		'Violet',
+		'Indigo',
+		'Cyan',
+		'Magenta'
+	]);
+
+	const MAX_LONG_NAME_LENGTH = 12;
+
+	let miniRouteName = $derived.by(() => {
+		const boxedText = route.route_display_short_name?.boxed_text;
+		const shortName = route.route_short_name || '';
+		let longName = route.route_long_name || '';
+
+		// 1. Priority: Boxed Text
+		if (boxedText) return boxedText;
+
+		// 2. Priority: Recognized Major Color
+		if (shortName && MAJOR_COLOURS.has(shortName)) {
+			return shortName;
+		}
+
+		// 3. Process Long Name
+		if (longName) {
+			// A. Strip " Line"
+			if (longName.endsWith(' Line')) {
+				longName = longName.slice(0, -5);
+			}
+
+			// C. Length Validation
+			if (longName.length <= MAX_LONG_NAME_LENGTH) {
+				return longName;
+			}
+		}
+
+		// 4. Final Fallback
+		return shortName || longName || '';
+	});
+
+	// Check if route short name is too short (1-3 chars)
+	let routeShortTooShort = $derived(
+		(route.route_short_name?.length || 0) > 0 && (route.route_short_name?.length || 0) <= 3
+	);
+
+	// Check if route has adjacent text element
+	function hasAdjacentText(): boolean {
+		return !!(
+			route.route_display_short_name?.elements &&
+			route.route_display_short_name.elements.length > 1 &&
+			route.route_display_short_name.elements[1]
+		);
+	}
+
+	// Determine if we should show the route long name
+	let shouldShowRouteLongName = $derived(
+		showLongName &&
+			!routeShortTooShort &&
+			!route.compact_display_short_name?.route_name_redundancy &&
+			isRouteIconImage() &&
+			!hasAdjacentText()
+	);
 
 	// Track dark mode state
 	let isDarkMode = $state(false);
@@ -46,6 +124,9 @@
 		const textColorLum = getRelativeLuminance(route.route_text_color);
 		return routeColorLum < 0.05 && textColorLum > 0.8;
 	});
+
+	// Check if route has light color
+	let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
 
 	// Get image URL for route icon
 	function getImageUrl(index: number): string | null {
@@ -112,12 +193,10 @@
 		}
 	});
 
-	// Check if route uses route icon image
+	// Check if route uses route icon image (not text)
 	function isRouteIconImage(): boolean {
-		return (
-			!!route.route_display_short_name?.elements &&
-			route.route_display_short_name.elements.length > 0
-		);
+		// Check if first element is an image (has getImageUrl)
+		return !!getImageUrl(0);
 	}
 
 	// Group itineraries by stop
@@ -169,28 +248,31 @@
 	}
 </script>
 
-<div class="table-view-route">
+<div
+	class="table-view-route"
+	class:white={useBlackText && !isDarkMode}
+	class:light-in-dark={isDarkMode && hasLightColor}
+	style="color: {routeDisplayColor}"
+>
 	<!-- Route Header -->
-	<h2 style={cellStyle}>
-		{#if isRouteIconImage()}
-			{#each route.route_display_short_name?.elements || [] as _, index}
-				{@const imageUrl = getImageUrl(index)}
-				{#if imageUrl}
-					<img
-						src={imageUrl}
-						alt="Route icon"
-						class="route-icon"
-						style="height: 34px; width: auto; vertical-align: middle;"
-					/>
+	<h2>
+		<span class="route-icon">
+			{#if route.route_display_short_name?.elements}
+				{#if getImageUrl(0)}
+					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
 				{/if}
-			{/each}
-		{:else}
-			<span style="color: {routeDisplayColor}">
-				{route.route_short_name || route.route_long_name}
-			</span>
-		{/if}
-		{#if showLongName && route.route_long_name && route.route_short_name}
-			<span class="route-long-name">{route.route_long_name}</span>
+				<span class="route-icon-text"
+					>{route.route_display_short_name.elements[1] || ''}<i
+						>{route.branch_code || ''}</i
+					></span
+				>
+				{#if getImageUrl(2)}
+					<img class="img{imageSize}" src={getImageUrl(2)} alt="Route icon" />
+				{/if}
+			{/if}
+		</span>
+		{#if shouldShowRouteLongName}
+			<span class="route-long-name" style={cellStyle}>{miniRouteName}</span>
 		{/if}
 	</h2>
 
@@ -228,7 +310,6 @@
 
 		<div class="table-grid">
 			<!-- Header Row -->
-			<div class="header-cell">{$_('table.route')}</div>
 			<div class="header-cell">{$_('table.destination')}</div>
 			<div class="header-cell right">{$_('table.nextDepartures')}</div>
 
@@ -236,25 +317,6 @@
 			{#each group.itineraries as itinerary}
 				{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 				{#if departures.length > 0}
-					<!-- Route Icon Cell -->
-					<div class="cell-icon" style={cellStyle}>
-						{#if isRouteIconImage()}
-							{#each route.route_display_short_name?.elements || [] as _, index}
-								{@const imageUrl = getImageUrl(index)}
-								{#if imageUrl}
-									<img
-										src={imageUrl}
-										alt="Route icon"
-										style="height: 2em; width: auto;"
-									/>
-								{/if}
-							{/each}
-						{:else}
-							<span style="color: {routeDisplayColor}; font-weight: 600;">
-								{route.route_short_name || route.route_long_name}
-							</span>
-						{/if}
-					</div>
 
 					<!-- Destination Cell -->
 					<div class="cell-destination">
@@ -291,21 +353,71 @@
 		margin-bottom: 1em;
 	}
 
+	/* Route header styles (from RouteItem) */
 	h2 {
-		padding: 0.5em;
-		margin: 0 0 0.5em 0;
-		border-radius: 0.5em;
+		position: relative;
+		padding-left: 0.15em;
+		padding-bottom: -0.2em;
+		padding-top: 0.25em;
 		display: flex;
 		align-items: center;
-		gap: 0.5em;
-		font-size: 1.2em;
-		font-weight: 600;
+		flex-wrap: nowrap;
+		gap: 0;
+		line-height: 0.82em;
+		flex-shrink: 0;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin: 0 0 0.5em 0;
+	}
+
+	.route-icon {
+		white-space: nowrap;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.1em;
+	}
+
+	.route-icon-text {
+		display: inline-block;
 	}
 
 	.route-long-name {
-		font-size: 0.8em;
-		opacity: 0.9;
-		font-weight: 400;
+		font-size: 0.4em;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 12em;
+		margin-left: 0;
+		align-self: center;
+		padding: 0.25em 0.35em 0.1em;
+		border-radius: 0.5em;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		line-height: 1.1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.img28,
+	.img34 {
+		height: 0.875em;
+		display: block;
+	}
+
+	i {
+		font-style: normal;
+		font-weight: 600;
+	}
+
+	/* Light text color adjustments */
+	.table-view-route.white h2 {
+		color: #000000;
+	}
+
+	.table-view-route.light-in-dark h2 {
+		color: var(--text-primary);
 	}
 
 	.stop-name {
