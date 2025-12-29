@@ -16,28 +16,26 @@ A real-time transit display application that shows arrival times for nearby publ
 > If you're looking for the original project, have a look over at [Transit App's account](https://github.com/TransitApp/Transit-TV)
 
 > [!WARNING]  
-> Transit TV was built by the Transit team as a fun project to demo our API, usage of this project comes with no guarantee of any kind.
+> Transit TV was built by the Transit team as a fun project to demo the API, usage of this project comes with no guarantee of any kind.
 
 > [!IMPORTANT]
 > Just as the original Transit TV was built by the Transit team as a fun project, **_this_** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
 
-- An API key from Transit - [keys can be requested here](https://transitapp.com/apis)
-- Node.js (version specified in .node-version)
-- pnpm (preferred package manager)
-- Docker (optional, for containerized deployment)
+- An API key from Transit - [keys can be requested here](https://transitapp.com/partners/apis)
+- Docker (recommended)
+- Node.js (version specified in .node-version, for development/local deployment purposes only)
+- pnpm (preferred package manager, for development/local deployment purposes only)
 
 ## Getting started
 
 > [!TIP]
-> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page. TL;DR you'll still need a Transit API key but
+> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page.
 
 1. Request API access
 
-Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment file.
-
-> `.env` for local development using `pnpm`
+Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment `.env` file or however variables/secrets are managed.
 
 2. Create your `.env` files
 
@@ -47,54 +45,13 @@ For testing/deployment with `pnpm` or Docker:
 # create .env for local deployment with pnpm or Docker
 cp .env.example .env
 ```
-
-## Local testing/deployment
-
-> [!NOTE]
-> This project has been migrated to a new stack built on Svelte and SvelteKit. The legacy version (based on AngularJS) is still available but the SvelteKit version is recommended for most new deployments. The warnings above still apply either way.
-
-1. Follow the **getting started** steps
-
-This includes getting an API key from Transit and setting up the `.env` file and cloning this repo locally.
-
-2. Build and run locally
-
-```bash
-# Install dependencies
-pnpm i
-
-# Build the SvelteKit app
-cd svelte-app && pnpm build && cd ..
-
-# Start the server with SvelteKit
-USE_SVELTE=true pnpm start
-```
-
-The application will be available at http://localhost:8080
-
-For development with hot reload:
-
-```bash
-# Terminal 1: Start SvelteKit dev server
-cd svelte-app && pnpm dev
-
-# Terminal 2: Start Express backend
-pnpm start
-```
-
-Then access the app at http://localhost:5173 (Vite dev server with hot reload)
-
-3. Deploy somewhere!
-
-If all looks good, you should be ready to deploy it.
-
-## Deployment with Docker
+## Deployment with Docker (recommended)
 
 1. **Configure environment variables:**
 
    ```bash
-   # Review and edit .env.docker file with your API key
-   nano .env.docker
+   # Review and edit .env file with your API key
+   nano .env
    ```
 
 2. **Using Docker Compose:**
@@ -120,40 +77,23 @@ If all looks good, you should be ready to deploy it.
 
    ```bash
    # Build the SvelteKit image
-   docker build -f Dockerfile.svelte -t transit-tv-svelte .
+   docker build -f Dockerfile .
 
    # Run the container
-   docker run -p 8080:8080 --env-file .env.docker transit-tv-svelte
+   docker run -p 8080:8080 --env-file .env transit-tv-svelte
    ```
 
 The application will be available at http://localhost:8080
 
-### Environment Variables
+## Configuration
 
-When running with Docker, you can configure the application using environment variables:
+You can configure the application using environment variables:
 
 - `NODE_ENV`: Set to `production` for production deployment
 - `PORT`: The port the application will listen on (default: 8080)
 - `TRANSIT_API_KEY`: Your Transit API key
 - `SESSION_SECRET`: Secret for session encryption
 - `ALLOWED_ORIGINS`: (Development only) Comma-separated list of allowed CORS origins
-
-#### CORS Configuration (advanced)
-
-**Note:** CORS is automatically disabled in production deployments. In production, SvelteKit and Express run on the same origin (port 8080), so cross-origin requests don't occur and CORS headers are not needed.
-
-CORS is only enabled during local development when running SvelteKit dev server (port 5173) separately from the Express backend (port 8080).
-
-For development, the default allowed origin is `http://localhost:5173`. If you need to allow additional origins during development:
-
-```bash
-# Development only - allow SvelteKit dev server
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
-```
-
-**Production deployments do not require ALLOWED_ORIGINS configuration.** Each deployment is self-contained and serves both frontend and backend on the same origin.
-
-## Enhancements
 
 ### Unattended Setup
 
@@ -189,6 +129,58 @@ curl http://localhost:8080/health
 
 This endpoint is used by Docker Compose health checks and can be integrated with monitoring tools like Prometheus, Datadog, or your cloud provider's health check system.
 
+### Caching
+
+This app includes configurable client-side and server-side caching to reduce the number of calls to the Transit API. 
+Please review the `.env.example` file to view all available caching options.
+
+## Development/advanced configuration
+
+### Local testing/deployment (advanced users only)
+
+1. Follow the **getting started** steps
+
+This includes getting an API key from Transit and setting up the `.env` file and cloning this repo locally.
+
+2. Build and run locally
+
+```bash
+# Install dependencies
+pnpm i
+
+# Build the SvelteKit app
+cd svelte-app && pnpm build && cd ..
+```
+
+The application will be available at http://localhost:8080
+
+For development with hot reload:
+
+```bash
+# Terminal 1: Start SvelteKit dev server
+cd svelte-app && pnpm dev
+
+# Terminal 2: Start Express backend
+pnpm start
+```
+
+Then access the app at http://localhost:5173 (Vite dev server with hot reload)
+
+#### CORS Configuration (advanced)
+
+**Note:** CORS is automatically disabled in production deployments. In production, SvelteKit and Express run on the same origin (port 8080), so cross-origin requests don't occur and CORS headers are not needed.
+
+CORS is only enabled during local development when running SvelteKit dev server (port 5173) separately from the Express backend (port 8080).
+
+For development, the default allowed origin is `http://localhost:5173`. If you need to allow additional origins during development:
+
+```bash
+# Development only - allow SvelteKit dev server
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
+```
+
+**Production deployments do not require ALLOWED_ORIGINS configuration.** Each deployment is self-contained and serves both frontend and backend on the same origin.
+
 ## Project structure
 
 ```bash
@@ -206,7 +198,7 @@ This endpoint is used by Docker Compose health checks and can be integrated with
 │   ├── components/       # Custom server components
 │   └── routes.js         # Express routing
 ├── .env.example          # Example environment variables
-├── .railway-env-template # Example environment variables for Railway deployments
+├── .env.railway		  # Example environment variables for Railway deployments
 ├── Dockerfile            # Docker build file
 ├── compose.yaml          # Docker Compose file (production)
 └── compose.dev.yaml      # Docker Compose (development)
