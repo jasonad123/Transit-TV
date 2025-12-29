@@ -7,6 +7,7 @@
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import TableView from '$lib/components/TableView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
@@ -517,6 +518,25 @@
 						>
 					</td>
 					<td id="utilities">
+						<button
+							type="button"
+							class="view-toggle"
+							onclick={() => {
+								config.update((c) => ({
+									...c,
+									viewMode: c.viewMode === 'card' ? 'table' : 'card'
+								}));
+								config.save();
+							}}
+							title={$config.viewMode === 'card'
+								? $_('config.viewMode.switchToTable')
+								: $_('config.viewMode.switchToCard')}
+							aria-label={$_('aria.toggleView')}
+						>
+							<iconify-icon
+								icon={$config.viewMode === 'card' ? 'ix:list' : 'ix:grid'}
+							></iconify-icon>
+						</button>
 						<span class="clock"
 							>{formatTime(currentTime, $config.timeFormat, $config.language)}</span
 						>
@@ -805,6 +825,33 @@
 						</div>
 					</SolidSection>
 
+					<div class="toggle-container">
+						<label class="toggle-label">
+							<span>View Mode</span>
+							<div class="button-group inline-buttons">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'card'}
+									onclick={() => config.update((c) => ({ ...c, viewMode: 'card' }))}
+								>
+									<iconify-icon icon="ix:grid"></iconify-icon>
+									Card
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'table'}
+									onclick={() => config.update((c) => ({ ...c, viewMode: 'table' }))}
+								>
+									<iconify-icon icon="ix:list"></iconify-icon>
+									Table
+								</button>
+							</div>
+						</label>
+						<small class="help-text">Choose between card view (detailed) or table view (compact)</small>
+					</div>
+
 					<CollapsibleSection
 						title={$_('config.hiddenRoutes.title')}
 						helpText={$_('config.hiddenRoutes.helpText')}
@@ -904,6 +951,11 @@
 			>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+							{#if $config.viewMode === 'card'}
+								<RouteItem {route} showLongName={$config.showRouteLongName} />
+							{:else}
+								<TableView {route} showLongName={$config.showRouteLongName} />
+							{/if}
 						<RouteItem {route} showLongName={$config.showRouteLongName} />
 						<div class="route-controls">
 							{#if index > 0}
@@ -1082,6 +1134,32 @@
 
 	#title:hover button {
 		opacity: 1;
+	}
+
+	.view-toggle {
+		padding: 0;
+		margin-right: 1em;
+		display: inline-block;
+		width: 2em;
+		height: 2em;
+		background: none;
+		border: none;
+		outline: none;
+		cursor: pointer;
+		opacity: 0.8;
+		transition: opacity 0.2s;
+		vertical-align: middle;
+	}
+
+	.view-toggle:hover {
+		opacity: 1;
+	}
+
+	.view-toggle iconify-icon {
+		width: 2em;
+		height: 2em;
+		color: var(--text-header);
+		display: block;
 	}
 
 	#utilities {
@@ -1430,6 +1508,44 @@
 		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	.inline-buttons {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.inline-buttons .btn-option {
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
+		flex: 1;
+		min-width: 100px;
+	}
+
+	.inline-buttons iconify-icon {
+		width: 1.2em;
+		height: 1.2em;
+	}
+
+	.inline-buttons {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.inline-buttons .btn-option {
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
+		flex: 1;
+		min-width: 100px;
+	}
+
+	.inline-buttons iconify-icon {
+		width: 1.2em;
+		height: 1.2em;
 	}
 
 	/* Floating QR Code Styles */
