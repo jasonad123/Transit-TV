@@ -8,7 +8,11 @@
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
-	import { COMPLEX_LOGOS, COLOR_OVERRIDES, ROUTE_COLOR_OVERRIDES } from '$lib/constants/routeOverrides';
+	import {
+		COMPLEX_LOGOS,
+		COLOR_OVERRIDES,
+		ROUTE_COLOR_OVERRIDES
+	} from '$lib/constants/routeOverrides';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -246,6 +250,33 @@
 	function hasRelevantAlerts(): boolean {
 		return !!route.alerts && route.alerts.length > 0;
 	}
+
+	// Get most severe alert level
+	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
+		if (!route.alerts || route.alerts.length === 0) return 'info';
+
+		const hasSevere = route.alerts.some(
+			(a) => a.effect === 'NO_SERVICE' || a.effect === 'DETOUR' || a.effect === 'STOP_MOVED'
+		);
+		if (hasSevere) return 'severe';
+
+		const hasWarning = route.alerts.some(
+			(a) =>
+				a.effect === 'REDUCED_SERVICE' ||
+				a.effect === 'MODIFIED_SERVICE' ||
+				a.effect === 'SIGNIFICANT_DELAYS'
+		);
+		if (hasWarning) return 'warning';
+
+		return 'info';
+	}
+
+	function getMostSevereAlertIcon(): string {
+		const level = getMostSevereAlertLevel();
+		if (level === 'severe') return 'ix:warning-octagon-filled';
+		if (level === 'warning') return 'ix:warning-filled';
+		return 'ix:about-filled';
+	}
 </script>
 
 <div
@@ -262,9 +293,7 @@
 					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
 				{/if}
 				<span class="route-icon-text"
-					>{route.route_display_short_name.elements[1] || ''}<i
-						>{route.branch_code || ''}</i
-					></span
+					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
 				>
 				{#if getImageUrl(2)}
 					<img class="img{imageSize}" src={getImageUrl(2)} alt="Route icon" />
@@ -276,73 +305,76 @@
 		{/if}
 	</h2>
 
-	<!-- Alerts -->
+	<!-- Alerts with sidebar and vertical ticker -->
 	{#if hasRelevantAlerts()}
-		<div class="route-alert-ticker">
-			{#each route.alerts || [] as alert}
-				{@const parsedContent = parseAlertContent(alert.title)}
-				{@const firstContent = parsedContent[0]}
-				<div class="alert-item">
-					{#if firstContent && firstContent.type === 'image'}
-						<img
-							src="/api/images/{firstContent.value}"
-							alt="Alert icon"
-							class="alert-icon"
-							style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.3em;"
-						/>
-					{:else}
-						<iconify-icon
-							icon={getAlertIcon(alert.effect)}
-							style="font-size: 1.2em; margin-right: 0.3em; vertical-align: middle;"
-						></iconify-icon>
-					{/if}
-					<span>{alert.title || 'Alert'}</span>
+		<div class="route-alert-container">
+			<div
+				class="alert-sidebar"
+				class:severe={getMostSevereAlertLevel() === 'severe'}
+				class:warning={getMostSevereAlertLevel() === 'warning'}
+				class:info={getMostSevereAlertLevel() === 'info'}
+				style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}
+			>
+				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+			</div>
+			<div class="route-alert-ticker" style={cellStyle}>
+				<div class="alert-text scrolling">
+					{#each route.alerts || [] as alert}
+						{@const parsedContent = parseAlertContent(alert.title)}
+						<div class="alert-content">
+							{#each parsedContent as content}
+								{#if content.type === 'text'}
+									{content.value}
+								{:else if content.type === 'image'}
+									<img src="/api/images/{content.value}" alt="transit icon" class="alert-image" />
+								{/if}
+							{/each}
+						</div>
+					{/each}
+					{#each route.alerts || [] as alert}
+						{@const parsedContent = parseAlertContent(alert.title)}
+						<div class="alert-content">
+							{#each parsedContent as content}
+								{#if content.type === 'text'}
+									{content.value}
+								{:else if content.type === 'image'}
+									<img src="/api/images/{content.value}" alt="transit icon" class="alert-image" />
+								{/if}
+							{/each}
+						</div>
+					{/each}
 				</div>
-			{/each}
+			</div>
 		</div>
 	{/if}
 
-	<!-- Table Grid -->
+	<!-- Direction Cards -->
 	{#each itineraryGroups as group}
-		{#if $config.groupItinerariesByStop}
-			<div class="stop-name">{group.stopName}</div>
-		{/if}
-
-		<div class="table-grid">
-			<!-- Header Row -->
-			<div class="header-cell">{$_('table.destination')}</div>
-			<div class="header-cell right">{$_('table.nextDepartures')}</div>
-
-			<!-- Data Rows -->
-			{#each group.itineraries as itinerary}
-				{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
-				{#if departures.length > 0}
-
-					<!-- Destination Cell -->
-					<div class="cell-destination">
-						<span class="destination-text">
-							{itinerary.merged_headsign || 'Unknown destination'}
-						</span>
+		{#each group.itineraries as itinerary}
+			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
+			{#if departures.length > 0}
+				<div class="direction-card" style={cellStyle}>
+					<div class="card-destination">
+						{itinerary.merged_headsign || 'Unknown destination'}
 					</div>
-
-					<!-- Departure Times Cell -->
-					<div class="cell-times">
-						{#each departures as item, i}
-							{#if item.is_real_time}
-								<i class="realtime"></i>
-							{/if}
-							<span class:cancelled={item.is_cancelled}>
-								{getMinutesUntil(item.departure_time)}
-							</span>
-							{#if i < departures.length - 1}
-								<span class="separator">, </span>
-							{/if}
+					<div class="card-times">
+						{#each departures as item}
+							<div class="time-card">
+								<span class:cancelled={item.is_cancelled}>
+									{getMinutesUntil(item.departure_time)}
+								</span>
+								{#if item.is_real_time}
+									<i class="realtime"></i>
+								{/if}
+								<small class:last={item.is_last}
+									>{item.is_last ? $_('departures.last') : 'min'}</small
+								>
+							</div>
 						{/each}
-						<small class="unit">{departures.some(d => d.is_last) ? $_('departures.last') : 'min'}</small>
 					</div>
-				{/if}
-			{/each}
-		</div>
+				</div>
+			{/if}
+		{/each}
 	{/each}
 </div>
 
@@ -351,23 +383,25 @@
 		width: 100%;
 		padding: 0.5em;
 		margin-bottom: 1em;
+		box-sizing: border-box;
+		max-width: 100%;
 	}
 
 	/* Route header styles (from RouteItem) */
 	h2 {
 		position: relative;
 		padding-left: 0.15em;
-		padding-bottom: -0.2em;
-		padding-top: 0.25em;
+		padding-bottom: 0;
+		padding-top: 0.15em;
 		display: flex;
 		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0;
-		line-height: 0.82em;
+		line-height: 0.75em;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
-		margin: 0 0 0.5em 0;
+		margin: 0 0 0.3em 0;
 	}
 
 	.route-icon {
@@ -380,6 +414,7 @@
 
 	.route-icon-text {
 		display: inline-block;
+		vertical-align: middle;
 	}
 
 	.route-long-name {
@@ -403,7 +438,8 @@
 	.img28,
 	.img34 {
 		height: 0.875em;
-		display: block;
+		display: inline-block;
+		vertical-align: middle;
 	}
 
 	i {
@@ -428,69 +464,71 @@
 		color: var(--text-secondary);
 	}
 
-	.table-grid {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		gap: 0.5em 1em;
-		align-items: center;
-		padding: 0.5em;
-		background: var(--bg-secondary);
+	/* Direction card styling */
+	.direction-card {
 		border-radius: 0.5em;
-		margin-bottom: 0.5em;
-	}
-
-	.header-cell {
-		font-weight: 600;
-		font-size: 0.9em;
-		padding-bottom: 0.5em;
-		border-bottom: 2px solid var(--border-color);
-		color: var(--text-secondary);
-	}
-
-	.header-cell.right {
-		text-align: right;
-	}
-
-	.cell-icon {
+		margin-bottom: 0.2em;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		padding: 0.3em 0.5em;
-		border-radius: 0.3em;
-		min-width: 3em;
+		justify-content: space-between;
+		gap: 1em;
+		padding: 0.5em 0.75em;
 	}
 
-	.cell-destination {
-		overflow: hidden;
-	}
-
-	.destination-text {
-		display: inline-block;
-		white-space: nowrap;
-		font-weight: 500;
-	}
-
-	.cell-times {
-		text-align: right;
-		font-size: 1.3em;
+	.card-destination {
+		flex: 1;
+		font-size: 1.5em;
 		font-weight: 600;
 		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
-	.separator {
-		margin: 0 0.2em;
+	.card-times {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+		flex-shrink: 0;
+		align-items: flex-end;
 	}
 
-	.unit {
+	.time-card {
+		text-align: right;
+		font-size: 1.4em;
+		font-weight: 700;
+		white-space: nowrap;
+		position: relative;
+		padding-right: 0.5em;
+	}
+
+	.time-card span {
+		font-size: inherit;
+		font-weight: inherit;
+	}
+
+	.time-card .cancelled {
+		text-decoration: line-through;
+		opacity: 0.6;
+	}
+
+	.time-card small {
 		font-size: 0.7em;
 		margin-left: 0.3em;
 		font-weight: 400;
 		opacity: 0.8;
 	}
 
-	.cancelled {
-		text-decoration: line-through;
-		opacity: 0.6;
+	.time-card small.last {
+		font-weight: normal;
+	}
+
+	.time-card .realtime {
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		margin-right: 0;
 	}
 
 	/* Real-time indicator animation (copied from RouteItem) */
@@ -535,22 +573,90 @@
 		}
 	}
 
-	/* Alert ticker (simplified from RouteItem) */
-	.route-alert-ticker {
+	/* Alert container with sidebar */
+	.route-alert-container {
 		display: flex;
-		gap: 1em;
-		padding: 0.5em;
-		background: var(--alert-bg);
-		border-radius: 0.3em;
+		margin-top: 0.25em;
 		margin-bottom: 0.5em;
-		overflow-x: auto;
-		font-size: 0.9em;
+		border-radius: 0.5em;
+		overflow: hidden;
+		height: clamp(5em, 15vh, 18em);
+	}
+
+	/* Alert sidebar with severity-based coloring */
+	.alert-sidebar {
+		width: 3em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.alert-sidebar.severe {
+		background-color: #e30613;
+		color: #ffffff;
+	}
+
+	.alert-sidebar.warning {
+		background-color: #ffa700;
+		color: #000000;
+	}
+
+	/* .alert-sidebar.info inherits from inline style (cellStyle) */
+
+	.alert-sidebar iconify-icon {
+		font-size: 2em;
+		width: 1em;
+		height: 1em;
+	}
+
+	/* Alert ticker - vertical scroll */
+	.route-alert-ticker {
+		flex: 1;
+		font-size: 1.5em;
+		font-weight: medium;
+		line-height: 1.4;
+		padding: 0.5em;
+		overflow: hidden;
+		position: relative;
+	}
+
+	@keyframes scroll-alert-vertical {
+		0% {
+			transform: translateY(0);
+		}
+		100% {
+			transform: translateY(-50%);
+		}
+	}
+
+	.route-alert-ticker .alert-text {
+		display: block;
+		white-space: pre-line;
+		word-wrap: break-word;
+	}
+
+	.route-alert-ticker .alert-text.scrolling {
+		animation: scroll-alert-vertical 180s linear infinite;
+		will-change: transform;
+		transform: translateZ(0);
+	}
+
+	.route-alert-ticker .alert-content {
+		margin-bottom: 1em;
 	}
 
 	.alert-item {
-		display: flex;
-		align-items: center;
-		white-space: nowrap;
-		color: var(--alert-text);
+		display: inline-block;
+		white-space: normal;
+		max-width: 60ch;
+		flex-shrink: 0;
+	}
+
+	.alert-image {
+		height: 1em;
+		display: inline-block;
+		margin: 0 0.2em;
+		vertical-align: middle;
 	}
 </style>
