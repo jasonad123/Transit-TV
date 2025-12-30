@@ -533,8 +533,7 @@
 								: $_('config.viewMode.switchToCard')}
 							aria-label={$_('aria.toggleView')}
 						>
-							<iconify-icon
-								icon={$config.viewMode === 'card' ? 'ix:list' : 'ix:grid'}
+							<iconify-icon icon={$config.viewMode === 'card' ? 'ix:list' : 'ix:card-layout'}
 							></iconify-icon>
 						</button>
 						<span class="clock"
@@ -835,7 +834,7 @@
 									class:active={$config.viewMode === 'card'}
 									onclick={() => config.update((c) => ({ ...c, viewMode: 'card' }))}
 								>
-									<iconify-icon icon="ix:grid"></iconify-icon>
+									<iconify-icon icon="ix:card-layout"></iconify-icon>
 									Card
 								</button>
 								<button
@@ -849,7 +848,9 @@
 								</button>
 							</div>
 						</label>
-						<small class="help-text">Choose between card view (detailed) or table view (compact)</small>
+						<small class="help-text"
+							>Choose between card view (detailed) or table view (compact)</small
+						>
 					</div>
 
 					<CollapsibleSection
@@ -948,6 +949,7 @@
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:table-view={$config.viewMode === 'table'}
 			>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
@@ -1141,14 +1143,14 @@
 		margin-right: 1em;
 		display: inline-block;
 		width: 2em;
-		height: 2em;
+		height: auto;
 		background: none;
 		border: none;
 		outline: none;
 		cursor: pointer;
 		opacity: 0.8;
-		transition: opacity 0.2s;
 		vertical-align: middle;
+		transform: translateX(7em);
 	}
 
 	.view-toggle:hover {
@@ -1156,8 +1158,8 @@
 	}
 
 	.view-toggle iconify-icon {
-		width: 2em;
-		height: 2em;
+		width: 30%;
+		font-size: 1.8em;
 		color: var(--text-header);
 		display: block;
 	}
@@ -1346,6 +1348,23 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.5em 0.5em;
+	}
+
+	/* Fix for table view horizontal scrolling - use flex layout like RouteItem */
+	#routes.table-view {
+		display: flex;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		justify-content: flex-start;
+	}
+
+	#routes.table-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		flex: 0 0 25%; /* Don't grow, don't shrink, take 25% width */
+		max-width: 25%;
+		box-sizing: border-box;
+		padding: 0.5em;
 	}
 
 	/* Responsive auto-layout defaults */
