@@ -43,10 +43,7 @@ function isLoopbackIp(ip) {
 
 // Helper: check for Docker bridge (172.17.0.0/16)
 // Note: This only checks the default Docker bridge network.
-// If using custom Docker networks with different IP ranges, you have two options:
-// 1. Use 'docker exec' commands (always works as true localhost)
-// 2. Expose the port and access via localhost from the host machine
-// Future enhancement: Support TRUSTED_NETWORKS environment variable for custom ranges
+// If using custom Docker networks with different IP ranges, use TRUSTED_NETWORKS
 function isDockerBridgeIp(ip) {
 	var n = normalizeIp(ip);
 	// Only IPv4 addresses have dots; IPv6 will be ignored here
@@ -57,10 +54,54 @@ function isDockerBridgeIp(ip) {
 	return parts[0] === '172' && parts[1] === '17';
 }
 
-// Combined local check
+// Helper: check if IP is in CIDR range
+function ipInCidr(ip, cidr) {
+	var n = normalizeIp(ip);
+	// Only support IPv4 for now
+	if (n.indexOf('.') === -1) return false;
+
+	var parts = cidr.split('/');
+	var network = parts[0];
+	var maskBits = parseInt(parts[1], 10);
+
+	if (isNaN(maskBits) || maskBits < 0 || maskBits > 32) return false;
+
+	// Convert IP to 32-bit integer
+	function ipToInt(ipStr) {
+		var p = ipStr.split('.');
+		return ((parseInt(p[0]) << 24) | (parseInt(p[1]) << 16) | (parseInt(p[2]) << 8) | parseInt(p[3])) >>> 0;
+	}
+
+	var ipInt = ipToInt(n);
+	var networkInt = ipToInt(network);
+	var mask = (0xffffffff << (32 - maskBits)) >>> 0;
+
+	return (ipInt & mask) === (networkInt & mask);
+}
+
+// Helper: check if IP is in trusted networks from environment variable
+// TRUSTED_NETWORKS format: "10.0.0.0/8,172.16.0.0/12,100.64.0.0/10"
+function isTrustedNetwork(ip) {
+	var trustedNets = process.env.TRUSTED_NETWORKS;
+	if (!trustedNets) return false;
+
+	var networks = trustedNets.split(',').map(function (s) {
+		return s.trim();
+	});
+
+	for (var i = 0; i < networks.length; i++) {
+		if (ipInCidr(ip, networks[i])) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// Combined local/trusted check
 function isLocalRequest(req) {
 	var clientIp = getClientIp(req);
-	return isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
+	return isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp) || isTrustedNetwork(clientIp);
 }
 
 // Get server status
@@ -76,11 +117,12 @@ exports.getStatus = function (req, res) {
 
 // Shutdown server
 exports.shutdown = function (req, res) {
-	// Security: Only allow shutdown from localhost, IPv6 loopback, or Docker bridge range
+	// Security: Only allow shutdown from localhost, Docker bridge, or trusted networks
 	var clientIp = getClientIp(req);
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
+	var isTrusted = isTrustedNetwork(clientIp);
 
-	if (!isLocalhost && process.env.NODE_ENV === 'production') {
+	if (!isLocalhost && !isTrusted && process.env.NODE_ENV === 'production') {
 		req.log.warn(
 			{
 				action: 'shutdown',
@@ -90,7 +132,7 @@ exports.shutdown = function (req, res) {
 			'Shutdown attempt from non-localhost IP'
 		);
 		return res.status(403).json({
-			error: 'Shutdown can only be triggered from localhost in production'
+			error: 'Shutdown can only be triggered from localhost or trusted networks in production'
 		});
 	}
 
@@ -102,7 +144,14 @@ exports.shutdown = function (req, res) {
 		});
 	}
 
-	req.log.info({ action: 'shutdown', requestedFrom: clientIp }, 'Shutdown initiated');
+	req.log.info(
+		{
+			action: 'shutdown',
+			requestedFrom: clientIp,
+			authMethod: isTrusted ? 'trusted_network' : 'localhost'
+		},
+		'Shutdown initiated'
+	);
 
 	// Send response before shutting down
 	res.json({
@@ -127,8 +176,9 @@ exports.start = function (req, res) {
 	// Security check
 	var clientIp = getClientIp(req);
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
+	var isTrusted = isTrustedNetwork(clientIp);
 
-	if (!isLocalhost && process.env.NODE_ENV === 'production') {
+	if (!isLocalhost && !isTrusted && process.env.NODE_ENV === 'production') {
 		req.log.warn(
 			{
 				action: 'start',
@@ -138,7 +188,7 @@ exports.start = function (req, res) {
 			'Start attempt from non-localhost IP'
 		);
 		return res.status(403).json({
-			error: 'Server start can only be triggered from localhost in production'
+			error: 'Server start can only be triggered from localhost or trusted networks in production'
 		});
 	}
 
@@ -149,7 +199,14 @@ exports.start = function (req, res) {
 		});
 	}
 
-	req.log.info({ action: 'start', requestedFrom: clientIp }, 'Server start initiated');
+	req.log.info(
+		{
+			action: 'start',
+			requestedFrom: clientIp,
+			authMethod: isTrusted ? 'trusted_network' : 'localhost'
+		},
+		'Server start initiated'
+	);
 
 	serverState.isRestarting = true;
 
@@ -173,8 +230,9 @@ exports.restart = function (req, res) {
 	// Security check
 	var clientIp = getClientIp(req);
 	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
+	var isTrusted = isTrustedNetwork(clientIp);
 
-	if (!isLocalhost && process.env.NODE_ENV === 'production') {
+	if (!isLocalhost && !isTrusted && process.env.NODE_ENV === 'production') {
 		req.log.warn(
 			{
 				action: 'restart',
@@ -184,11 +242,18 @@ exports.restart = function (req, res) {
 			'Restart attempt from non-localhost IP'
 		);
 		return res.status(403).json({
-			error: 'Server restart can only be triggered from localhost in production'
+			error: 'Server restart can only be triggered from localhost or trusted networks in production'
 		});
 	}
 
-	req.log.info({ action: 'restart', requestedFrom: clientIp }, 'Server restart initiated');
+	req.log.info(
+		{
+			action: 'restart',
+			requestedFrom: clientIp,
+			authMethod: isTrusted ? 'trusted_network' : 'localhost'
+		},
+		'Server restart initiated'
+	);
 
 	serverState.isRestarting = true;
 
