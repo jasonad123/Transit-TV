@@ -54,10 +54,7 @@ module.exports = function (app) {
 
 		// If previous load attempt failed, return error
 		if (handlerLoadError) {
-			logger.error(
-				{ err: handlerLoadError },
-				'SvelteKit handler not available'
-			);
+			logger.error({ err: handlerLoadError }, 'SvelteKit handler not available');
 			return res.status(500).send({
 				error: 'Application not available',
 				message: 'SvelteKit build not found. Run: cd svelte-app && pnpm build'

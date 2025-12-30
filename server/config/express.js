@@ -117,7 +117,16 @@ module.exports = function (app) {
 
 		customErrorMessage: function (req, res, err) {
 			var duration = res.responseTime !== undefined ? res.responseTime + 'ms' : '';
-			return req.method + ' ' + req.url + ' ' + res.statusCode + (duration ? ' ' + duration : '') + ' - ' + (err.message || 'Error');
+			return (
+				req.method +
+				' ' +
+				req.url +
+				' ' +
+				res.statusCode +
+				(duration ? ' ' + duration : '') +
+				' - ' +
+				(err.message || 'Error')
+			);
 		},
 
 		// Custom attribute keys for Railway filtering

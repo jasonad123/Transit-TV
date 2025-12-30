@@ -45,7 +45,7 @@
 			"invalidUrl": "Failed to load logo image"
 		},
 		"hiddenRoutes": {
-			"title": "Hidden Routes",
+			"title": "Hidden routes",
 			"helpText": "Click to unhide routes"
 		},
 		"qrCode": {
@@ -68,16 +68,14 @@
 			"resetToDefault": "Reset to default"
 		},
 		"server": {
-			"title": "Server Controls",
+			"title": "Server controls",
 			"status": {
 				"running": "Running",
-				"shutdown": "Shut down",
-				"restarting": "Restarting..."
+				"shutdown": "Shut down"
 			},
 			"actions": {
-				"shutdown": "Shutdown",
-				"start": "Start",
-				"restart": "Restart"
+				"shutdown": "Stop polling",
+				"start": "Start polling"
 			},
 			"confirmShutdown": "Stop polling the Transit API? This will pause live updates.",
 			"confirmRestart": "Restart the server? This will briefly interrupt service.",

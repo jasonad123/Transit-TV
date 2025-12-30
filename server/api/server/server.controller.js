@@ -69,7 +69,10 @@ function ipInCidr(ip, cidr) {
 	// Convert IP to 32-bit integer
 	function ipToInt(ipStr) {
 		var p = ipStr.split('.');
-		return ((parseInt(p[0]) << 24) | (parseInt(p[1]) << 16) | (parseInt(p[2]) << 8) | parseInt(p[3])) >>> 0;
+		return (
+			((parseInt(p[0]) << 24) | (parseInt(p[1]) << 16) | (parseInt(p[2]) << 8) | parseInt(p[3])) >>>
+			0
+		);
 	}
 
 	var ipInt = ipToInt(n);
@@ -109,7 +112,6 @@ exports.getStatus = function (req, res) {
 	res.json({
 		isShutdown: serverState.isShutdown,
 		shutdownTime: serverState.shutdownTime,
-		isRestarting: serverState.isRestarting,
 		uptime: process.uptime(),
 		timestamp: new Date().toISOString()
 	});
@@ -225,58 +227,3 @@ exports.start = function (req, res) {
 	});
 };
 
-// Restart server (shutdown then start)
-exports.restart = function (req, res) {
-	// Security check
-	var clientIp = getClientIp(req);
-	var isLocalhost = isLoopbackIp(clientIp) || isDockerBridgeIp(clientIp);
-	var isTrusted = isTrustedNetwork(clientIp);
-
-	if (!isLocalhost && !isTrusted && process.env.NODE_ENV === 'production') {
-		req.log.warn(
-			{
-				action: 'restart',
-				requestedFrom: clientIp,
-				blocked: true
-			},
-			'Restart attempt from non-localhost IP'
-		);
-		return res.status(403).json({
-			error: 'Server restart can only be triggered from localhost or trusted networks in production'
-		});
-	}
-
-	req.log.info(
-		{
-			action: 'restart',
-			requestedFrom: clientIp,
-			authMethod: isTrusted ? 'trusted_network' : 'localhost'
-		},
-		'Server restart initiated'
-	);
-
-	serverState.isRestarting = true;
-
-	// Send response
-	res.json({
-		message: 'Server restart initiated',
-		timestamp: new Date().toISOString()
-	});
-
-	// Pause then resume after response is sent
-	setTimeout(function () {
-		// Set to shutdown state
-		var logger = require('../../config/logger');
-		serverState.isShutdown = true;
-		serverState.shutdownTime = new Date().toISOString();
-		logger.info('Server paused for restart');
-
-		// Wait 2 seconds before resuming
-		setTimeout(function () {
-			serverState.isShutdown = false;
-			serverState.shutdownTime = null;
-			serverState.isRestarting = false;
-			logger.info('Server restart completed successfully');
-		}, 2000);
-	}, 100);
-};

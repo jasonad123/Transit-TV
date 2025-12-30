@@ -71,13 +71,11 @@
 			"title": "Contrôles du serveur",
 			"status": {
 				"running": "Activé",
-				"shutdown": "Fermé",
-				"restarting": "Redémarrage..."
+				"shutdown": "Fermé"
 			},
 			"actions": {
 				"shutdown": "Arrêter",
-				"start": "Commencer",
-				"restart": "Redémarrer"
+				"start": "Commencer"
 			},
 			"confirmShutdown": "Arrêter le sondage de l’API de Transit ? Cela mettra en pause les mises à jour en temps réel.",
 			"confirmRestart": "Redémarrer le serveur ? Cela entraînera une courte interruption du service.",

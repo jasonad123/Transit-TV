@@ -71,13 +71,11 @@
 			"title": "Controles del servidor",
 			"status": {
 				"running": "Funcionamiento",
-				"shutdown": "A Pausa",
-				"restarting": "Reanudado..."
+				"shutdown": "A Pausa"
 			},
 			"actions": {
 				"shutdown": "Pausa",
-				"start": "Iniciar",
-				"restart": "Reanudar"
+				"start": "Iniciar"
 			},
 			"confirmShutdown": "¿Desea detener la consulta a la API de Transit? Esto pausará las actualizaciones en tiempo real.",
 			"confirmRestart": "¿Reiniciar el servidor? Esto interrumpirá brevemente el servicio.",

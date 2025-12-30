@@ -71,13 +71,11 @@
 			"title": "Serversteuerungen",
 			"status": {
 				"running": "Ausgeführt",
-				"shutdown": "Herunterfahren",
-				"restarting": "Neustarten..."
+				"shutdown": "Herunterfahren"
 			},
 			"actions": {
 				"shutdown": "Herunterfahren",
-				"start": "Anfangen",
-				"restart": "Neustart"
+				"start": "Anfangen"
 			},
 			"confirmShutdown": "Möchten Sie das Abfragen der Transit-API stoppen? Dadurch werden Live-Updates pausiert.",
 			"confirmRestart": "Den Server neu starten? Dies wird den Dienst kurz unterbrechen.",

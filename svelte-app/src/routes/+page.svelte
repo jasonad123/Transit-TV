@@ -41,11 +41,9 @@
 	// Server status state
 	let serverStatus = $state<{
 		isShutdown: boolean;
-		isRestarting: boolean;
 		shutdownTime: string | null;
 	}>({
 		isShutdown: false,
-		isRestarting: false,
 		shutdownTime: null
 	});
 	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -505,7 +503,6 @@
 				const status = await response.json();
 				serverStatus = {
 					isShutdown: status.isShutdown,
-					isRestarting: status.isRestarting,
 					shutdownTime: status.shutdownTime
 				};
 			}
@@ -552,29 +549,6 @@
 		}
 	}
 
-	async function restartServer() {
-		if (!confirm($_('config.server.confirmRestart'))) {
-			return;
-		}
-
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/restart', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-				// Reload routes after restart completes
-				setTimeout(() => {
-					checkServerStatus();
-					loadNearby();
-				}, 3000);
-			}
-		} catch (error) {
-			console.error('Error restarting server:', error);
-			alert('Failed to restart server');
-		} finally {
-			serverActionInProgress = false;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -754,7 +728,7 @@
 							>
 								2
 							</button>
-							<button
+			<button
 								type="button"
 								class="btn-option"
 								class:active={$config.columns === 3}
@@ -906,24 +880,28 @@
 						<small class="help-text">{$_('config.routeDisplay.showRouteLongNameHelpText')}</small>
 					</div>
 
-					{#if $config.hiddenRoutes.length > 0}
-						<div class="route-management">
-							<h3>{$_('config.hiddenRoutes.title')}</h3>
-							<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
-							<div class="hidden-routes-list">
-								{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
-									<button
-										type="button"
-										class="hidden-route-item"
-										onclick={() => toggleRouteHidden(route.global_route_id)}
-									>
-										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-										<span>{route.route_short_name || route.route_long_name}</span>
-									</button>
-								{/each}
+					<CollapsibleSection
+						title={$_('config.hiddenRoutes.title')}
+						helpText={$_('config.hiddenRoutes.helpText')}
+						initiallyOpen={false}
+					>
+						{#if $config.hiddenRoutes.length > 0}
+							<div class="route-management">
+								<div class="hidden-routes-list">
+									{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+										<button
+											type="button"
+											class="hidden-route-item"
+											onclick={() => toggleRouteHidden(route.global_route_id)}
+										>
+											<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+											<span>{route.route_short_name || route.route_long_name}</span>
+										</button>
+									{/each}
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
+					</CollapsibleSection>
 
 					<CollapsibleSection
 						title={$_('config.server.title')}
@@ -935,17 +913,12 @@
 							<span class="status-label">Status:</span>
 							<span
 								class="status-value"
-								class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
+								class:status-running={!serverStatus.isShutdown}
 								class:status-shutdown={serverStatus.isShutdown}
-								class:status-restarting={serverStatus.isRestarting}
 							>
-								{#if serverStatus.isRestarting}
-									{$_('config.server.status.restarting')}
-								{:else if serverStatus.isShutdown}
-									{$_('config.server.status.shutdown')}
-								{:else}
-									{$_('config.server.status.running')}
-								{/if}
+								{serverStatus.isShutdown
+									? $_('config.server.status.shutdown')
+									: $_('config.server.status.running')}
 							</span>
 						</div>
 
@@ -965,14 +938,6 @@
 								disabled={!serverStatus.isShutdown || serverActionInProgress}
 							>
 								{$_('config.server.actions.start')}
-							</button>
-							<button
-								type="button"
-								class="btn-server-control btn-restart"
-								onclick={restartServer}
-								disabled={serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.restart')}
 							</button>
 						</div>
 					</CollapsibleSection>
@@ -1977,11 +1942,6 @@
 		color: white;
 	}
 
-	.status-restarting {
-		background: #8b5cf6;
-		color: white;
-	}
-
 	.server-controls-buttons {
 		display: flex;
 		gap: 0.5em;
@@ -2022,16 +1982,6 @@
 	.btn-start:hover:not(:disabled) {
 		background: #1f7a42;
 		border-color: #1f7a42;
-	}
-
-	.btn-restart {
-		background: #8b5cf6;
-		border-color: #8b5cf6;
-	}
-
-	.btn-restart:hover:not(:disabled) {
-		background: #7c3aed;
-		border-color: #7c3aed;
 	}
 
 	/* Shutdown Notice Styles */
