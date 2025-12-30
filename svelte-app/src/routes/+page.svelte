@@ -1361,8 +1361,6 @@
 	#routes.table-view .route-wrapper {
 		display: flex;
 		flex-direction: column;
-		flex: 0 0 25%; /* Don't grow, don't shrink, take 25% width */
-		max-width: 25%;
 		box-sizing: border-box;
 		padding: 0.5em;
 	}

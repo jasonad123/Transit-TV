@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
-	import { parseAlertContent, getAlertIcon } from '$lib/services/alerts';
+	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
@@ -19,6 +19,160 @@
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let imageSize = $derived((route.route_display_short_name?.elements?.length || 0) > 1 ? 28 : 34);
+
+	// Smart route name for alerts (transplanted from RouteItem)
+	let alertRouteName = $derived.by(() => {
+		const shortName = route.route_short_name;
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return '';
+		}
+
+		if (route.route_long_name?.includes('Line')) {
+			return route.route_long_name;
+		}
+
+		if (route.route_network_name === 'Long Island Rail Road' && route.route_long_name) {
+			return route.route_long_name;
+		}
+
+		if (route.route_network_name === 'GO Transit' && route.route_long_name) {
+			return route.route_long_name;
+		}
+
+		if (route.route_network_name === 'Capitol Corridor' && route.route_long_name) {
+			return route.route_long_name;
+		}
+
+		const routeName = route.route_short_name || route.route_long_name;
+
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (
+				!modeName.includes('train') &&
+				!modeName.includes('subway') &&
+				!modeName.includes('metro') &&
+				!modeName.includes('streetcar') &&
+				!modeName.includes('light rail')
+			) {
+				return `Route ${routeName}`;
+			}
+		}
+
+		if (routeName && /^[A-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('rapidride')) {
+				return '';
+			}
+		}
+
+		if (routeName && /^[a-zA-Z]+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			if (modeName.includes('citylink')) {
+				return '';
+			}
+		}
+
+		if (routeName && /^\d+$/.test(routeName)) {
+			const modeName = route.mode_name?.toLowerCase() || '';
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+			if (
+				modeName.includes('subway') &&
+				ttsName.startsWith('line') &&
+				route.route_network_name === 'TTC'
+			) {
+				return '';
+			}
+		}
+
+		if (route.mode_name?.includes('Muni')) {
+			return '';
+		}
+
+		return routeName;
+	});
+
+	// Smart mode name for alerts (transplanted from RouteItem)
+	let alertModeName = $derived.by(() => {
+		const modeName = route.mode_name;
+		const shortName = route.route_short_name;
+
+		if (shortName && /^[A-Z]$/.test(shortName) && route.route_network_name === 'SEPTA Metro') {
+			return `${shortName} Line`;
+		}
+
+		if (route.route_long_name?.includes('Line')) {
+			return '';
+		}
+
+		if (route.route_network_name === 'Long Island Rail Road') {
+			return '';
+		}
+
+		if (route.route_network_name === 'ACE') {
+			return '';
+		}
+
+		if (route.route_network_name === 'Capitol Corridor') {
+			return '';
+		}
+
+		if (modeName && (modeName === shortName || modeName === route.route_long_name)) {
+			return '';
+		}
+
+		if (modeName?.includes('Muni') && shortName && route.route_long_name) {
+			return `${shortName} ${route.route_long_name}`;
+		}
+
+		if (modeName?.includes('Metro') || modeName?.includes('Light Rail')) {
+			return 'Line';
+		}
+
+		if (modeName?.includes('MAX') || modeName?.includes('REM')) {
+			return '';
+		}
+
+		if (shortName?.includes('SeaBus')) {
+			return '';
+		}
+
+		if (modeName?.includes('Subway') && shortName) {
+			const ttsName = route.tts_short_name?.toLowerCase() || '';
+			if (ttsName.startsWith('line') && route.route_network_name === 'TTC') {
+				return `Line ${shortName}`;
+			}
+			if (ttsName.endsWith('line') && route.route_network_name === 'BART') {
+				return 'Line';
+			}
+			if (ttsName.includes('train') && route.route_network_name === 'NYC Subway') {
+				return 'Train';
+			}
+		}
+
+		if (modeName?.includes('Bus')) {
+			return '';
+		}
+
+		if (shortName && /^[A-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('rapidride')) {
+				return `RapidRide ${shortName}`;
+			}
+		}
+
+		if (shortName && /^[a-zA-Z]+$/.test(shortName)) {
+			const modeNameLower = route.mode_name?.toLowerCase() || '';
+			if (modeNameLower.includes('citylink')) {
+				return `CityLink ${shortName}`;
+			}
+		}
+
+		if (modeName === 'Commuter Rail') {
+			return 'Line';
+		}
+
+		return modeName;
+	});
 
 	// Major color names for route display
 	const MAJOR_COLOURS = new Set([
@@ -246,28 +400,86 @@
 				})) || []
 	);
 
-	// Get relevant alerts for this route
-	function hasRelevantAlerts(): boolean {
-		return !!route.alerts && route.alerts.length > 0;
+	// Alert Relevance Logic (transplanted from RouteItem)
+	function getLocalStopIds(): Set<string> {
+		const stopIds = new Set<string>();
+		route.itineraries?.forEach((itinerary) => {
+			const stopId = itinerary.closest_stop?.global_stop_id;
+			if (stopId) {
+				stopIds.add(stopId);
+			}
+		});
+		return stopIds;
 	}
 
-	// Get most severe alert level
+	function isAlertRelevantToRoute(alert: any): boolean {
+		if (!alert.informed_entities || alert.informed_entities.length === 0) {
+			return true;
+		}
+
+		const localStopIds = getLocalStopIds();
+
+		return alert.informed_entities.some((entity: any) => {
+			const hasRouteId = !!entity.global_route_id;
+			const hasStopId = !!entity.global_stop_id;
+
+			if (!hasRouteId && !hasStopId) {
+				return true;
+			}
+
+			const routeMatches = !hasRouteId || entity.global_route_id === route.global_route_id;
+			const stopMatches = !hasStopId || localStopIds.has(entity.global_stop_id);
+
+			return routeMatches && stopMatches;
+		});
+	}
+
+	function getRelevantAlerts() {
+		if (!route.alerts?.length) return [];
+		return route.alerts.filter(isAlertRelevantToRoute);
+	}
+
+	let relevantAlerts = $derived(getRelevantAlerts());
+
+	function hasRelevantAlerts(): boolean {
+		return relevantAlerts.length > 0;
+	}
+
+	function getAlertText(): string {
+		if (!relevantAlerts.length) return '';
+
+		return relevantAlerts
+			.map((alert) => {
+				const hasTitle = alert.title && alert.title.trim().length > 0;
+				const hasDescription = alert.description && alert.description.trim().length > 0;
+
+				if (hasTitle && hasDescription) {
+					return `${alert.title}\n\n${alert.description}`;
+				} else if (hasTitle) {
+					return alert.title;
+				} else if (hasDescription) {
+					return alert.description;
+				} else {
+					return $_('alerts.default');
+				}
+			})
+			.join('\n\n---\n\n');
+	}
+
+	let relevantAlertCount = $derived(relevantAlerts.length);
+
+	// Get the most severe alert level for styling (transplanted severity logic from RouteItem)
 	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
-		if (!route.alerts || route.alerts.length === 0) return 'info';
+		const alerts = getRelevantAlerts();
+		if (!alerts.length) return 'info';
 
-		const hasSevere = route.alerts.some(
-			(a) => a.effect === 'NO_SERVICE' || a.effect === 'DETOUR' || a.effect === 'STOP_MOVED'
-		);
-		if (hasSevere) return 'severe';
-
-		const hasWarning = route.alerts.some(
-			(a) =>
-				a.effect === 'REDUCED_SERVICE' ||
-				a.effect === 'MODIFIED_SERVICE' ||
-				a.effect === 'SIGNIFICANT_DELAYS'
-		);
-		if (hasWarning) return 'warning';
-
+		// Check for severe first, then warning, then info
+		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+			return 'severe';
+		}
+		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+			return 'warning';
+		}
 		return 'info';
 	}
 
@@ -319,26 +531,42 @@
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text scrolling">
-					{#each route.alerts || [] as alert}
-						{@const parsedContent = parseAlertContent(alert.title)}
+					{#each relevantAlerts as alert}
+						{@const fullText =
+							alert.title && alert.description
+								? `${alert.title}\n\n${alert.description}`
+								: alert.title || alert.description || $_('alerts.default')}
+						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
 							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
-									<img src="/api/images/{content.value}" alt="transit icon" class="alert-image" />
+									<img
+										src="/api/images/{extractImageId(content.value)}"
+										alt="transit icon"
+										class="alert-image"
+									/>
 								{/if}
 							{/each}
 						</div>
 					{/each}
-					{#each route.alerts || [] as alert}
-						{@const parsedContent = parseAlertContent(alert.title)}
+					{#each relevantAlerts as alert}
+						{@const fullText =
+							alert.title && alert.description
+								? `${alert.title}\n\n${alert.description}`
+								: alert.title || alert.description || $_('alerts.default')}
+						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
 							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
-									<img src="/api/images/{content.value}" alt="transit icon" class="alert-image" />
+									<img
+										src="/api/images/{extractImageId(content.value)}"
+										alt="transit icon"
+										class="alert-image"
+									/>
 								{/if}
 							{/each}
 						</div>
@@ -417,6 +645,7 @@
 		vertical-align: middle;
 	}
 
+
 	.route-long-name {
 		font-size: 0.4em;
 		font-weight: 600;
@@ -477,11 +706,13 @@
 
 	.card-destination {
 		flex: 1;
-		font-size: 1.5em;
+		font-size: 1.75em;
+		padding-top: 0.1em;
 		font-weight: 600;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		display: block;
+		overflow-wrap: normal;
+		word-break: normal;
+		/* text-overflow: ellipsis; */
 		min-width: 0;
 	}
 
@@ -494,16 +725,21 @@
 	}
 
 	.time-card {
-		text-align: right;
-		font-size: 1.4em;
+		text-align: left;
+		font-size: 1.5em;
 		font-weight: 700;
 		white-space: nowrap;
 		position: relative;
 		padding-right: 0.5em;
+		padding-top: 0.1em;
 	}
 
 	.time-card span {
-		font-size: inherit;
+		font-weight: inherit;
+	}
+
+	.time-card:first-child span {
+		font-size: 1.5em;
 		font-weight: inherit;
 	}
 
@@ -514,7 +750,7 @@
 
 	.time-card small {
 		font-size: 0.7em;
-		margin-left: 0.3em;
+		margin-left: 0.2em;
 		font-weight: 400;
 		opacity: 0.8;
 	}
@@ -527,17 +763,17 @@
 		position: absolute;
 		right: 0;
 		top: 50%;
-		transform: translateY(-50%);
+		transform: translateX(35%) translateY(-70%);
 		margin-right: 0;
 	}
 
 	/* Real-time indicator animation (copied from RouteItem) */
 	.realtime {
-		width: 0.28em;
-		height: 0.28em;
+		width: 0.6em;
+		height: 0.6em;
 		position: relative;
 		display: inline-block;
-		margin-right: 0.2em;
+		margin-right: 0.3em;
 		vertical-align: middle;
 	}
 
@@ -580,7 +816,7 @@
 		margin-bottom: 0.5em;
 		border-radius: 0.5em;
 		overflow: hidden;
-		height: clamp(5em, 15vh, 18em);
+		height: clamp(5em, 20vh, 10em);
 	}
 
 	/* Alert sidebar with severity-based coloring */
