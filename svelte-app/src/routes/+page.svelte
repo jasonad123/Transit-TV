@@ -8,6 +8,7 @@
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
+	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
@@ -924,10 +925,12 @@
 						</div>
 					{/if}
 
-					<div class="server-management">
-						<h3>{$_('config.server.title')}</h3>
-						<p class="help-text">{$_('config.server.helpText')}</p>
-
+					<CollapsibleSection
+						title={$_('config.server.title')}
+						helpText={$_('config.server.helpText')}
+						initiallyOpen={false}
+						containerClass="server-management"
+					>
 						<div class="server-status">
 							<span class="status-label">Status:</span>
 							<span
@@ -972,7 +975,7 @@
 								{$_('config.server.actions.restart')}
 							</button>
 						</div>
-					</div>
+					</CollapsibleSection>
 
 					<div class="credits">
 						<h3>{$_('config.credits.title')}</h3>
@@ -1938,18 +1941,7 @@
 
 	/* Server Management Styles */
 	.server-management {
-		margin-top: 0;
-		padding-top: 1em;
-		border-top: 1px solid var(--border-color);
 		max-width: 500px;
-	}
-
-	.server-management h3 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		font-size: 1.2em;
-		color: var(--text-primary);
-		overflow-wrap: normal;
 	}
 
 	.server-status {
