@@ -5,18 +5,23 @@
 	},
 	"config": {
 		"title": "Configure Transit TV",
+		"sections": {
+			"display": "Display settings",
+			"style": "Style",
+			"routeOptions": "Route & stop options"
+		},
 		"fields": {
-			"title": "Title:",
+			"title": "Title",
 			"location": "Location (lat, lng):",
-			"timeFormat": "Time Format:",
-			"language": "Language:",
-			"columns": "Grid Columns:",
-			"theme": "Theme:",
-			"headerColor": "Header Color:",
-			"customLogo": "Custom Logo URL:",
+			"timeFormat": "Time format",
+			"language": "Language",
+			"columns": "Grid columns",
+			"theme": "Theme",
+			"headerColor": "Header colour",
+			"customLogo": "Custom logo URL",
 			"showQRCode": "Show Transit deeplink QR Code",
-			"maxDistance": "Search Radius:",
-			"groupItinerariesByStop": "Group destinations with shared stop names?",
+			"maxDistance": "Search radius",
+			"groupItinerariesByStop": "Group destinations with shared stop names",
 			"filterRedundantTerminus": "Hide nearby terminus",
 			"showRouteLongName": "Show line colours and names"
 		},
@@ -71,7 +76,7 @@
 			"title": "Server controls",
 			"status": {
 				"running": "Running",
-				"shutdown": "Shut down"
+				"shutdown": "Polling stopped"
 			},
 			"actions": {
 				"shutdown": "Stop polling",

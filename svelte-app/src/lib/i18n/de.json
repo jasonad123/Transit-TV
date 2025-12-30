@@ -5,18 +5,23 @@
 	},
 	"config": {
 		"title": "Konfigurieren Transit-TV",
+		"sections": {
+			"display": "Anzeigeeinstellungen",
+			"style": "Stil",
+			"routeOptions": "Routen- und Haltestellenoptionen"
+		},
 		"fields": {
-			"title": "Titel:",
-			"location": "Location (lat, lng):",
-			"timeFormat": "Zeitformat:",
-			"language": "Sprache:",
-			"columns": "Rasterspalten:",
-			"theme": "Thema:",
-			"headerColor": "Kopfzeilenfarbe:",
+			"title": "Titel",
+			"location": "Location (lat, lng)",
+			"timeFormat": "Zeitformat",
+			"language": "Sprache",
+			"columns": "Rasterspalten",
+			"theme": "Thema",
+			"headerColor": "Kopfzeilenfarbe",
 			"showQRCode": "Transit-Deep-Link-QR-Code anzeigen",
-			"customLogo": "Logo-URL:",
-			"maxDistance": "Suchradius:",
-			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
+			"customLogo": "Logo-URL",
+			"maxDistance": "Suchradius",
+			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen"
 		},

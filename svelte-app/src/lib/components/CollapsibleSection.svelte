@@ -10,19 +10,20 @@
 	 * </CollapsibleSection>
 	 */
 
-	/** Section title displayed in the header */
-	export let title = '';
+	interface Props {
+		/** Section title displayed in the header */
+		title?: string;
+		/** Optional help text displayed below the title when expanded */
+		helpText?: string;
+		/** Whether the section should be open by default */
+		initiallyOpen?: boolean;
+		/** Optional CSS class for the container */
+		containerClass?: string;
+	}
 
-	/** Optional help text displayed below the title when expanded */
-	export let helpText = '';
+	let { title = '', helpText = '', initiallyOpen = false, containerClass = '' }: Props = $props();
 
-	/** Whether the section should be open by default */
-	export let initiallyOpen = false;
-
-	/** Optional CSS class for the container */
-	export let containerClass = '';
-
-	let isOpen = initiallyOpen;
+	let isOpen = $state(initiallyOpen);
 
 	function toggle() {
 		isOpen = !isOpen;
@@ -84,6 +85,20 @@
 <style>
 	.collapsible-section {
 		margin: 0;
+		padding-top: 1.5rem;
+		margin-top: 1.5rem;
+		position: relative;
+	}
+
+	.collapsible-section::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background-color: var(--text-secondary);
+		opacity: 0.3;
 	}
 
 	.collapsible-header {

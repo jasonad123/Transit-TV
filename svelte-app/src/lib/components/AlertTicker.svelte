@@ -8,9 +8,13 @@
 	} from '$lib/services/alerts';
 	import type { Route } from '$lib/services/nearby';
 
-	export let routes: Route[] = [];
+	interface Props {
+		routes?: Route[];
+	}
 
-	$: alerts = getAllActiveAlerts(routes);
+	let { routes = [] }: Props = $props();
+
+	let alerts = $derived(getAllActiveAlerts(routes));
 </script>
 
 {#if alerts.length > 0}

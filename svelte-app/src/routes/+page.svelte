@@ -9,6 +9,7 @@
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
+	import SolidSection from '$lib/components/SolidSection.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
@@ -682,170 +683,173 @@
 							<option value="de">{$_('config.languages.german')}</option>
 						</select>
 					</label>
-
-					<label>
-						{$_('config.fields.maxDistance')}
-						<div class="slider-container">
-							<input
-								type="range"
-								min="250"
-								max="1500"
-								step="250"
-								bind:value={$config.maxDistance}
-								class="distance-slider"
-								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-							/>
-							<div class="slider-labels">
-								<span>{$config.maxDistance}m</span>
+						<label>
+							{$_('config.fields.maxDistance')}
+							<div class="slider-container">
+								<input
+									type="range"
+									min="250"
+									max="1500"
+									step="250"
+									bind:value={$config.maxDistance}
+									class="distance-slider"
+									style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+								/>
+								<div class="slider-labels">
+									<span>{$config.maxDistance}m</span>
+								</div>
 							</div>
-						</div>
-					</label>
+						</label>
 
-					<label>
-						{$_('config.fields.columns')}
-						<div class="button-group">
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 'auto'}
-								onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-							>
-								{$_('config.columns.auto')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 1}
-								onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-							>
-								1
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 2}
-								onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-							>
-								2
-							</button>
-			<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 3}
-								onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-							>
-								3
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 4}
-								onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-							>
-								4
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 5}
-								onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-							>
-								5
-							</button>
-						</div>
-					</label>
+					<SolidSection title={$_('config.sections.display')}>
+						<label>
+							{$_('config.fields.columns')}
+							<div class="button-group">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 'auto'}
+									onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
+								>
+									{$_('config.columns.auto')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 1}
+									onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
+								>
+									1
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 2}
+									onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
+								>
+									2
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 3}
+									onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
+								>
+									3
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 4}
+									onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
+								>
+									4
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 5}
+									onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
+								>
+									5
+								</button>
+							</div>
+						</label>
 
-					<label>
-						{$_('config.fields.theme')}
-						<div class="button-group">
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'light'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
-							>
-								{$_('config.theme.light')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'auto'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
-							>
-								{$_('config.theme.auto')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'dark'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
-							>
-								{$_('config.theme.dark')}
-							</button>
+						<div class="toggle-container">
+							<label class="toggle-label">
+								<span>{$_('config.fields.showQRCode')} </span>
+								<label class="toggle-switch">
+									<input type="checkbox" bind:checked={$config.showQRCode} />
+									<span class="toggle-slider"></span>
+								</label>
+							</label>
+							<small class="help-text">{$_('config.qrCode.helpText')}</small>
 						</div>
-					</label>
+					</SolidSection>
 
-					<label>
-						{$_('config.fields.headerColor')}
-						<div style="display: flex; gap: 0.5em; align-items: center;">
-							<input type="color" bind:value={$config.headerColor} />
-							<button
-								type="button"
-								class="btn-reset"
-								onclick={() => {
-									const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-									config.update((c) => ({ ...c, headerColor: defaultColor }));
-								}}
-								title={$_('config.buttons.resetToDefault')}
-							>
-								{$_('config.buttons.reset')}
-							</button>
-						</div>
-					</label>
+					<SolidSection title={$_('config.sections.style')}>
+						<label>
+							{$_('config.fields.theme')}
+							<div class="button-group">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'light'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
+								>
+									{$_('config.theme.light')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'auto'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
+								>
+									{$_('config.theme.auto')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'dark'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
+								>
+									{$_('config.theme.dark')}
+								</button>
+							</div>
+						</label>
 
-					<label>
-						{$_('config.fields.customLogo')}
-						<input
-							type="text"
-							bind:value={$config.customLogo}
-							placeholder="https://example.com/logo.png or /assets/images/logo.png"
-						/>
-						<small class="help-text">{$_('config.customLogo.helpText')}</small>
-						{#if $config.customLogo}
-							<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
+						<label>
+							{$_('config.fields.headerColor')}
+							<div style="display: flex; gap: 0.5em; align-items: center;">
+								<input type="color" bind:value={$config.headerColor} />
 								<button
 									type="button"
 									class="btn-reset"
-									onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
+									onclick={() => {
+										const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
+										config.update((c) => ({ ...c, headerColor: defaultColor }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
 								>
-									{$_('config.customLogo.clear')}
+									{$_('config.buttons.reset')}
 								</button>
 							</div>
-							<div class="logo-preview">
-								<img
-									src={$config.customLogo}
-									alt="Logo preview"
-									onerror={(e) => {
-										const parent = (e.currentTarget as HTMLImageElement).parentElement;
-										if (parent) {
-											parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
-										}
-									}}
-								/>
-							</div>
-						{/if}
-					</label>
-
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.showQRCode')} </span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.showQRCode} />
-								<span class="toggle-slider"></span>
-							</label>
 						</label>
-						<small class="help-text">{$_('config.qrCode.helpText')}</small>
-					</div>
+
+						<label>
+							{$_('config.fields.customLogo')}
+							<input
+								type="text"
+								bind:value={$config.customLogo}
+								placeholder="https://example.com/logo.png or /assets/images/logo.png"
+							/>
+							<small class="help-text">{$_('config.customLogo.helpText')}</small>
+							{#if $config.customLogo}
+								<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
+									<button
+										type="button"
+										class="btn-reset"
+										onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
+									>
+										{$_('config.customLogo.clear')}
+									</button>
+								</div>
+								<div class="logo-preview">
+									<img
+										src={$config.customLogo}
+										alt="Logo preview"
+										onerror={(e) => {
+											const parent = (e.currentTarget as HTMLImageElement).parentElement;
+											if (parent) {
+												parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+											}
+										}}
+									/>
+								</div>
+							{/if}
+						</label>
+					</SolidSection>
 
 					<div class="toggle-container">
 						<label class="toggle-label">
@@ -1512,11 +1516,11 @@
 		font-size: 1.25em;
 	}
 
-	.route-management {
+	/* .route-management {
 		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
-	}
+	} */
 
 	.route-management h3 {
 		margin-top: 0;
