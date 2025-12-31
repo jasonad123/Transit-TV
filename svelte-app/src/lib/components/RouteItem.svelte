@@ -1385,6 +1385,12 @@
 		will-change: auto;
 	}
 
+	.variant-debug {
+		font-size: 0.6em;
+		opacity: 0.6;
+		font-weight: 400;
+	}
+
 	.route .img28 {
 		height: 0.875em;
 		display: block;
