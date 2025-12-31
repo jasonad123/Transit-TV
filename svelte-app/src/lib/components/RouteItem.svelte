@@ -1027,7 +1027,9 @@
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-								>{dir.merged_headsign || 'Unknown destination'}</span
+								>{dir.direction_headsign || dir.merged_headsign || 'Unknown destination'}{#if dir.variant_id}<span
+										class="variant-debug">&nbsp;[v{dir.variant_id}]</span
+									>{/if}</span
 							>
 						</h3>
 
@@ -1381,6 +1383,12 @@
 
 	.route h3 .destination-text:not(.scrolling) {
 		will-change: auto;
+	}
+
+	.variant-debug {
+		font-size: 0.6em;
+		opacity: 0.6;
+		font-weight: 400;
 	}
 
 	.route .img28 {
