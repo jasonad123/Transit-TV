@@ -1,6 +1,7 @@
 import { get } from 'svelte/store';
 import { apiCache } from '$lib/utils/apiCache';
 import { config } from '$lib/stores/config';
+import { demergeItineraries } from '$lib/utils/itineraryUtils';
 
 export interface Route {
 	global_route_id: string;
@@ -37,6 +38,9 @@ export interface Itinerary {
 		parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;
+	direction_id?: number;
+	direction_headsign?: string;
+	variant_id?: string;
 	schedule_items?: ScheduleItem[];
 }
 
@@ -156,11 +160,12 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			// Let cache determine TTL based on real-time vs schedule data (3s vs 120s)
 		)
 		.then((routes) => {
-			// Filter out itineraries with no shown departures
-			// Prevents displaying commuter route directions with no active trips (e.g., morning-only routes in PM)
+			const enableDemerge = get(config).enableHeadsignDemerge;
+			if (!enableDemerge) return routes;
+
 			return routes.map((route: Route) => ({
 				...route,
-				itineraries: route.itineraries?.filter((itinerary) => hasShownDeparture(route, itinerary))
+				itineraries: route.itineraries ? demergeItineraries(route.itineraries) : undefined
 			}));
 		})
 		.then((routes) => applyFilters(routes));
