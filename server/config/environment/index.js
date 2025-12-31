@@ -217,6 +217,13 @@ function validateEnvironment() {
 	var warnings = [];
 	var errors = [];
 
+	if (!process.env.NODE_ENV) {
+		console.warn('NODE_ENV not set, defaulting to development');
+		process.env.NODE_ENV = 'development';
+	} else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'development') {
+		warnings.push('NODE_ENV should be "production" or "development", got: ' + process.env.NODE_ENV);
+	}
+
 	// Critical: Transit API key in production
 	if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
 		errors.push('TRANSIT_API_KEY is required in production');

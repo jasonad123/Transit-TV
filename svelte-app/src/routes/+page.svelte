@@ -39,17 +39,6 @@
 	let validationMessage = $state<string | null>(null);
 	let validationSuccess = $state<boolean | null>(null);
 
-	// Server status state
-	let serverStatus = $state<{
-		isShutdown: boolean;
-		shutdownTime: string | null;
-	}>({
-		isShutdown: false,
-		shutdownTime: null
-	});
-	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
-	let serverActionInProgress = $state(false);
-
 	// App version state
 	let appVersion = $state<string>('1.3.1'); // Fallback version
 
@@ -118,12 +107,6 @@
 	}
 
 	async function loadNearby() {
-		// Don't poll Transit API if server is in shutdown state
-		if (serverStatus.isShutdown) {
-			console.log('Skipping Transit API poll - server is shutdown');
-			return;
-		}
-
 		try {
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
@@ -330,12 +313,8 @@
 			console.log('Could not fetch version, using fallback');
 		}
 
-		// Check server status first, before starting polling
-		await checkServerStatus();
-		serverStatusIntervalId = setInterval(checkServerStatus, 10000);
-
-		// Only load routes if screen is wide enough and server is not shutdown
-		if (!$config.isEditing && !isScreenTooNarrow && !serverStatus.isShutdown) {
+		// Only load routes if screen is wide enough
+		if (!$config.isEditing && !isScreenTooNarrow) {
 			await loadNearby();
 			// Use adaptive polling interval (starts at 20s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -360,8 +339,8 @@
 				clearInterval(intervalId);
 				intervalId = undefined!;
 			}
-		} else if (!$config.isEditing && !serverStatus.isShutdown) {
-			// Screen wide enough and server running - start/resume polling if not already running
+		} else if (!$config.isEditing) {
+			// Screen wide enough - start/resume polling if not already running
 			if (!intervalId) {
 				loadNearby();
 				intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -381,9 +360,6 @@
 		}
 		if (errorRetryTimeoutId) {
 			clearTimeout(errorRetryTimeoutId);
-		}
-		if (serverStatusIntervalId) {
-			clearInterval(serverStatusIntervalId);
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
@@ -409,7 +385,6 @@
 
 	async function validateLocation(latitude: number, longitude: number) {
 		if (!$config.isEditing) return; // Only validate during interactive config
-		if (serverStatus.isShutdown) return; // Don't validate when server is shutdown
 
 		validatingLocation = true;
 		validationMessage = null;
@@ -495,61 +470,6 @@
 			validateLocation($config.latLng.latitude, $config.latLng.longitude);
 		}
 	}
-
-	// Server status and control functions
-	async function checkServerStatus() {
-		try {
-			const response = await fetch('/api/server/status');
-			if (response.ok) {
-				const status = await response.json();
-				serverStatus = {
-					isShutdown: status.isShutdown,
-					shutdownTime: status.shutdownTime
-				};
-			}
-		} catch (error) {
-			console.error('Error checking server status:', error);
-		}
-	}
-
-	async function shutdownServer() {
-		if (!confirm($_('config.server.confirmShutdown'))) {
-			return;
-		}
-
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/shutdown', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-			}
-		} catch (error) {
-			console.error('Error shutting down server:', error);
-			alert('Failed to shutdown server');
-		} finally {
-			serverActionInProgress = false;
-		}
-	}
-
-	async function startServer() {
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/start', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-				// Reload routes after starting
-				setTimeout(() => {
-					loadNearby();
-				}, 1000);
-			}
-		} catch (error) {
-			console.error('Error starting server:', error);
-			alert('Failed to start server');
-		} finally {
-			serverActionInProgress = false;
-		}
-	}
-
 </script>
 
 <svelte:head>
@@ -683,23 +603,23 @@
 							<option value="de">{$_('config.languages.german')}</option>
 						</select>
 					</label>
-						<label>
-							{$_('config.fields.maxDistance')}
-							<div class="slider-container">
-								<input
-									type="range"
-									min="250"
-									max="1500"
-									step="250"
-									bind:value={$config.maxDistance}
-									class="distance-slider"
-									style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-								/>
-								<div class="slider-labels">
-									<span>{$config.maxDistance}m</span>
-								</div>
+					<label>
+						{$_('config.fields.maxDistance')}
+						<div class="slider-container">
+							<input
+								type="range"
+								min="250"
+								max="1500"
+								step="250"
+								bind:value={$config.maxDistance}
+								class="distance-slider"
+								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+							/>
+							<div class="slider-labels">
+								<span>{$config.maxDistance}m</span>
 							</div>
-						</label>
+						</div>
+					</label>
 
 					<SolidSection title={$_('config.sections.display')}>
 						<label>
@@ -907,45 +827,6 @@
 						{/if}
 					</CollapsibleSection>
 
-					<CollapsibleSection
-						title={$_('config.server.title')}
-						helpText={$_('config.server.helpText')}
-						initiallyOpen={false}
-						containerClass="server-management"
-					>
-						<div class="server-status">
-							<span class="status-label">Status:</span>
-							<span
-								class="status-value"
-								class:status-running={!serverStatus.isShutdown}
-								class:status-shutdown={serverStatus.isShutdown}
-							>
-								{serverStatus.isShutdown
-									? $_('config.server.status.shutdown')
-									: $_('config.server.status.running')}
-							</span>
-						</div>
-
-						<div class="button-group server-controls-buttons">
-							<button
-								type="button"
-								class="btn-server-control btn-shutdown"
-								onclick={shutdownServer}
-								disabled={serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.shutdown')}
-							</button>
-							<button
-								type="button"
-								class="btn-server-control btn-start"
-								onclick={startServer}
-								disabled={!serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.start')}
-							</button>
-						</div>
-					</CollapsibleSection>
-
 					<div class="credits">
 						<h3>{$_('config.credits.title')}</h3>
 						<h4>
@@ -995,93 +876,81 @@
 	{/if}
 
 	<div class="content">
-		{#if serverStatus.isShutdown}
-			<div class="shutdown-notice">
-				<div class="shutdown-icon-stack">
-					<iconify-icon icon="fluent:vehicle-bus-20-filled" class="bus-icon"></iconify-icon>
-					<iconify-icon icon="ix:maintenance-warning-filled" class="warning-badge"></iconify-icon>
-				</div>
-				<h2>{$_('shutdown.title')}</h2>
-				<p>{$_('shutdown.message')}</p>
-				<p class="shutdown-subtitle">{$_('shutdown.subtitle')}</p>
+		{#if errorMessage}
+			<div
+				class="error-banner"
+				class:error-auth={errorType === 'auth'}
+				class:error-timeout={errorType === 'timeout'}
+				class:error-backend={errorType === 'backend'}
+			>
+				<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
+				></iconify-icon>
+				{errorMessage}
 			</div>
+		{/if}
+		{#if loading}
+			<div class="loading">{$_('routes.loading')}</div>
+		{:else if routes.length === 0}
+			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
-			{#if errorMessage}
-				<div
-					class="error-banner"
-					class:error-auth={errorType === 'auth'}
-					class:error-timeout={errorType === 'timeout'}
-					class:error-backend={errorType === 'backend'}
-				>
-					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
-					></iconify-icon>
-					{errorMessage}
-				</div>
-			{/if}
-			{#if loading}
-				<div class="loading">{$_('routes.loading')}</div>
-			{:else if routes.length === 0}
-				<div class="no-routes">{$_('routes.noRoutes')}</div>
-			{:else}
-				<section
-					id="routes"
-					class:cols-1={$config.columns === 1}
-					class:cols-2={$config.columns === 2}
-					class:cols-3={$config.columns === 3}
-					class:cols-4={$config.columns === 4}
-					class:cols-5={$config.columns === 5}
-				>
-					{#each routes as route, index (route.global_route_id)}
-						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-							<RouteItem {route} showLongName={$config.showRouteLongName} />
-							<div class="route-controls">
-								{#if index > 0}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRouteToTop(index)}
-										aria-label={$_('aria.moveRouteToTop')}
-										title={$_('routes.controls.moveToTop')}
-									>
-										<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
-									</button>
-								{/if}
-								{#if index > 0}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRoute(index, 'up')}
-										aria-label={$_('aria.moveRouteUp')}
-										title={$_('routes.controls.moveUp')}
-									>
-										<iconify-icon icon="ix:arrow-up"></iconify-icon>
-									</button>
-								{/if}
-								{#if index < routes.length - 1}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRoute(index, 'down')}
-										aria-label={$_('aria.moveRouteDown')}
-										title={$_('routes.controls.moveDown')}
-									>
-										<iconify-icon icon="ix:arrow-down"></iconify-icon>
-									</button>
-								{/if}
+			<section
+				id="routes"
+				class:cols-1={$config.columns === 1}
+				class:cols-2={$config.columns === 2}
+				class:cols-3={$config.columns === 3}
+				class:cols-4={$config.columns === 4}
+				class:cols-5={$config.columns === 5}
+			>
+				{#each routes as route, index (route.global_route_id)}
+					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						<div class="route-controls">
+							{#if index > 0}
 								<button
 									type="button"
 									class="btn-route-control"
-									onclick={() => toggleRouteHidden(route.global_route_id)}
-									aria-label={$_('aria.hideRoute')}
-									title={$_('routes.controls.hide')}
+									onclick={() => moveRouteToTop(index)}
+									aria-label={$_('aria.moveRouteToTop')}
+									title={$_('routes.controls.moveToTop')}
 								>
-									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
 								</button>
-							</div>
+							{/if}
+							{#if index > 0}
+								<button
+									type="button"
+									class="btn-route-control"
+									onclick={() => moveRoute(index, 'up')}
+									aria-label={$_('aria.moveRouteUp')}
+									title={$_('routes.controls.moveUp')}
+								>
+									<iconify-icon icon="ix:arrow-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if index < routes.length - 1}
+								<button
+									type="button"
+									class="btn-route-control"
+									onclick={() => moveRoute(index, 'down')}
+									aria-label={$_('aria.moveRouteDown')}
+									title={$_('routes.controls.moveDown')}
+								>
+									<iconify-icon icon="ix:arrow-down"></iconify-icon>
+								</button>
+							{/if}
+							<button
+								type="button"
+								class="btn-route-control"
+								onclick={() => toggleRouteHidden(route.global_route_id)}
+								aria-label={$_('aria.hideRoute')}
+								title={$_('routes.controls.hide')}
+							>
+								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+							</button>
 						</div>
-					{/each}
-				</section>
-			{/if}
+					</div>
+				{/each}
+			</section>
 		{/if}
 	</div>
 
@@ -1522,13 +1391,6 @@
 		border-top: 1px solid var(--border-color);
 	} */
 
-	.route-management h3 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		font-size: 1.2em;
-		color: var(--text-primary);
-	}
-
 	.hidden-routes-list {
 		display: flex;
 		flex-direction: column;
@@ -1906,141 +1768,6 @@
 		font-size: 0.9em;
 		font-weight: 500;
 		color: var(--text-primary);
-	}
-
-	/* Server Management Styles */
-	.server-management {
-		max-width: 500px;
-	}
-
-	.server-status {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-bottom: 1em;
-		padding: 0.75em;
-		background: var(--bg-primary);
-		border-radius: 4px;
-		border: 1px solid var(--border-color);
-	}
-
-	.status-label {
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.status-value {
-		font-weight: 700;
-		padding: 0.3em 0.8em;
-		border-radius: 4px;
-		font-size: 0.9em;
-	}
-
-	.status-running {
-		background: #30b566;
-		color: white;
-	}
-
-	.status-shutdown {
-		background: #f59e0b;
-		color: white;
-	}
-
-	.server-controls-buttons {
-		display: flex;
-		gap: 0.5em;
-	}
-
-	.btn-server-control {
-		flex: 1;
-		padding: 0.7em 1em;
-		border: 2px solid var(--border-color);
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.2s;
-		font-size: 0.95em;
-		font-weight: 600;
-		color: white;
-	}
-
-	.btn-server-control:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.btn-shutdown {
-		background: #e30022;
-		border-color: #e30022;
-	}
-
-	.btn-shutdown:hover:not(:disabled) {
-		background: #b8001b;
-		border-color: #b8001b;
-	}
-
-	.btn-start {
-		background: #30b566;
-		border-color: #30b566;
-	}
-
-	.btn-start:hover:not(:disabled) {
-		background: #1f7a42;
-		border-color: #1f7a42;
-	}
-
-	/* Shutdown Notice Styles */
-	.shutdown-notice {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		text-align: center;
-		padding: 3em;
-		color: var(--text-primary);
-	}
-
-	.shutdown-icon-stack {
-		position: relative;
-		display: inline-block;
-		margin-bottom: 0.5em;
-	}
-
-	.shutdown-icon-stack .bus-icon {
-		font-size: 8em;
-		color: var(--text-secondary);
-		display: block;
-	}
-
-	.shutdown-icon-stack .warning-badge {
-		position: absolute;
-		bottom: -0.05em;
-		right: -0.1em;
-		font-size: 3em;
-		color: #f59e0b;
-		background: var(--bg-primary);
-		border-radius: 50%;
-		padding: 0.1px;
-	}
-
-	.shutdown-notice h2 {
-		font-size: 3em;
-		margin: 0.3em 0;
-		color: var(--text-primary);
-		text-wrap: wrap;
-		overflow-wrap: normal;
-	}
-
-	.shutdown-notice p {
-		font-size: 1.8em;
-		margin: 0.5em 0;
-		color: var(--text-secondary);
-	}
-
-	.shutdown-subtitle {
-		font-size: 1.4em;
-		font-style: italic;
-		opacity: 0.8;
 	}
 
 	/* Credits Styles */

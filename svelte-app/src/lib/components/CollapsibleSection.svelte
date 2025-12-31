@@ -23,6 +23,7 @@
 
 	let { title = '', helpText = '', initiallyOpen = false, containerClass = '' }: Props = $props();
 
+	// svelte-ignore state_referenced_locally
 	let isOpen = $state(initiallyOpen);
 
 	function toggle() {

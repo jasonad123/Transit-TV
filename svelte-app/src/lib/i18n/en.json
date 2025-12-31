@@ -72,20 +72,6 @@
 			"reset": "Reset",
 			"resetToDefault": "Reset to default"
 		},
-		"server": {
-			"title": "Server controls",
-			"status": {
-				"running": "Running",
-				"shutdown": "Polling stopped"
-			},
-			"actions": {
-				"shutdown": "Stop polling",
-				"start": "Start polling"
-			},
-			"confirmShutdown": "Stop polling the Transit API? This will pause live updates.",
-			"confirmRestart": "Restart the server? This will briefly interrupt service.",
-			"helpText": "Use these controls to manage the server for troubleshooting or to reduce API usage."
-		},
 		"location": {
 			"validating": "Checking location...",
 			"validationSuccess": "Location set - {count} route{plural} found nearby",
@@ -143,10 +129,5 @@
 		"timeout": "Checking for updates..",
 		"backend": "Transit TV is out of service. Retrying...",
 		"generic": "Transit TV ran into a problem. Retrying..."
-	},
-	"shutdown": {
-		"title": "Sorry, Transit TV is out of service!",
-		"message": "The server has been paused for maintenance.",
-		"subtitle": "Live transit updates are temporarily unavailable."
 	}
 }

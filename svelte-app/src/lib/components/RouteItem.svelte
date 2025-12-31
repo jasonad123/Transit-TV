@@ -1046,6 +1046,7 @@
 								</h4>
 							{/each}
 							{#each Array(Math.max(0, 3 - (dir.schedule_items?.filter(shouldShowDeparture).length || 0))) as _}
+								<!-- svelte-ignore a11y_missing_content -->
 								<h4>
 									<span class="inactive">&nbsp;</span>
 									<small>&nbsp;</small>

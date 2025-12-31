@@ -11,7 +11,6 @@ module.exports = function (app) {
 	app.use('/api/images', require('./api/image'));
 	app.use('/api/routes', require('./api/routes'));
 	app.use('/api/config', require('./api/config'));
-	app.use('/api/server', require('./api/server'));
 
 	// Health check endpoint for monitoring and orchestration
 	// Always allow CORS for health endpoint to support dev mode version fetching
