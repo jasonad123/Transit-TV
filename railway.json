@@ -3,12 +3,7 @@
 	"build": {
 		"builder": "DOCKERFILE",
 		"dockerfilePath": "Dockerfile.railway",
-		"watchPatterns": [
-			"server/**",
-			"svelte-app/**",
-			"package.json",
-			"pnpm-lock.yaml"
-		]
+		"watchPatterns": ["server/**", "svelte-app/**", "package.json", "pnpm-lock.yaml"]
 	},
 	"deploy": {
 		"startCommand": "node server/app.js",

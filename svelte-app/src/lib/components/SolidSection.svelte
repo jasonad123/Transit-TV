@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	/**
 	 * Reusable Solid section component
 	 * Provides non-collapsible section functionality with consistent visual style
@@ -17,9 +19,11 @@
 		helpText?: string;
 		/** Optional CSS class for the container */
 		containerClass?: string;
+		/** Content to display in the section */
+		children: Snippet;
 	}
 
-	let { title = '', helpText = '', containerClass = '' }: Props = $props();
+	let { title = '', helpText = '', containerClass = '', children }: Props = $props();
 </script>
 
 <div class="solid-section {containerClass}">
@@ -36,7 +40,7 @@
 		{#if helpText}
 			<p class="help-text">{helpText}</p>
 		{/if}
-		<slot />
+		{@render children()}
 	</div>
 </div>
 

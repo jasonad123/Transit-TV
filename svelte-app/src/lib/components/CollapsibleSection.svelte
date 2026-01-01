@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	/**
 	 * Reusable collapsible section component
 	 * Provides accessible, animated expand/collapse functionality
@@ -19,9 +21,17 @@
 		initiallyOpen?: boolean;
 		/** Optional CSS class for the container */
 		containerClass?: string;
+		/** Content to display in the collapsible section */
+		children: Snippet;
 	}
 
-	let { title = '', helpText = '', initiallyOpen = false, containerClass = '' }: Props = $props();
+	let {
+		title = '',
+		helpText = '',
+		initiallyOpen = false,
+		containerClass = '',
+		children
+	}: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	let isOpen = $state(initiallyOpen);
@@ -78,7 +88,7 @@
 			{#if helpText}
 				<p class="help-text">{helpText}</p>
 			{/if}
-			<slot />
+			{@render children()}
 		</div>
 	{/if}
 </div>

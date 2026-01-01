@@ -684,7 +684,7 @@
 									<span class="toggle-slider"></span>
 								</label>
 							</label>
-							<small class="help-text">{$_('config.qrCode.helpText')}</small>
+							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
 						</div>
 					</SolidSection>
 
@@ -771,38 +771,46 @@
 						</label>
 					</SolidSection>
 
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.groupItinerariesByStop')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
-								<span class="toggle-slider"></span>
+					<SolidSection title={$_('config.sections.routeOptions')}>
+						<div class="toggle-container">
+							<label class="toggle-label">
+								<span>{$_('config.fields.groupItinerariesByStop')}</span>
+								<label class="toggle-switch">
+									<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
+									<span class="toggle-slider"></span>
+								</label>
 							</label>
-						</label>
-						<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
-					</div>
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
+							>
+						</div>
 
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.filterRedundantTerminus')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
-								<span class="toggle-slider"></span>
+						<div class="toggle-container">
+							<label class="toggle-label">
+								<span>{$_('config.fields.filterRedundantTerminus')}</span>
+								<label class="toggle-switch">
+									<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
+									<span class="toggle-slider"></span>
+								</label>
 							</label>
-						</label>
-						<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
-					</div>
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.filterTerminushelpText')}</small
+							>
+						</div>
 
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.showRouteLongName')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.showRouteLongName} />
-								<span class="toggle-slider"></span>
+						<div class="toggle-container">
+							<label class="toggle-label">
+								<span>{$_('config.fields.showRouteLongName')}</span>
+								<label class="toggle-switch">
+									<input type="checkbox" bind:checked={$config.showRouteLongName} />
+									<span class="toggle-slider"></span>
+								</label>
 							</label>
-						</label>
-						<small class="help-text">{$_('config.routeDisplay.showRouteLongNameHelpText')}</small>
-					</div>
+							<small class="toggle-help-text"
+								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
+							>
+						</div>
+					</SolidSection>
 
 					<CollapsibleSection
 						title={$_('config.hiddenRoutes.title')}
@@ -1256,6 +1264,17 @@
 		justify-content: space-between;
 		gap: 1em;
 		margin-bottom: 0;
+	}
+
+	.toggle-help-text {
+		display: block !important;
+		margin-top: 0.25em;
+		margin-bottom: 0;
+		font-size: 0.95em;
+		color: var(--text-secondary);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		max-width: 85%;
 	}
 
 	.toggle-switch {
