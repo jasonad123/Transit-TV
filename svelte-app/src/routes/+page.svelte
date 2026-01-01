@@ -8,6 +8,7 @@
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
+	import Toggle from '$lib/components/Toggle.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
 	import SolidSection from '$lib/components/SolidSection.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -677,13 +678,11 @@
 						</label>
 
 						<div class="toggle-container">
-							<label class="toggle-label">
-								<span>{$_('config.fields.showQRCode')} </span>
-								<label class="toggle-switch">
-									<input type="checkbox" bind:checked={$config.showQRCode} />
-									<span class="toggle-slider"></span>
-								</label>
-							</label>
+							<Toggle bind:checked={$config.showQRCode}>
+								{#snippet label()}
+									<span>{$_('config.fields.showQRCode')}</span>
+								{/snippet}
+							</Toggle>
 							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
 						</div>
 					</SolidSection>
@@ -773,39 +772,33 @@
 
 					<SolidSection title={$_('config.sections.routeOptions')}>
 						<div class="toggle-container">
-							<label class="toggle-label">
-								<span>{$_('config.fields.groupItinerariesByStop')}</span>
-								<label class="toggle-switch">
-									<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
-									<span class="toggle-slider"></span>
-								</label>
-							</label>
+							<Toggle bind:checked={$config.groupItinerariesByStop}>
+								{#snippet label()}
+									<span>{$_('config.fields.groupItinerariesByStop')}</span>
+								{/snippet}
+							</Toggle>
 							<small class="toggle-help-text"
 								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
 							>
 						</div>
 
 						<div class="toggle-container">
-							<label class="toggle-label">
-								<span>{$_('config.fields.filterRedundantTerminus')}</span>
-								<label class="toggle-switch">
-									<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
-									<span class="toggle-slider"></span>
-								</label>
-							</label>
+							<Toggle bind:checked={$config.filterRedundantTerminus}>
+								{#snippet label()}
+									<span>{$_('config.fields.filterRedundantTerminus')}</span>
+								{/snippet}
+							</Toggle>
 							<small class="toggle-help-text"
 								>{$_('config.stopManagement.filterTerminushelpText')}</small
 							>
 						</div>
 
 						<div class="toggle-container">
-							<label class="toggle-label">
-								<span>{$_('config.fields.showRouteLongName')}</span>
-								<label class="toggle-switch">
-									<input type="checkbox" bind:checked={$config.showRouteLongName} />
-									<span class="toggle-slider"></span>
-								</label>
-							</label>
+							<Toggle bind:checked={$config.showRouteLongName}>
+								{#snippet label()}
+									<span>{$_('config.fields.showRouteLongName')}</span>
+								{/snippet}
+							</Toggle>
 							<small class="toggle-help-text"
 								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
 							>
@@ -1257,15 +1250,6 @@
 		gap: 0.3em;
 	}
 
-	.toggle-label {
-		display: flex;
-		flex-direction: row !important;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		margin-bottom: 0;
-	}
-
 	.toggle-help-text {
 		display: block !important;
 		margin-top: 0.25em;
@@ -1275,53 +1259,6 @@
 		word-wrap: break-word;
 		overflow-wrap: break-word;
 		max-width: 85%;
-	}
-
-	.toggle-switch {
-		position: relative;
-		display: inline-block;
-		width: 3em;
-		height: 1.6em;
-		flex-shrink: 0;
-	}
-
-	.toggle-switch input {
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
-	.toggle-slider {
-		position: absolute;
-		cursor: pointer;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: #ccc;
-		transition: 0.3s;
-		border-radius: 1.6em;
-	}
-
-	.toggle-slider:before {
-		position: absolute;
-		content: '';
-		height: 1.2em;
-		width: 1.2em;
-		left: 0.2em;
-		bottom: 0.2em;
-		background-color: white;
-		transition: 0.3s;
-		border-radius: 50%;
-	}
-
-	.toggle-switch input:checked + .toggle-slider {
-		/* background-color: #30b566; */
-		background-color: var(--bg-header);
-	}
-
-	.toggle-switch input:checked + .toggle-slider:before {
-		transform: translateX(1.4em);
 	}
 
 	.route-wrapper {
@@ -1495,7 +1432,7 @@
 		font-weight: 600;
 	}
 
-	/* QR Code Styles */
+	/* Floating QR Code Styles */
 	.floating-qr {
 		position: fixed;
 		bottom: 1.5em;
@@ -1552,45 +1489,6 @@
 	.qr-label-2 {
 		font-weight: bold;
 	}
-
-	/* .qr-section {
-		margin-top: 1em;
-		padding: 1em;
-		background: var(--bg-secondary);
-		border-radius: 8px;
-		text-align: center;
-	}
-
-	.qr-section h3 {
-		margin: 0 0 0.5em 0;
-		font-size: 1.1em;
-		color: var(--text-primary);
-	}
-
-	.qr-section .help-text {
-		margin: 0 0 1em 0;
-		font-size: 0.9em;
-		color: var(--text-secondary);
-	}
-
-	.qr-display {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background: white;
-		padding: 1.5em;
-		border-radius: 8px;
-		width: fit-content;
-		margin: 0 auto;
-		border: 2px solid #ddd;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	[data-theme="dark"] .qr-display {
-		background: white;
-		border-color: #666;
-		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-	} */
 
 	.error-banner {
 		position: fixed;
@@ -1840,4 +1738,46 @@
 	:global(.credits a:hover) {
 		text-decoration: underline;
 	}
+
+	/* QR Code Section Styles */
+
+	/* .qr-section {
+		margin-top: 1em;
+		padding: 1em;
+		background: var(--bg-secondary);
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	.qr-section h3 {
+		margin: 0 0 0.5em 0;
+		font-size: 1.1em;
+		color: var(--text-primary);
+	}
+
+	.qr-section .help-text {
+		margin: 0 0 1em 0;
+		font-size: 0.9em;
+		color: var(--text-secondary);
+	}
+
+	.qr-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: white;
+		padding: 1.5em;
+		border-radius: 8px;
+		width: fit-content;
+		margin: 0 auto;
+		border: 2px solid #ddd;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	[data-theme="dark"] .qr-display {
+		background: white;
+		border-color: #666;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+	} */
+
 </style>
