@@ -1,5 +1,7 @@
 'use strict';
 
+const config = require('../../config/environment');
+
 /**
  * Analyzes Transit API response to detect if it contains real-time predictions
  * @param {Object} data - The API response data
@@ -35,7 +37,7 @@ function hasRealTimeData(data) {
 }
 
 // Server-side request cache (optional, enabled via ENABLE_SERVER_CACHE env var)
-const CACHE_ENABLED = process.env.ENABLE_SERVER_CACHE === 'true';
+const CACHE_ENABLED = config.parseBoolean(process.env.ENABLE_SERVER_CACHE);
 // Dual-TTL configuration: different cache times for real-time vs schedule data
 const REALTIME_CACHE_TTL = parseInt(process.env.REALTIME_CACHE_TTL) || 5000; // 5s default (free tier safe)
 const STATIC_CACHE_TTL = parseInt(process.env.STATIC_CACHE_TTL) || 120000; // 120s for schedule
