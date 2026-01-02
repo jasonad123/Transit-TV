@@ -602,6 +602,12 @@
 								>
 							</div>
 						{/each}
+						{#each Array(Math.max(0, 3 - departures.length)) as _}
+							<div class="time-card inactive">
+								<span>&nbsp;</span>
+								<small>&nbsp;</small>
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/if}
@@ -800,6 +806,22 @@
 		top: 50%;
 		transform: translateX(35%) translateY(-70%);
 		margin-right: 0;
+	}
+
+	.time-card.inactive {
+		opacity: 0.5;
+	}
+
+	.time-card.inactive span {
+		display: inline-block;
+		background-image: url('/assets/images/inactive-w@2x.png');
+		background-position: center;
+		background-repeat: repeat-x;
+		background-size: 20px;
+	}
+
+	.table-view-route.white .time-card.inactive span {
+		background-image: url('/assets/images/inactive@2x.png');
 	}
 
 	/* Real-time indicator animation (copied from RouteItem) */
