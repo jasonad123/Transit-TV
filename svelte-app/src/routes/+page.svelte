@@ -1779,5 +1779,4 @@
 		border-color: #666;
 		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 	} */
-
 </style>
