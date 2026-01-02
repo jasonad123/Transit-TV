@@ -518,7 +518,7 @@
 						>
 					</td>
 					<td id="utilities">
-						<button
+<!-- 						<button
 							type="button"
 							class="view-toggle"
 							onclick={() => {
@@ -535,7 +535,7 @@
 						>
 							<iconify-icon icon={$config.viewMode === 'card' ? 'ix:list' : 'ix:card-layout'}
 							></iconify-icon>
-						</button>
+						</button> -->
 						<span class="clock"
 							>{formatTime(currentTime, $config.timeFormat, $config.language)}</span
 						>
@@ -826,7 +826,7 @@
 
 					<div class="toggle-container">
 						<label class="toggle-label">
-							<span>View Mode</span>
+							<span>{$_('config.routeDisplay.viewMode')}</span>
 							<div class="button-group inline-buttons">
 								<button
 									type="button"
@@ -834,7 +834,7 @@
 									class:active={$config.viewMode === 'card'}
 									onclick={() => config.update((c) => ({ ...c, viewMode: 'card' }))}
 								>
-									<iconify-icon icon="ix:card-layout"></iconify-icon>
+									<iconify-icon icon="ix:application-screen"></iconify-icon>
 									Card
 								</button>
 								<button
@@ -843,13 +843,13 @@
 									class:active={$config.viewMode === 'table'}
 									onclick={() => config.update((c) => ({ ...c, viewMode: 'table' }))}
 								>
-									<iconify-icon icon="ix:list"></iconify-icon>
-									Table
+									<iconify-icon icon="ix:table"></iconify-icon>
+									List
 								</button>
 							</div>
 						</label>
 						<small class="help-text"
-							>Choose between card view (detailed) or table view (compact)</small
+							>{$_('config.routeDisplay.viewModeHelpText')}</small
 						>
 					</div>
 
@@ -958,7 +958,6 @@
 							{:else}
 								<TableView {route} showLongName={$config.showRouteLongName} />
 							{/if}
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
 						<div class="route-controls">
 							{#if index > 0}
 								<button

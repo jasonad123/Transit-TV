@@ -228,10 +228,8 @@
 		return shortName || longName || '';
 	});
 
-	// Check if route short name is too short (1-3 chars)
-	let routeShortTooShort = $derived(
-		(route.route_short_name?.length || 0) > 0 && (route.route_short_name?.length || 0) <= 3
-	);
+	// Check if route short name is too short
+	let routeShortTooShort = $derived((route.route_short_name?.length || 0) < 3);
 
 	// Check if route has adjacent text element
 	function hasAdjacentText(): boolean {
@@ -582,8 +580,13 @@
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
 				<div class="direction-card" style={cellStyle}>
-					<div class="card-destination">
-						{itinerary.merged_headsign || 'Unknown destination'}
+					<div class="card-info">
+						<div class="card-destination">
+							{itinerary.merged_headsign || 'Unknown destination'}
+						</div>
+						<div class="card-stop-location">
+							<span>{group.stopName}</span>
+						</div>
 					</div>
 					<div class="card-times">
 						{#each departures as item}
@@ -698,21 +701,53 @@
 		border-radius: 0.5em;
 		margin-bottom: 0.2em;
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: space-between;
 		gap: 1em;
 		padding: 0.5em 0.75em;
 	}
 
-	.card-destination {
+	.card-info {
 		flex: 1;
-		font-size: 1.75em;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.card-destination {
+		font-size: 1.65em;
 		padding-top: 0.1em;
 		font-weight: 600;
 		display: block;
 		overflow-wrap: normal;
 		word-break: normal;
-		/* text-overflow: ellipsis; */
+		min-width: 0;
+	}
+
+	.card-stop-location {
+		font-size: 1.1em;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.3em;
+		margin: 0.2em 0 0 0;
+		opacity: 0.8;
+		overflow-wrap: break-word;
+		word-break: break-word;
+		min-width: 0;
+	}
+
+	.card-stop-location iconify-icon {
+		width: 0.9em;
+		height: 0.9em;
+		flex-shrink: 0;
+		margin-top: 0.05em;
+		fill: currentColor;
+	}
+
+	.card-stop-location span {
+		overflow-wrap: break-word;
+		word-break: break-word;
+		flex: 1;
 		min-width: 0;
 	}
 
@@ -792,9 +827,29 @@
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
+	/* Light mode: dark waves on white routes */
+	.table-view-route.white .realtime::before {
+		background-image: url('/assets/images/real_time_wave_small@2x.png');
+	}
+
+	/* Dark mode: dark waves on light-colored routes */
+	.table-view-route.light-in-dark .realtime::before {
+		background-image: url('/assets/images/real_time_wave_small@2x.png');
+	}
+
 	.realtime::after {
 		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
+	}
+
+	/* Light mode: dark waves on white routes */
+	.table-view-route.white .realtime::after {
+		background-image: url('/assets/images/real_time_wave_big@2x.png');
+	}
+
+	/* Dark mode: dark waves on light-colored routes */
+	.table-view-route.light-in-dark .realtime::after {
+		background-image: url('/assets/images/real_time_wave_big@2x.png');
 	}
 
 	@keyframes realtimeAnim {
