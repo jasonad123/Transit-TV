@@ -8,6 +8,9 @@
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
+	import Toggle from '$lib/components/Toggle.svelte';
+	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
+	import SolidSection from '$lib/components/SolidSection.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
@@ -37,21 +40,8 @@
 	let validationMessage = $state<string | null>(null);
 	let validationSuccess = $state<boolean | null>(null);
 
-	// Server status state
-	let serverStatus = $state<{
-		isShutdown: boolean;
-		isRestarting: boolean;
-		shutdownTime: string | null;
-	}>({
-		isShutdown: false,
-		isRestarting: false,
-		shutdownTime: null
-	});
-	let serverStatusIntervalId: ReturnType<typeof setInterval> | null = null;
-	let serverActionInProgress = $state(false);
-
 	// App version state
-	let appVersion = $state<string>('1.3.1'); // Fallback version
+	let appVersion = $state<string>('1.3.2'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -118,12 +108,6 @@
 	}
 
 	async function loadNearby() {
-		// Don't poll Transit API if server is in shutdown state
-		if (serverStatus.isShutdown) {
-			console.log('Skipping Transit API poll - server is shutdown');
-			return;
-		}
-
 		try {
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
@@ -324,18 +308,14 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.1';
+				appVersion = healthData.version || '1.3.2';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
 		}
 
-		// Check server status first, before starting polling
-		await checkServerStatus();
-		serverStatusIntervalId = setInterval(checkServerStatus, 10000);
-
-		// Only load routes if screen is wide enough and server is not shutdown
-		if (!$config.isEditing && !isScreenTooNarrow && !serverStatus.isShutdown) {
+		// Only load routes if screen is wide enough
+		if (!$config.isEditing && !isScreenTooNarrow) {
 			await loadNearby();
 			// Use adaptive polling interval (starts at 20s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -360,8 +340,8 @@
 				clearInterval(intervalId);
 				intervalId = undefined!;
 			}
-		} else if (!$config.isEditing && !serverStatus.isShutdown) {
-			// Screen wide enough and server running - start/resume polling if not already running
+		} else if (!$config.isEditing) {
+			// Screen wide enough - start/resume polling if not already running
 			if (!intervalId) {
 				loadNearby();
 				intervalId = setInterval(loadNearby, currentPollingInterval);
@@ -381,9 +361,6 @@
 		}
 		if (errorRetryTimeoutId) {
 			clearTimeout(errorRetryTimeoutId);
-		}
-		if (serverStatusIntervalId) {
-			clearInterval(serverStatusIntervalId);
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
@@ -409,7 +386,6 @@
 
 	async function validateLocation(latitude: number, longitude: number) {
 		if (!$config.isEditing) return; // Only validate during interactive config
-		if (serverStatus.isShutdown) return; // Don't validate when server is shutdown
 
 		validatingLocation = true;
 		validationMessage = null;
@@ -493,85 +469,6 @@
 		// Validate if we have valid coordinates
 		if ($config.latLng && !isNaN($config.latLng.latitude) && !isNaN($config.latLng.longitude)) {
 			validateLocation($config.latLng.latitude, $config.latLng.longitude);
-		}
-	}
-
-	// Server status and control functions
-	async function checkServerStatus() {
-		try {
-			const response = await fetch('/api/server/status');
-			if (response.ok) {
-				const status = await response.json();
-				serverStatus = {
-					isShutdown: status.isShutdown,
-					isRestarting: status.isRestarting,
-					shutdownTime: status.shutdownTime
-				};
-			}
-		} catch (error) {
-			console.error('Error checking server status:', error);
-		}
-	}
-
-	async function shutdownServer() {
-		if (!confirm($_('config.server.confirmShutdown'))) {
-			return;
-		}
-
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/shutdown', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-			}
-		} catch (error) {
-			console.error('Error shutting down server:', error);
-			alert('Failed to shutdown server');
-		} finally {
-			serverActionInProgress = false;
-		}
-	}
-
-	async function startServer() {
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/start', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-				// Reload routes after starting
-				setTimeout(() => {
-					loadNearby();
-				}, 1000);
-			}
-		} catch (error) {
-			console.error('Error starting server:', error);
-			alert('Failed to start server');
-		} finally {
-			serverActionInProgress = false;
-		}
-	}
-
-	async function restartServer() {
-		if (!confirm($_('config.server.confirmRestart'))) {
-			return;
-		}
-
-		serverActionInProgress = true;
-		try {
-			const response = await fetch('/api/server/restart', { method: 'POST' });
-			if (response.ok) {
-				await checkServerStatus();
-				// Reload routes after restart completes
-				setTimeout(() => {
-					checkServerStatus();
-					loadNearby();
-				}, 3000);
-			}
-		} catch (error) {
-			console.error('Error restarting server:', error);
-			alert('Failed to restart server');
-		} finally {
-			serverActionInProgress = false;
 		}
 	}
 </script>
@@ -707,7 +604,6 @@
 							<option value="de">{$_('config.languages.german')}</option>
 						</select>
 					</label>
-
 					<label>
 						{$_('config.fields.maxDistance')}
 						<div class="slider-container">
@@ -726,253 +622,211 @@
 						</div>
 					</label>
 
-					<label>
-						{$_('config.fields.columns')}
-						<div class="button-group">
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 'auto'}
-								onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-							>
-								{$_('config.columns.auto')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 1}
-								onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-							>
-								1
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 2}
-								onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-							>
-								2
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 3}
-								onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-							>
-								3
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 4}
-								onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-							>
-								4
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.columns === 5}
-								onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-							>
-								5
-							</button>
-						</div>
-					</label>
+					<SolidSection title={$_('config.sections.display')}>
+						<label>
+							{$_('config.fields.columns')}
+							<div class="button-group">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 'auto'}
+									onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
+								>
+									{$_('config.columns.auto')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 1}
+									onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
+								>
+									1
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 2}
+									onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
+								>
+									2
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 3}
+									onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
+								>
+									3
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 4}
+									onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
+								>
+									4
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.columns === 5}
+									onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
+								>
+									5
+								</button>
+							</div>
+						</label>
 
-					<label>
-						{$_('config.fields.theme')}
-						<div class="button-group">
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'light'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
-							>
-								{$_('config.theme.light')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'auto'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
-							>
-								{$_('config.theme.auto')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.theme === 'dark'}
-								onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
-							>
-								{$_('config.theme.dark')}
-							</button>
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.showQRCode}>
+								{#snippet label()}
+									<span>{$_('config.fields.showQRCode')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
 						</div>
-					</label>
+					</SolidSection>
 
-					<label>
-						{$_('config.fields.headerColor')}
-						<div style="display: flex; gap: 0.5em; align-items: center;">
-							<input type="color" bind:value={$config.headerColor} />
-							<button
-								type="button"
-								class="btn-reset"
-								onclick={() => {
-									const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-									config.update((c) => ({ ...c, headerColor: defaultColor }));
-								}}
-								title={$_('config.buttons.resetToDefault')}
-							>
-								{$_('config.buttons.reset')}
-							</button>
-						</div>
-					</label>
+					<SolidSection title={$_('config.sections.style')}>
+						<label>
+							{$_('config.fields.theme')}
+							<div class="button-group">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'light'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
+								>
+									{$_('config.theme.light')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'auto'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
+								>
+									{$_('config.theme.auto')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.theme === 'dark'}
+									onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
+								>
+									{$_('config.theme.dark')}
+								</button>
+							</div>
+						</label>
 
-					<label>
-						{$_('config.fields.customLogo')}
-						<input
-							type="text"
-							bind:value={$config.customLogo}
-							placeholder="https://example.com/logo.png or /assets/images/logo.png"
-						/>
-						<small class="help-text">{$_('config.customLogo.helpText')}</small>
-						{#if $config.customLogo}
-							<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
+						<label>
+							{$_('config.fields.headerColor')}
+							<div style="display: flex; gap: 0.5em; align-items: center;">
+								<input type="color" bind:value={$config.headerColor} />
 								<button
 									type="button"
 									class="btn-reset"
-									onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
+									onclick={() => {
+										const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
+										config.update((c) => ({ ...c, headerColor: defaultColor }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
 								>
-									{$_('config.customLogo.clear')}
+									{$_('config.buttons.reset')}
 								</button>
 							</div>
-							<div class="logo-preview">
-								<img
-									src={$config.customLogo}
-									alt="Logo preview"
-									onerror={(e) => {
-										const parent = (e.currentTarget as HTMLImageElement).parentElement;
-										if (parent) {
-											parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
-										}
-									}}
-								/>
-							</div>
-						{/if}
-					</label>
-
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.showQRCode')} </span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.showQRCode} />
-								<span class="toggle-slider"></span>
-							</label>
 						</label>
-						<small class="help-text">{$_('config.qrCode.helpText')}</small>
-					</div>
 
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.groupItinerariesByStop')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.groupItinerariesByStop} />
-								<span class="toggle-slider"></span>
-							</label>
-						</label>
-						<small class="help-text">{$_('config.stopManagement.groupItinerarieshelpText')}</small>
-					</div>
-
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.filterRedundantTerminus')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.filterRedundantTerminus} />
-								<span class="toggle-slider"></span>
-							</label>
-						</label>
-						<small class="help-text">{$_('config.stopManagement.filterTerminushelpText')}</small>
-					</div>
-
-					<div class="toggle-container">
-						<label class="toggle-label">
-							<span>{$_('config.fields.showRouteLongName')}</span>
-							<label class="toggle-switch">
-								<input type="checkbox" bind:checked={$config.showRouteLongName} />
-								<span class="toggle-slider"></span>
-							</label>
-						</label>
-						<small class="help-text">{$_('config.routeDisplay.showRouteLongNameHelpText')}</small>
-					</div>
-
-					{#if $config.hiddenRoutes.length > 0}
-						<div class="route-management">
-							<h3>{$_('config.hiddenRoutes.title')}</h3>
-							<p class="help-text">{$_('config.hiddenRoutes.helpText')}</p>
-							<div class="hidden-routes-list">
-								{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+						<label>
+							{$_('config.fields.customLogo')}
+							<input
+								type="text"
+								bind:value={$config.customLogo}
+								placeholder="https://example.com/logo.png or /assets/images/logo.png"
+							/>
+							<small class="help-text">{$_('config.customLogo.helpText')}</small>
+							{#if $config.customLogo}
+								<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
 									<button
 										type="button"
-										class="hidden-route-item"
-										onclick={() => toggleRouteHidden(route.global_route_id)}
+										class="btn-reset"
+										onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
 									>
-										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-										<span>{route.route_short_name || route.route_long_name}</span>
+										{$_('config.customLogo.clear')}
 									</button>
-								{/each}
+								</div>
+								<div class="logo-preview">
+									<img
+										src={$config.customLogo}
+										alt="Logo preview"
+										onerror={(e) => {
+											const parent = (e.currentTarget as HTMLImageElement).parentElement;
+											if (parent) {
+												parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+											}
+										}}
+									/>
+								</div>
+							{/if}
+						</label>
+					</SolidSection>
+
+					<SolidSection title={$_('config.sections.routeOptions')}>
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.groupItinerariesByStop}>
+								{#snippet label()}
+									<span>{$_('config.fields.groupItinerariesByStop')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
+							>
+						</div>
+
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.filterRedundantTerminus}>
+								{#snippet label()}
+									<span>{$_('config.fields.filterRedundantTerminus')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.filterTerminushelpText')}</small
+							>
+						</div>
+
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.showRouteLongName}>
+								{#snippet label()}
+									<span>{$_('config.fields.showRouteLongName')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text"
+								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
+							>
+						</div>
+					</SolidSection>
+
+					<CollapsibleSection
+						title={$_('config.hiddenRoutes.title')}
+						helpText={$_('config.hiddenRoutes.helpText')}
+						initiallyOpen={false}
+					>
+						{#if $config.hiddenRoutes.length > 0}
+							<div class="route-management">
+								<div class="hidden-routes-list">
+									{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+										<button
+											type="button"
+											class="hidden-route-item"
+											onclick={() => toggleRouteHidden(route.global_route_id)}
+										>
+											<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+											<span>{route.route_short_name || route.route_long_name}</span>
+										</button>
+									{/each}
+								</div>
 							</div>
-						</div>
-					{/if}
-
-					<div class="server-management">
-						<h3>{$_('config.server.title')}</h3>
-						<p class="help-text">{$_('config.server.helpText')}</p>
-
-						<div class="server-status">
-							<span class="status-label">Status:</span>
-							<span
-								class="status-value"
-								class:status-running={!serverStatus.isShutdown && !serverStatus.isRestarting}
-								class:status-shutdown={serverStatus.isShutdown}
-								class:status-restarting={serverStatus.isRestarting}
-							>
-								{#if serverStatus.isRestarting}
-									{$_('config.server.status.restarting')}
-								{:else if serverStatus.isShutdown}
-									{$_('config.server.status.shutdown')}
-								{:else}
-									{$_('config.server.status.running')}
-								{/if}
-							</span>
-						</div>
-
-						<div class="button-group server-controls-buttons">
-							<button
-								type="button"
-								class="btn-server-control btn-shutdown"
-								onclick={shutdownServer}
-								disabled={serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.shutdown')}
-							</button>
-							<button
-								type="button"
-								class="btn-server-control btn-start"
-								onclick={startServer}
-								disabled={!serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.start')}
-							</button>
-							<button
-								type="button"
-								class="btn-server-control btn-restart"
-								onclick={restartServer}
-								disabled={serverStatus.isShutdown || serverActionInProgress}
-							>
-								{$_('config.server.actions.restart')}
-							</button>
-						</div>
-					</div>
+						{/if}
+					</CollapsibleSection>
 
 					<div class="credits">
 						<h3>{$_('config.credits.title')}</h3>
@@ -1023,93 +877,81 @@
 	{/if}
 
 	<div class="content">
-		{#if serverStatus.isShutdown}
-			<div class="shutdown-notice">
-				<div class="shutdown-icon-stack">
-					<iconify-icon icon="fluent:vehicle-bus-20-filled" class="bus-icon"></iconify-icon>
-					<iconify-icon icon="ix:maintenance-warning-filled" class="warning-badge"></iconify-icon>
-				</div>
-				<h2>{$_('shutdown.title')}</h2>
-				<p>{$_('shutdown.message')}</p>
-				<p class="shutdown-subtitle">{$_('shutdown.subtitle')}</p>
+		{#if errorMessage}
+			<div
+				class="error-banner"
+				class:error-auth={errorType === 'auth'}
+				class:error-timeout={errorType === 'timeout'}
+				class:error-backend={errorType === 'backend'}
+			>
+				<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
+				></iconify-icon>
+				{errorMessage}
 			</div>
+		{/if}
+		{#if loading}
+			<div class="loading">{$_('routes.loading')}</div>
+		{:else if routes.length === 0}
+			<div class="no-routes">{$_('routes.noRoutes')}</div>
 		{:else}
-			{#if errorMessage}
-				<div
-					class="error-banner"
-					class:error-auth={errorType === 'auth'}
-					class:error-timeout={errorType === 'timeout'}
-					class:error-backend={errorType === 'backend'}
-				>
-					<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
-					></iconify-icon>
-					{errorMessage}
-				</div>
-			{/if}
-			{#if loading}
-				<div class="loading">{$_('routes.loading')}</div>
-			{:else if routes.length === 0}
-				<div class="no-routes">{$_('routes.noRoutes')}</div>
-			{:else}
-				<section
-					id="routes"
-					class:cols-1={$config.columns === 1}
-					class:cols-2={$config.columns === 2}
-					class:cols-3={$config.columns === 3}
-					class:cols-4={$config.columns === 4}
-					class:cols-5={$config.columns === 5}
-				>
-					{#each routes as route, index (route.global_route_id)}
-						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-							<RouteItem {route} showLongName={$config.showRouteLongName} />
-							<div class="route-controls">
-								{#if index > 0}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRouteToTop(index)}
-										aria-label={$_('aria.moveRouteToTop')}
-										title={$_('routes.controls.moveToTop')}
-									>
-										<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
-									</button>
-								{/if}
-								{#if index > 0}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRoute(index, 'up')}
-										aria-label={$_('aria.moveRouteUp')}
-										title={$_('routes.controls.moveUp')}
-									>
-										<iconify-icon icon="ix:arrow-up"></iconify-icon>
-									</button>
-								{/if}
-								{#if index < routes.length - 1}
-									<button
-										type="button"
-										class="btn-route-control"
-										onclick={() => moveRoute(index, 'down')}
-										aria-label={$_('aria.moveRouteDown')}
-										title={$_('routes.controls.moveDown')}
-									>
-										<iconify-icon icon="ix:arrow-down"></iconify-icon>
-									</button>
-								{/if}
+			<section
+				id="routes"
+				class:cols-1={$config.columns === 1}
+				class:cols-2={$config.columns === 2}
+				class:cols-3={$config.columns === 3}
+				class:cols-4={$config.columns === 4}
+				class:cols-5={$config.columns === 5}
+			>
+				{#each routes as route, index (route.global_route_id)}
+					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						<div class="route-controls">
+							{#if index > 0}
 								<button
 									type="button"
 									class="btn-route-control"
-									onclick={() => toggleRouteHidden(route.global_route_id)}
-									aria-label={$_('aria.hideRoute')}
-									title={$_('routes.controls.hide')}
+									onclick={() => moveRouteToTop(index)}
+									aria-label={$_('aria.moveRouteToTop')}
+									title={$_('routes.controls.moveToTop')}
 								>
-									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
 								</button>
-							</div>
+							{/if}
+							{#if index > 0}
+								<button
+									type="button"
+									class="btn-route-control"
+									onclick={() => moveRoute(index, 'up')}
+									aria-label={$_('aria.moveRouteUp')}
+									title={$_('routes.controls.moveUp')}
+								>
+									<iconify-icon icon="ix:arrow-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if index < routes.length - 1}
+								<button
+									type="button"
+									class="btn-route-control"
+									onclick={() => moveRoute(index, 'down')}
+									aria-label={$_('aria.moveRouteDown')}
+									title={$_('routes.controls.moveDown')}
+								>
+									<iconify-icon icon="ix:arrow-down"></iconify-icon>
+								</button>
+							{/if}
+							<button
+								type="button"
+								class="btn-route-control"
+								onclick={() => toggleRouteHidden(route.global_route_id)}
+								aria-label={$_('aria.hideRoute')}
+								title={$_('routes.controls.hide')}
+							>
+								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+							</button>
 						</div>
-					{/each}
-				</section>
-			{/if}
+					</div>
+				{/each}
+			</section>
 		{/if}
 	</div>
 
@@ -1408,60 +1250,15 @@
 		gap: 0.3em;
 	}
 
-	.toggle-label {
-		display: flex;
-		flex-direction: row !important;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
+	.toggle-help-text {
+		display: block !important;
+		margin-top: 0.25em;
 		margin-bottom: 0;
-	}
-
-	.toggle-switch {
-		position: relative;
-		display: inline-block;
-		width: 3em;
-		height: 1.6em;
-		flex-shrink: 0;
-	}
-
-	.toggle-switch input {
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
-	.toggle-slider {
-		position: absolute;
-		cursor: pointer;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: #ccc;
-		transition: 0.3s;
-		border-radius: 1.6em;
-	}
-
-	.toggle-slider:before {
-		position: absolute;
-		content: '';
-		height: 1.2em;
-		width: 1.2em;
-		left: 0.2em;
-		bottom: 0.2em;
-		background-color: white;
-		transition: 0.3s;
-		border-radius: 50%;
-	}
-
-	.toggle-switch input:checked + .toggle-slider {
-		/* background-color: #30b566; */
-		background-color: var(--bg-header);
-	}
-
-	.toggle-switch input:checked + .toggle-slider:before {
-		transform: translateX(1.4em);
+		font-size: 0.95em;
+		color: var(--text-secondary);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		max-width: 85%;
 	}
 
 	.route-wrapper {
@@ -1544,18 +1341,11 @@
 		font-size: 1.25em;
 	}
 
-	.route-management {
+	/* .route-management {
 		margin-top: 0;
 		padding-top: 1em;
 		border-top: 1px solid var(--border-color);
-	}
-
-	.route-management h3 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		font-size: 1.2em;
-		color: var(--text-primary);
-	}
+	} */
 
 	.hidden-routes-list {
 		display: flex;
@@ -1642,7 +1432,7 @@
 		font-weight: 600;
 	}
 
-	/* QR Code Styles */
+	/* Floating QR Code Styles */
 	.floating-qr {
 		position: fixed;
 		bottom: 1.5em;
@@ -1699,45 +1489,6 @@
 	.qr-label-2 {
 		font-weight: bold;
 	}
-
-	/* .qr-section {
-		margin-top: 1em;
-		padding: 1em;
-		background: var(--bg-secondary);
-		border-radius: 8px;
-		text-align: center;
-	}
-
-	.qr-section h3 {
-		margin: 0 0 0.5em 0;
-		font-size: 1.1em;
-		color: var(--text-primary);
-	}
-
-	.qr-section .help-text {
-		margin: 0 0 1em 0;
-		font-size: 0.9em;
-		color: var(--text-secondary);
-	}
-
-	.qr-display {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background: white;
-		padding: 1.5em;
-		border-radius: 8px;
-		width: fit-content;
-		margin: 0 auto;
-		border: 2px solid #ddd;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	[data-theme="dark"] .qr-display {
-		background: white;
-		border-color: #666;
-		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-	} */
 
 	.error-banner {
 		position: fixed;
@@ -1936,167 +1687,6 @@
 		color: var(--text-primary);
 	}
 
-	/* Server Management Styles */
-	.server-management {
-		margin-top: 0;
-		padding-top: 1em;
-		border-top: 1px solid var(--border-color);
-		max-width: 500px;
-	}
-
-	.server-management h3 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		font-size: 1.2em;
-		color: var(--text-primary);
-		overflow-wrap: normal;
-	}
-
-	.server-status {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-bottom: 1em;
-		padding: 0.75em;
-		background: var(--bg-primary);
-		border-radius: 4px;
-		border: 1px solid var(--border-color);
-	}
-
-	.status-label {
-		font-weight: 600;
-		color: var(--text-primary);
-	}
-
-	.status-value {
-		font-weight: 700;
-		padding: 0.3em 0.8em;
-		border-radius: 4px;
-		font-size: 0.9em;
-	}
-
-	.status-running {
-		background: #30b566;
-		color: white;
-	}
-
-	.status-shutdown {
-		background: #f59e0b;
-		color: white;
-	}
-
-	.status-restarting {
-		background: #8b5cf6;
-		color: white;
-	}
-
-	.server-controls-buttons {
-		display: flex;
-		gap: 0.5em;
-	}
-
-	.btn-server-control {
-		flex: 1;
-		padding: 0.7em 1em;
-		border: 2px solid var(--border-color);
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.2s;
-		font-size: 0.95em;
-		font-weight: 600;
-		color: white;
-	}
-
-	.btn-server-control:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.btn-shutdown {
-		background: #e30022;
-		border-color: #e30022;
-	}
-
-	.btn-shutdown:hover:not(:disabled) {
-		background: #b8001b;
-		border-color: #b8001b;
-	}
-
-	.btn-start {
-		background: #30b566;
-		border-color: #30b566;
-	}
-
-	.btn-start:hover:not(:disabled) {
-		background: #1f7a42;
-		border-color: #1f7a42;
-	}
-
-	.btn-restart {
-		background: #8b5cf6;
-		border-color: #8b5cf6;
-	}
-
-	.btn-restart:hover:not(:disabled) {
-		background: #7c3aed;
-		border-color: #7c3aed;
-	}
-
-	/* Shutdown Notice Styles */
-	.shutdown-notice {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		text-align: center;
-		padding: 3em;
-		color: var(--text-primary);
-	}
-
-	.shutdown-icon-stack {
-		position: relative;
-		display: inline-block;
-		margin-bottom: 0.5em;
-	}
-
-	.shutdown-icon-stack .bus-icon {
-		font-size: 8em;
-		color: var(--text-secondary);
-		display: block;
-	}
-
-	.shutdown-icon-stack .warning-badge {
-		position: absolute;
-		bottom: -0.05em;
-		right: -0.1em;
-		font-size: 3em;
-		color: #f59e0b;
-		background: var(--bg-primary);
-		border-radius: 50%;
-		padding: 0.1px;
-	}
-
-	.shutdown-notice h2 {
-		font-size: 3em;
-		margin: 0.3em 0;
-		color: var(--text-primary);
-		text-wrap: wrap;
-		overflow-wrap: normal;
-	}
-
-	.shutdown-notice p {
-		font-size: 1.8em;
-		margin: 0.5em 0;
-		color: var(--text-secondary);
-	}
-
-	.shutdown-subtitle {
-		font-size: 1.4em;
-		font-style: italic;
-		opacity: 0.8;
-	}
-
 	/* Credits Styles */
 	.credits {
 		margin-top: 0;
@@ -2148,4 +1738,45 @@
 	:global(.credits a:hover) {
 		text-decoration: underline;
 	}
+
+	/* QR Code Section Styles */
+
+	/* .qr-section {
+		margin-top: 1em;
+		padding: 1em;
+		background: var(--bg-secondary);
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	.qr-section h3 {
+		margin: 0 0 0.5em 0;
+		font-size: 1.1em;
+		color: var(--text-primary);
+	}
+
+	.qr-section .help-text {
+		margin: 0 0 1em 0;
+		font-size: 0.9em;
+		color: var(--text-secondary);
+	}
+
+	.qr-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: white;
+		padding: 1.5em;
+		border-radius: 8px;
+		width: fit-content;
+		margin: 0 auto;
+		border: 2px solid #ddd;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	[data-theme="dark"] .qr-display {
+		background: white;
+		border-color: #666;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+	} */
 </style>

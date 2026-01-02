@@ -14,7 +14,7 @@ services:
   # Production service using optimized Dockerfile
   transit-tv-svelte:
     env_file:
-      - .env.docker
+      - .env
     build:
       context: .
       dockerfile: Dockerfile

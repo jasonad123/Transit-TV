@@ -5,18 +5,23 @@
 	},
 	"config": {
 		"title": "Configurar Transit TV",
+		"sections": {
+			"display": "Configuración de pantalla",
+			"style": "Estilo",
+			"routeOptions": "Opciones de rutas y paradas"
+		},
 		"fields": {
-			"title": "Título :",
-			"location": "Posición (lat, lng) :",
-			"timeFormat": "Formato de tiempo :",
-			"language": "Idioma :",
-			"columns": "Columnas de cuadrícula:",
-			"theme": "Tema:",
-			"headerColor": "Color del encabezado:",
-			"customLogo": "URL del logotipo personalizado:",
+			"title": "Título",
+			"location": "Posición (lat, lng)",
+			"timeFormat": "Formato de tiempo",
+			"language": "Idioma",
+			"columns": "Columnas de cuadrícula",
+			"theme": "Tema",
+			"headerColor": "Color del encabezado",
+			"customLogo": "URL del logotipo personalizado",
 			"showQRCode": "Mostrar código QR deeplink de Transit",
-			"maxDistance": "Radio de búsqueda:",
-			"groupItinerariesByStop": "¿Agrupar destinos con nombres de paradas compartidos?",
+			"maxDistance": "Radio de búsqueda",
+			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea"
 		},
@@ -66,22 +71,6 @@
 			"save": "Ahorrar",
 			"reset": "Restablecer",
 			"resetToDefault": "Restablecer valores predeterminados"
-		},
-		"server": {
-			"title": "Controles del servidor",
-			"status": {
-				"running": "Funcionamiento",
-				"shutdown": "A Pausa",
-				"restarting": "Reanudado..."
-			},
-			"actions": {
-				"shutdown": "Pausa",
-				"start": "Iniciar",
-				"restart": "Reanudar"
-			},
-			"confirmShutdown": "¿Desea detener la consulta a la API de Transit? Esto pausará las actualizaciones en tiempo real.",
-			"confirmRestart": "¿Reiniciar el servidor? Esto interrumpirá brevemente el servicio.",
-			"helpText": "Usando estos controles para Utilice estos controles para administrar el servidor con fines de solución de problemas o para reducir el uso de la API."
 		},
 		"location": {
 			"validating": "Buscando ubicación...",
@@ -134,10 +123,5 @@
 		"timeout": "Buscando actualizaciones...",
 		"backend": "Transit TV está fuera de servicio. Reintentando...",
 		"generic": "Transit TV tuvo un problema. Reintentando..."
-	},
-	"shutdown": {
-		"title": "Transit TV está fuera de servicio.",
-		"message": "El servidor ha sido pausado para mantenimiento.",
-		"subtitle": "Las actualizaciones de tránsito en vivo no están disponibles temporalmente."
 	}
 }

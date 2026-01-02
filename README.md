@@ -45,6 +45,7 @@ For testing/deployment with `pnpm` or Docker:
 # create .env for local deployment with pnpm or Docker
 cp .env.example .env
 ```
+
 ## Deployment with Docker (recommended)
 
 1. **Configure environment variables:**
@@ -131,7 +132,7 @@ This endpoint is used by Docker Compose health checks and can be integrated with
 
 ### Caching
 
-This app includes configurable client-side and server-side caching to reduce the number of calls to the Transit API. 
+This app includes configurable client-side and server-side caching to reduce the number of calls to the Transit API.
 Please review the `.env.example` file to view all available caching options.
 
 ## Development/advanced configuration

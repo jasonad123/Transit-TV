@@ -5,18 +5,23 @@
 	},
 	"config": {
 		"title": "Konfigurieren Transit-TV",
+		"sections": {
+			"display": "Anzeigeeinstellungen",
+			"style": "Stil",
+			"routeOptions": "Routen- und Haltestellenoptionen"
+		},
 		"fields": {
-			"title": "Titel:",
-			"location": "Location (lat, lng):",
-			"timeFormat": "Zeitformat:",
-			"language": "Sprache:",
-			"columns": "Rasterspalten:",
-			"theme": "Thema:",
-			"headerColor": "Kopfzeilenfarbe:",
+			"title": "Titel",
+			"location": "Location (lat, lng)",
+			"timeFormat": "Zeitformat",
+			"language": "Sprache",
+			"columns": "Rasterspalten",
+			"theme": "Thema",
+			"headerColor": "Kopfzeilenfarbe",
 			"showQRCode": "Transit-Deep-Link-QR-Code anzeigen",
-			"customLogo": "Logo-URL:",
-			"maxDistance": "Suchradius:",
-			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen?",
+			"customLogo": "Logo-URL",
+			"maxDistance": "Suchradius",
+			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen"
 		},
@@ -66,22 +71,6 @@
 			"save": "Speichern",
 			"reset": "Zurücksetzen",
 			"resetToDefault": "Auf Standard zurücksetzen"
-		},
-		"server": {
-			"title": "Serversteuerungen",
-			"status": {
-				"running": "Ausgeführt",
-				"shutdown": "Herunterfahren",
-				"restarting": "Neustarten..."
-			},
-			"actions": {
-				"shutdown": "Herunterfahren",
-				"start": "Anfangen",
-				"restart": "Neustart"
-			},
-			"confirmShutdown": "Möchten Sie das Abfragen der Transit-API stoppen? Dadurch werden Live-Updates pausiert.",
-			"confirmRestart": "Den Server neu starten? Dies wird den Dienst kurz unterbrechen.",
-			"helpText": "Verwenden Sie diese Steuerelemente, um den Server zur Fehlersuche zu verwalten oder die API-Nutzung zu reduzieren."
 		},
 		"location": {
 			"validating": "Standort wird überprüft...",
@@ -133,10 +122,5 @@
 		"timeout": "Überprüfung auf Updates...",
 		"backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
 		"generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."
-	},
-	"shutdown": {
-		"title": "Entschuldigung, Transit-TV hat eine Technische Störung",
-		"message": "Der Server wurde für Wartungsarbeiten pausiert.",
-		"subtitle": "Aktuelle Informationen zum Öffis sind vorübergehend nicht verfügbar."
 	}
 }

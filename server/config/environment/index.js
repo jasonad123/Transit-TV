@@ -14,6 +14,32 @@ if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
 // =================================
 
 /**
+ * Parses a boolean environment variable (case-insensitive)
+ * SECURITY: Only use with trusted input (environment variables).
+ * DO NOT use with user-supplied or external data without validation.
+ * @param {string} value - The environment variable value
+ * @returns {boolean} - true if value is truthy, false otherwise
+ */
+function parseBoolean(value) {
+	if (!value) return false;
+
+	// Type guard: prevent prototype pollution attacks
+	if (typeof value !== 'string') {
+		console.warn('parseBoolean received non-string value:', typeof value);
+		return false;
+	}
+
+	// Length guard: prevent DoS via large strings (boolean values should be short)
+	if (value.length > 10) {
+		console.warn('parseBoolean received excessively long value (length: ' + value.length + ')');
+		return false;
+	}
+
+	var normalized = value.toLowerCase().trim();
+	return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on';
+}
+
+/**
  * Validates and returns a safe max distance value
  * @param {number} distance - The distance to validate
  * @returns {number} - Valid distance or default (500)
@@ -173,6 +199,9 @@ var all = {
 	// API request timeout in milliseconds
 	requestTimeout: parseInt(process.env.REQUEST_TIMEOUT) || 10000,
 
+	// Logging configuration
+	logLevel: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+
 	// Cache TTL configuration
 	cache: {
 		realtimeTTL: parseInt(process.env.REALTIME_CACHE_TTL) || 5000,
@@ -181,7 +210,7 @@ var all = {
 
 	// Unattended setup configuration
 	unattendedSetup: {
-		enabled: process.env.UNATTENDED_SETUP === 'true',
+		enabled: parseBoolean(process.env.UNATTENDED_SETUP),
 		location: validateLocation(process.env.UNATTENDED_LOCATION || ''),
 		title: process.env.UNATTENDED_TITLE || '',
 		timeFormat: validateTimeFormat(process.env.UNATTENDED_TIME_FORMAT || 'HH:mm'),
@@ -189,12 +218,12 @@ var all = {
 		theme: validateTheme(process.env.UNATTENDED_THEME || 'auto'),
 		headerColor: process.env.UNATTENDED_HEADER_COLOR || '#30b566',
 		columns: validateColumns(process.env.UNATTENDED_COLUMNS || 'auto'),
-		showQRCode: process.env.UNATTENDED_SHOW_QR_CODE === 'true',
+		showQRCode: parseBoolean(process.env.UNATTENDED_SHOW_QR_CODE),
 		maxDistance: validateMaxDistance(parseInt(process.env.UNATTENDED_MAX_DISTANCE) || 500),
 		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null,
-		groupItinerariesByStop: process.env.UNATTENDED_GROUP_ITINERARIES === 'true',
-		filterRedundantTerminus: process.env.UNATTENDED_FILTER_TERMINUS === 'true',
-		showRouteLongName: process.env.UNATTENDED_SHOW_ROUTE_NAMES === 'true'
+		groupItinerariesByStop: parseBoolean(process.env.UNATTENDED_GROUP_ITINERARIES),
+		filterRedundantTerminus: parseBoolean(process.env.UNATTENDED_FILTER_TERMINUS),
+		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES)
 	},
 
 	// Security settings
@@ -213,6 +242,13 @@ var all = {
 function validateEnvironment() {
 	var warnings = [];
 	var errors = [];
+
+	if (!process.env.NODE_ENV) {
+		console.warn('NODE_ENV not set, defaulting to development');
+		process.env.NODE_ENV = 'development';
+	} else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'development') {
+		warnings.push('NODE_ENV should be "production" or "development", got: ' + process.env.NODE_ENV);
+	}
 
 	// Critical: Transit API key in production
 	if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
@@ -266,4 +302,6 @@ function validateEnvironment() {
 // Run validation on module load
 validateEnvironment();
 
+// Export configuration and parseBoolean helper for reuse
 module.exports = all;
+module.exports.parseBoolean = parseBoolean;

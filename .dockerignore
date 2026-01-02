@@ -6,11 +6,6 @@
 # Node.js
 node_modules
 svelte-app/node_modules
-npm-debug.log
-.npm
-
-# Bower (legacy)
-bower_components
 
 # Build artifacts
 dist
@@ -48,9 +43,13 @@ assets/
 *.md
 !README.md
 
-# Docker
-**/compose*.yaml
+# Svelte/Vite
+.svelte-kit
+.vercel
+.netlify
 
 # CI/CD
 .railway-env-template
 railway.json
+.claude/
+.mcp.json

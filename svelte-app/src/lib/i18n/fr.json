@@ -5,18 +5,23 @@
 	},
 	"config": {
 		"title": "Configurer Télé Transit",
+		"sections": {
+			"display": "Paramètres d'affichage",
+			"style": "Style",
+			"routeOptions": "Options de ligne et d'arrêt"
+		},
 		"fields": {
-			"title": "Titre :",
-			"location": "Emplacement (lat, lng) :",
-			"timeFormat": "Format de l'heure :",
-			"language": "Langue :",
-			"columns": "Colonnes de grille :",
-			"theme": "Thème :",
-			"headerColor": "Couleur d'en-tête :",
-			"customLogo": "URL du logo personnalisé :",
+			"title": "Titre",
+			"location": "Emplacement (lat, lng)",
+			"timeFormat": "Format de l'heure",
+			"language": "Langue",
+			"columns": "Colonnes de grille",
+			"theme": "Thème",
+			"headerColor": "Couleur d'en-tête",
+			"customLogo": "URL du logo personnalisé",
 			"showQRCode": "Afficher code QR deeplink Transit",
-			"maxDistance": "Rayon de recherche :",
-			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs ?",
+			"maxDistance": "Rayon de recherche",
+			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs",
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
 			"showRouteLongName": "Afficher les noms et couleurs de ligne"
 		},
@@ -66,22 +71,6 @@
 			"save": "Enregistrer",
 			"reset": "Réinitialiser",
 			"resetToDefault": "Réinitialiser par défaut"
-		},
-		"server": {
-			"title": "Contrôles du serveur",
-			"status": {
-				"running": "Activé",
-				"shutdown": "Fermé",
-				"restarting": "Redémarrage..."
-			},
-			"actions": {
-				"shutdown": "Arrêter",
-				"start": "Commencer",
-				"restart": "Redémarrer"
-			},
-			"confirmShutdown": "Arrêter le sondage de l’API de Transit ? Cela mettra en pause les mises à jour en temps réel.",
-			"confirmRestart": "Redémarrer le serveur ? Cela entraînera une courte interruption du service.",
-			"helpText": "Utilisez ces commandes pour gérer le serveur à des fins de débogage ou pour réduire l'utilisation de l'API."
 		},
 		"location": {
 			"validating": "Chargement votre emplacement...",
@@ -134,10 +123,5 @@
 		"timeout": "Vérification des mises à jour...",
 		"backend": "Transit TV est hors service. J'essaie encore...",
 		"generic": "Transit TV a rencontré un problème. J'essaie encore..."
-	},
-	"shutdown": {
-		"title": "Transit TV c'est En Transit",
-		"message": "Le serveur a été mis en pause pour maintenance.",
-		"subtitle": "Les mises à jour en direct des transport collectif sont temporairement indisponibles."
 	}
 }

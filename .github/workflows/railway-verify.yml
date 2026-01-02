@@ -24,8 +24,8 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f ".env.railway" ]; then
-            echo "Warning: .env.railway not found"
+          if [ ! -f ".env.example" ]; then
+            echo "Warning: .env.example not found"
             exit 1
           fi
 
