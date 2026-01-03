@@ -807,36 +807,51 @@
 						</div>
 					</SolidSection>
 
-					<div class="toggle-container">
-						<label class="toggle-label">
+					<div class="option-container">
+						<label class="option-label">
 							<span>{$_('config.routeDisplay.viewMode')}</span>
 							<div class="button-group inline-buttons">
 								<button
 									type="button"
 									class="btn-option"
 									class:active={$config.viewMode === 'card'}
-									onclick={() => config.update((c) => ({ ...c, viewMode: 'card' }))}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'card',
+											groupItinerariesByStop: false
+										}))}
 								>
 									<iconify-icon icon="ix:application-screen"></iconify-icon>
-									Card
+									{$_('config.routeDisplay.card')}
 								</button>
 								<button
 									type="button"
 									class="btn-option"
 									class:active={$config.viewMode === 'compact'}
-									onclick={() => config.update((c) => ({ ...c, viewMode: 'compact' }))}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'compact',
+											groupItinerariesByStop: false
+										}))}
 								>
 									<iconify-icon icon="ix:frames"></iconify-icon>
-									Compact
+									{$_('config.routeDisplay.compact')}
 								</button>
 								<button
 									type="button"
 									class="btn-option"
 									class:active={$config.viewMode === 'list'}
-									onclick={() => config.update((c) => ({ ...c, viewMode: 'list' }))}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'list',
+											groupItinerariesByStop: true
+										}))}
 								>
 									<iconify-icon icon="ix:table"></iconify-icon>
-									List
+									{$_('config.routeDisplay.list')}
 								</button>
 							</div>
 						</label>
@@ -1321,6 +1336,47 @@
 		gap: 0.3em;
 	}
 
+	.toggle-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.toggle-label > span {
+		flex-shrink: 0;
+	}
+
+	.toggle-label .button-group {
+		flex-shrink: 0;
+	}
+
+	.option-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+	}
+
+	.option-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.option-label > span {
+		flex-shrink: 0;
+		order: -1;
+	}
+
+	.option-label .button-group {
+		flex-shrink: 0;
+		order: 0;
+	}
+
+	.option-label .button-group,
+	.option-label .inline-buttons {
+		width: 100%;
+	}
+
 	.toggle-help-text {
 		display: block !important;
 		margin-top: 0.25em;
@@ -1490,11 +1546,15 @@
 	.button-group {
 		display: flex;
 		gap: 0.5em;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
+	}
+
+	.button-group.inline-buttons {
+		width: 100%;
 	}
 
 	.btn-option {
-		flex: 2;
+		flex: 1 1 auto;
 		min-width: 60px;
 		padding: 0.6em 1em;
 		border: 2px solid var(--border-color);
@@ -1502,13 +1562,14 @@
 		background: var(--bg-secondary);
 		color: var(--text-primary);
 		cursor: pointer;
-		transition: all 0.2s;
+		transition:
+			border-color 0.2s,
+			background-color 0.2s;
 		font-size: 0.95em;
 	}
 
-	.btn-option:hover {
-		border-color: var(--bg-header);
-		background: var(--bg-primary);
+	.btn-option:active {
+		transform: scale(0.98);
 	}
 
 	.btn-option.active {
@@ -1527,33 +1588,16 @@
 	.inline-buttons .btn-option {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: 0.4em;
-		flex: 1;
-		min-width: 100px;
+		flex: 1 1 120px;
+		min-width: unset;
 	}
 
 	.inline-buttons iconify-icon {
 		width: 1.2em;
 		height: 1.2em;
-	}
-
-	.inline-buttons {
-		display: flex;
-		gap: 0.5em;
-		flex-wrap: wrap;
-	}
-
-	.inline-buttons .btn-option {
-		display: flex;
-		align-items: center;
-		gap: 0.4em;
-		flex: 1;
-		min-width: 100px;
-	}
-
-	.inline-buttons iconify-icon {
-		width: 1.2em;
-		height: 1.2em;
+		flex-shrink: 0;
 	}
 
 	/* Floating QR Code Styles */

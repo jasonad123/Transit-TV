@@ -328,6 +328,104 @@
 		});
 	}
 
+	// Three-step rescaling for overflow handling
+	let routeIconTextScale = $state(1);
+	let routeIconShouldWrap = $state(false);
+	let routeIconScale = $state(1);
+
+	let routeIconElement: HTMLElement | undefined = $state();
+
+	let iconCheckTimeouts: Array<ReturnType<typeof setTimeout>> = [];
+	let iconCheckVersion = 0; // Track current check version to prevent race conditions
+
+	function checkRouteIconOverflow() {
+		if (!browser || !routeIconElement) return;
+
+		// Clear previous check cycle to prevent race conditions
+		if (iconCheckTimeouts.length > 0) {
+			iconCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+			iconCheckTimeouts = [];
+		}
+
+		// Increment version to invalidate any in-flight checks
+		iconCheckVersion++;
+		const currentVersion = iconCheckVersion;
+
+		const containerWidth = routeIconElement.parentElement?.clientWidth;
+		const contentWidth = routeIconElement.scrollWidth;
+
+		if (!containerWidth) return;
+
+		// No overflow
+		if (contentWidth <= containerWidth) {
+			routeIconScale = 1;
+			routeIconTextScale = 1;
+			routeIconShouldWrap = false;
+			return;
+		}
+
+		// Step 1: Scale text only
+		const textScale = Math.max(0.65, containerWidth / contentWidth);
+		if (textScale >= 0.65) {
+			routeIconTextScale = textScale;
+			routeIconScale = 1;
+			routeIconShouldWrap = false;
+
+			const timeout1 = setTimeout(() => {
+				// Verify we're still the current check and element still exists
+				if (currentVersion !== iconCheckVersion || !routeIconElement?.isConnected) return;
+
+				if (routeIconElement && routeIconElement.scrollWidth <= containerWidth) {
+					return;
+				}
+
+				// Step 2: Allow text to wrap
+				routeIconTextScale = 1;
+				routeIconShouldWrap = true;
+
+				const timeout2 = setTimeout(() => {
+					// Verify we're still the current check and element still exists
+					if (currentVersion !== iconCheckVersion || !routeIconElement?.isConnected) return;
+
+					if (routeIconElement && routeIconElement.scrollWidth <= containerWidth) {
+						return;
+					}
+
+					// Step 3: Scale entire container
+					const finalScale = Math.max(0.65, (containerWidth - 4) / routeIconElement.scrollWidth);
+					routeIconScale = finalScale;
+					routeIconShouldWrap = false;
+				}, 10);
+				iconCheckTimeouts.push(timeout2);
+			}, 10);
+			iconCheckTimeouts.push(timeout1);
+		}
+	}
+
+	if (browser) {
+		const observer = new ResizeObserver(() => {
+			checkRouteIconOverflow();
+		});
+
+		let observerElement: HTMLElement | undefined;
+
+		const checkSetup = setInterval(() => {
+			if (routeIconElement?.parentElement && observerElement !== routeIconElement.parentElement) {
+				observer.observe(routeIconElement.parentElement);
+				observerElement = routeIconElement.parentElement;
+				checkRouteIconOverflow();
+			}
+		}, 100);
+
+		onDestroy(() => {
+			clearInterval(checkSetup);
+			observer.disconnect();
+			// Clear any pending timeouts
+			iconCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
+			iconCheckTimeouts = [];
+		});
+	}
+
 	onDestroy(() => {
 		if (themeObserver) {
 			themeObserver.disconnect();
@@ -337,7 +435,14 @@
 </script>
 
 <!-- Route icon - exactly matching RouteItem's span.route-icon structure -->
-<span class="route-icon">
+<span
+	class="route-icon"
+	class:icon-scaled={routeIconScale !== 1}
+	class:allow-wrap={routeIconShouldWrap}
+	bind:this={routeIconElement}
+	style:transform={routeIconScale !== 1 ? `scale(${routeIconScale})` : ''}
+	style:transform-origin="left center"
+>
 	{#if route.route_display_short_name?.elements}
 		{#if getImageUrl(0)}
 			<img
@@ -347,7 +452,14 @@
 				style="vertical-align: middle;"
 			/>
 		{/if}
-		<span class="route-icon-text" style={`color: ${routeDisplayColor}`}>
+		<span
+			class="route-icon-text"
+			class:text-scaled={routeIconTextScale !== 1}
+			class:text-wrapped={routeIconShouldWrap}
+			style={`color: ${routeDisplayColor}`}
+			style:transform={routeIconTextScale !== 1 ? `scale(${routeIconTextScale})` : ''}
+			style:transform-origin="left center"
+		>
 			{route.route_display_short_name.elements[1] || ''}
 			<i>{route.branch_code || ''}</i>
 		</span>
@@ -362,10 +474,7 @@
 	{/if}
 
 	{#if shouldShowRouteLongName}
-		<span
-			class="route-long-name"
-			style={cellStyle}
-		>
+		<span class="route-long-name" style={cellStyle}>
 			{miniRouteName}
 		</span>
 	{/if}
@@ -380,10 +489,21 @@
 		gap: 0.1em;
 	}
 
+	.route-icon.allow-wrap {
+		white-space: normal;
+		flex-wrap: wrap;
+	}
+
 	.route-icon-text {
 		display: inline-block;
 		font-weight: 600;
 		font-size: inherit;
+	}
+
+	.route-icon-text.text-wrapped {
+		white-space: normal;
+		word-break: break-word;
+		max-width: 15em;
 	}
 
 	.route-icon-text i {

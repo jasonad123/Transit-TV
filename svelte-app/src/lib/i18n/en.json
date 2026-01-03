@@ -67,12 +67,15 @@
 			"scanPrompt2": "Scan the code to open in Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (This feature is not supported in Compact or List mode.)",
+			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (This feature is not supported in Compact mode. This feature is enabled by default in List mode.)",
 			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
 		},
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name.",
 			"viewMode": "View mode",
+			"card": "Card",
+			"compact": "Compact",
+			"list": "List",
 			"viewModeHelpText": "Select between Card mode (default), Compact mode (better for vertical displays), or List mode (better for large numbers of routes)."
 		},
 		"buttons": {
