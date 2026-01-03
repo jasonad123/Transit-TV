@@ -29,9 +29,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    # Cancel redundant builds to save build minutes
+    # Cancel redundant hardened builds to save build minutes (separate from standard workflow)
     concurrency:
-      group: docker-build-${{ github.ref }}
+      group: docker-build-hardened-${{ github.ref }}
       cancel-in-progress: true
 
     permissions:
