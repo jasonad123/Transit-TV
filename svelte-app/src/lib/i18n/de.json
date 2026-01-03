@@ -60,13 +60,13 @@
 			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Diese Funktion wird im Listenmodus nicht unterstützt.)",
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Diese Funktion wird im Kompaktmodus oder Listenmodus nicht unterstützt.)",
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden.",
 			"viewMode": "Anzeigemodus",
-			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard) oder Listenmodus (kompakt, besser für vertikale Anzeigen)"
+			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard), Kompaktmodus (besser für vertikale Anzeigen) oder Listenmodus (besser für viele Routen)."
 		},
 		"buttons": {
 			"cancel": "Stornieren",
