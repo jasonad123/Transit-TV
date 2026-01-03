@@ -15,21 +15,15 @@ Builds and publishes multi-architecture (amd64, arm64) Docker images to GitHub C
 
 **Outputs**: Docker images tagged and pushed to `ghcr.io/jasonad123/transit-tv`
 
-### cleanup-images.yml
+### docker-publish-hardened.yml
 
-Cleans up old Docker images to manage storage costs using bash/jq scripts.
+Builds and publishes multi-architecture (amd64, arm64) Docker images to GitHub Container Registry using Docker Hardened Images as the base.
 
-**Schedule**: Weekly on Sunday at 2 AM UTC
+**Triggers**:
+- Semantic version tags (v1.2.3, v1.2.3-beta.1, v1.2.3-rc.2, etc.)
+- Manual workflow dispatch
 
-**Retention Policy**:
-- Beta builds: Keep last 3
-- Edge builds: Keep last 2
-- Stable releases: Always retained
-- Untagged manifests: Deleted
-
-**Manual Run**: Can be triggered manually with dry run option
-
-**Status**: Has experienced persistent JSON parsing errors. Consider using cleanup-images-action.yml instead.
+**Outputs**: Docker images tagged and pushed to `ghcr.io/jasonad123/transit-tv:hardened-(x)`
 
 ### cleanup-images-action.yml
 

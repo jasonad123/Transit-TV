@@ -13,12 +13,10 @@ A real-time transit display application that shows arrival times for nearby publ
 > [!IMPORTANT]
 > This is a _rewrite_ of the original Transit TV application in a more up-to-date stack.
 > If you're looking for _my fork_ of the original project, have a look at the [legacy branch](https://github.com/jasonad123/Transit-TV/tree/legacy) of this repo.
-> If you're looking for the original project, have a look over at [Transit App's account](https://github.com/TransitApp/Transit-TV)
+> If you're looking for the original project, have a look over on [Transit's account](https://github.com/TransitApp/Transit-TV)
 
 > [!WARNING]  
 > Transit TV was built by the Transit team as a fun project to demo the API, usage of this project comes with no guarantee of any kind.
-
-> [!IMPORTANT]
 > Just as the original Transit TV was built by the Transit team as a fun project, **_this_** version of this project comes with no guarantee of any kind. I am **not** affiliated with Transit, just big fans of their app.
 
 ## Prerequisites
@@ -107,9 +105,10 @@ To use unattended setup, simply modify your relevant `.env` file or environment 
 
 Please review the `.env.example` file and the [Unattended Setup documentation](https://github.com/jasonad123/Transit-TV/wiki/Unattended-Setup) for more information on all available options.
 
-### Custom Logo
+### Theming
 
-Transit TV supports displaying your organization's logo alongside the "Powered by Transit" logo in the header. This feature works with both external URLs and local file paths.
+Transit TV supports changing the header colour to match your organization's branding and displaying your organization's logo alongside the "Powered by Transit" logo in the header.
+The logo feature feature works with both external URLs and local file paths. Both features are configurable in Unattended Setup for scalability.
 
 ### Health Check Endpoint (v1.3.0+)
 
