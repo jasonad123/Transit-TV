@@ -8,7 +8,11 @@
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
-	import { COMPLEX_LOGOS, COLOR_OVERRIDES, ROUTE_COLOR_OVERRIDES } from '$lib/constants/routeOverrides';
+	import {
+		COMPLEX_LOGOS,
+		COLOR_OVERRIDES,
+		ROUTE_COLOR_OVERRIDES
+	} from '$lib/constants/routeOverrides';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -362,7 +366,6 @@
 		headerCheckTimeouts = [];
 	});
 
-
 	// Check if we should invert in dark mode:
 	// Only invert if route_color is extremely dark (near black) AND route_text_color is light
 	// This catches cases like SamTrans 292 (luminance 0.022, dark navy with white text)
@@ -413,7 +416,6 @@
 			isRouteIconImage() &&
 			!hasAdjacentText()
 	);
-
 
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
@@ -492,7 +494,6 @@
 		}
 	});
 
-
 	// Stop name color: use route color if contrast is acceptable, otherwise use default text
 	let stopNameColor = $derived.by(() => {
 		// Get the route display color (remove # prefix)
@@ -514,7 +515,6 @@
 		// If contrast is sufficient, use route color; otherwise use default text color
 		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
 	});
-
 
 	function getLocalStopIds(): Set<string> {
 		const stopIds = new Set<string>();

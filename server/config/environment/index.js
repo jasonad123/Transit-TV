@@ -125,7 +125,7 @@ function validateTheme(theme) {
  * @returns {string} - Valid view mode or default (card)
  */
 function validateViewMode(viewMode) {
-	var allowed = ['card', 'table'];
+	var allowed = ['card', 'compact', 'list'];
 	if (allowed.includes(viewMode)) {
 		return viewMode;
 	}
