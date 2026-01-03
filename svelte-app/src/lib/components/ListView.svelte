@@ -255,7 +255,7 @@
 			</div>
 
 			<div class="alert-ticker">
-				<div class="alert-content">
+				<div class="alert-content" class:grouped-alerts={$config.groupItinerariesByStop}>
 					{#each [0, 1] as _}
 						<div class="alert-text">
 							{getAlertText()}
@@ -278,10 +278,11 @@
 		border-radius: 0.4em;
 		overflow: hidden;
 		font-size: 1.5em;
+		height: 100%;
 	}
 
 	.list-view.white {
-		border-color: rgba(0, 0, 0, 0.1);
+		/* border-color: rgba(0, 0, 0, 0.1); */
 	}
 
 	h2.list-header {
@@ -294,7 +295,6 @@
 
 	.list-view.white h2.list-header {
 		border-color: rgba(0, 0, 0, 0.1);
-		background: rgba(0, 0, 0, 0.02);
 	}
 
 	h2 {
@@ -320,12 +320,12 @@
 		padding: 0.3em 0.6em;
 		font-size: 0.75em;
 		font-weight: 400;
-		background: rgba(255, 255, 255, 0.05);
+		background: transparent;
 		border-bottom: none;
 	}
 
 	.list-view.white .stop-header {
-		background: rgba(0, 0, 0, 0.03);
+		/* background: rgba(0, 0, 0, 0.03); */
 		border-color: rgba(0, 0, 0, 0.08);
 	}
 
@@ -355,10 +355,13 @@
 		letter-spacing: 0.03em;
 	}
 
-	/* .list-view.white .table-header {
-		background: rgba(0, 0, 0, 0.04);
-		border-color: rgba(0, 0, 0, 0.1);
-	} */
+	.list-view.white .table-header {
+		background: rgba(0, 0, 0, 0.08) !important;
+	}
+
+	.list-view.light-in-dark .table-header {
+		background: rgba(255, 255, 255, 0.08) !important;
+	}
 
 	.destination-row {
 		display: grid;
@@ -367,7 +370,6 @@
 		padding: 0.4em 0.6em;
 		font-size: 0.8em;
 		align-items: center;
-
 	}
 
 	.list-view.white .destination-row {
@@ -379,13 +381,13 @@
 		display: block;
 		overflow-wrap: break-word;
 		font-weight: 600;
-		color: var(--text-secondary)
+		color: var(--text-secondary);
 	}
 
 	.times-col {
 		flex-shrink: 0;
 		text-align: right;
-		color: var(--text-primary)
+		color: var(--text-primary);
 	}
 
 	.table-header .times-col,
@@ -429,17 +431,18 @@
 		background-size: 100%;
 	}
 
+	/* Dark mode: white waves */
 	.time-item::before {
-		background-image: url('/assets/images/real_time_wave_small@2x.png');
+		background-image: url('/assets/images/real_time_wave_small-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
 	.time-item::after {
-		background-image: url('/assets/images/real_time_wave_big@2x.png');
+		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
-	/* Light mode: dark waves on white background */
+	/* Light mode: dark waves */
 	.list-view.white .time-item::before {
 		background-image: url('/assets/images/real_time_wave_small@2x.png');
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
@@ -447,17 +450,6 @@
 
 	.list-view.white .time-item::after {
 		background-image: url('/assets/images/real_time_wave_big@2x.png');
-		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
-	}
-
-	/* Dark mode with light-colored routes: white waves */
-	.list-view.light-in-dark .time-item::before {
-		background-image: url('/assets/images/real_time_wave_small-w@2x.png');
-		animation: realtimeAnim 1.4s linear 0s infinite alternate;
-	}
-
-	.list-view.light-in-dark .time-item::after {
-		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
@@ -489,7 +481,6 @@
 	.group-divider {
 		display: none;
 	}
-
 
 	.alert-section {
 		margin-top: 0;
@@ -542,11 +533,32 @@
 	}
 
 	.alert-ticker {
-		max-height: clamp(2em, 8vh, 6em);
+		max-height: clamp(5em, 15vh, 18em);
 		overflow: hidden;
 		position: relative;
 	}
 
+	@media (orientation: portrait) {
+		.alert-ticker {
+			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	.alert-ticker.grouped-alerts {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.alert-ticker.grouped-alerts {
+			height: clamp(5em, 10vh, 15em);
+		}
+	}
+
+	.alert-section {
+		margin-top: 0;
+		border-top: none;
+		flex-shrink: 0;
+	}
 
 	.alert-content {
 		padding: 0.2em 0.5em;
@@ -555,7 +567,7 @@
 		animation: scroll-alert-vertical 180s linear infinite;
 		white-space: pre-wrap;
 		word-wrap: break-word;
-		color: var(--text-tertiary)
+		color: var(--text-tertiary);
 	}
 
 	@keyframes scroll-alert-vertical {

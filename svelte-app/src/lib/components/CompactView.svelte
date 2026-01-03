@@ -500,6 +500,46 @@
 		<RouteIcon {route} {showLongName} compact={true} />
 	</h2>
 
+	<!-- Direction Cards -->
+	{#each itineraryGroups as group}
+		{#each group.itineraries as itinerary}
+			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
+			{#if departures.length > 0}
+				<div class="direction-card" style={cellStyle}>
+					<div class="card-info">
+						<div class="card-destination">
+							{itinerary.merged_headsign || 'Unknown destination'}
+						</div>
+						<div class="card-stop-location">
+							<span>{group.stopName}</span>
+						</div>
+					</div>
+					<div class="card-times">
+						{#each departures as item}
+							<div class="time-card">
+								<span class:cancelled={item.is_cancelled}>
+									{getMinutesUntil(item.departure_time)}
+								</span>
+								{#if item.is_real_time}
+									<i class="realtime"></i>
+								{/if}
+								<small class:last={item.is_last}
+									>{item.is_last ? $_('departures.last') : 'min'}</small
+								>
+							</div>
+						{/each}
+						{#each Array(Math.max(0, 3 - departures.length)) as _}
+							<div class="time-card inactive">
+								<span>&nbsp;</span>
+								<small>&nbsp;</small>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		{/each}
+	{/each}
+
 	<!-- Alerts with sidebar and vertical ticker -->
 	{#if hasRelevantAlerts()}
 		<div class="route-alert-container">
@@ -558,46 +598,6 @@
 			</div>
 		</div>
 	{/if}
-
-	<!-- Direction Cards -->
-	{#each itineraryGroups as group}
-		{#each group.itineraries as itinerary}
-			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
-			{#if departures.length > 0}
-				<div class="direction-card" style={cellStyle}>
-					<div class="card-info">
-						<div class="card-destination">
-							{itinerary.merged_headsign || 'Unknown destination'}
-						</div>
-						<div class="card-stop-location">
-							<span>{group.stopName}</span>
-						</div>
-					</div>
-					<div class="card-times">
-						{#each departures as item}
-							<div class="time-card">
-								<span class:cancelled={item.is_cancelled}>
-									{getMinutesUntil(item.departure_time)}
-								</span>
-								{#if item.is_real_time}
-									<i class="realtime"></i>
-								{/if}
-								<small class:last={item.is_last}
-									>{item.is_last ? $_('departures.last') : 'min'}</small
-								>
-							</div>
-						{/each}
-						{#each Array(Math.max(0, 3 - departures.length)) as _}
-							<div class="time-card inactive">
-								<span>&nbsp;</span>
-								<small>&nbsp;</small>
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/if}
-		{/each}
-	{/each}
 </div>
 
 <style>
@@ -607,6 +607,9 @@
 		margin-bottom: 1em;
 		box-sizing: border-box;
 		max-width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
 	/* Route header styles (from RouteItem) */
@@ -626,7 +629,7 @@
 		margin: 0 0 0.3em 0;
 	}
 
-	.route-icon {
+	/* .route-icon {
 		white-space: nowrap;
 		flex-shrink: 0;
 		display: flex;
@@ -662,7 +665,7 @@
 		height: 0.875em;
 		display: inline-block;
 		vertical-align: middle;
-	}
+	} */
 
 	i {
 		font-style: normal;
@@ -676,14 +679,6 @@
 
 	.table-view-route.light-in-dark h2 {
 		color: var(--text-primary);
-	}
-
-	.stop-name {
-		font-weight: 600;
-		margin: 1em 0 0.5em 0;
-		padding-bottom: 0.3em;
-		border-bottom: 1px solid var(--border-color);
-		color: var(--text-secondary);
 	}
 
 	/* Direction card styling */
@@ -724,14 +719,6 @@
 		overflow-wrap: break-word;
 		word-break: break-word;
 		min-width: 0;
-	}
-
-	.card-stop-location iconify-icon {
-		width: 0.9em;
-		height: 0.9em;
-		flex-shrink: 0;
-		margin-top: 0.05em;
-		fill: currentColor;
 	}
 
 	.card-stop-location span {
@@ -877,7 +864,14 @@
 		margin-bottom: 0.5em;
 		border-radius: 0.5em;
 		overflow: hidden;
-		height: clamp(5em, 20vh, 10em);
+		height: clamp(5em, 15vh, 18em);
+		flex-shrink: 0;
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-container {
+			height: clamp(5em, 8vh, 12em);
+		}
 	}
 
 	/* Alert sidebar with severity-based coloring */
