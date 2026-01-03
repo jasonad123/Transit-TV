@@ -66,7 +66,7 @@
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización.",
 			"viewMode": "Modo de vista",
-			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado) o el modo Lista (compacto, mejor para pantallas verticales)"
+			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales) o el modo Lista (mejor para grandes cantidades de rutas)."
 		},
 		"buttons": {
 			"cancel": "Cancelar",

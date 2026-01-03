@@ -7,7 +7,8 @@
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
-	import TableView from '$lib/components/TableView.svelte';
+	import CompactView from '$lib/components/CompactView.svelte';
+	import ListView from '$lib/components/ListView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
@@ -518,24 +519,6 @@
 						>
 					</td>
 					<td id="utilities">
-<!-- 						<button
-							type="button"
-							class="view-toggle"
-							onclick={() => {
-								config.update((c) => ({
-									...c,
-									viewMode: c.viewMode === 'card' ? 'table' : 'card'
-								}));
-								config.save();
-							}}
-							title={$config.viewMode === 'card'
-								? $_('config.viewMode.switchToTable')
-								: $_('config.viewMode.switchToCard')}
-							aria-label={$_('aria.toggleView')}
-						>
-							<iconify-icon icon={$config.viewMode === 'card' ? 'ix:list' : 'ix:card-layout'}
-							></iconify-icon>
-						</button> -->
 						<span class="clock"
 							>{formatTime(currentTime, $config.timeFormat, $config.language)}</span
 						>
@@ -840,17 +823,24 @@
 								<button
 									type="button"
 									class="btn-option"
-									class:active={$config.viewMode === 'table'}
-									onclick={() => config.update((c) => ({ ...c, viewMode: 'table' }))}
+									class:active={$config.viewMode === 'compact'}
+									onclick={() => config.update((c) => ({ ...c, viewMode: 'compact' }))}
+								>
+									<iconify-icon icon="ix:frames"></iconify-icon>
+									Compact
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'list'}
+									onclick={() => config.update((c) => ({ ...c, viewMode: 'list' }))}
 								>
 									<iconify-icon icon="ix:table"></iconify-icon>
 									List
 								</button>
 							</div>
 						</label>
-						<small class="help-text"
-							>{$_('config.routeDisplay.viewModeHelpText')}</small
-						>
+						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
 					</div>
 
 					<CollapsibleSection
@@ -949,15 +939,17 @@
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
-				class:table-view={$config.viewMode === 'table'}
+				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-							{#if $config.viewMode === 'card'}
-								<RouteItem {route} showLongName={$config.showRouteLongName} />
-							{:else}
-								<TableView {route} showLongName={$config.showRouteLongName} />
-							{/if}
+						{#if $config.viewMode === 'card'}
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'compact'}
+							<CompactView {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'list'}
+							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -1349,15 +1341,15 @@
 		padding: 0.5em 0.5em;
 	}
 
-	/* Fix for table view horizontal scrolling - use flex layout like RouteItem */
-	#routes.table-view {
+	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
+	#routes.compact-view {
 		display: flex;
 		flex-wrap: wrap;
 		align-content: flex-start;
 		justify-content: flex-start;
 	}
 
-	#routes.table-view .route-wrapper {
+	#routes.compact-view .route-wrapper {
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;

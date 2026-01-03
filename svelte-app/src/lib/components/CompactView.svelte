@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
+	import RouteIcon from './RouteIcon.svelte';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
@@ -495,24 +496,8 @@
 	class:light-in-dark={isDarkMode && hasLightColor}
 	style="color: {routeDisplayColor}"
 >
-	<!-- Route Header -->
 	<h2>
-		<span class="route-icon">
-			{#if route.route_display_short_name?.elements}
-				{#if getImageUrl(0)}
-					<img class="img{imageSize}" src={getImageUrl(0)} alt="Route icon" />
-				{/if}
-				<span class="route-icon-text"
-					>{route.route_display_short_name.elements[1] || ''}<i>{route.branch_code || ''}</i></span
-				>
-				{#if getImageUrl(2)}
-					<img class="img{imageSize}" src={getImageUrl(2)} alt="Route icon" />
-				{/if}
-			{/if}
-		</span>
-		{#if shouldShowRouteLongName}
-			<span class="route-long-name" style={cellStyle}>{miniRouteName}</span>
-		{/if}
+		<RouteIcon {route} {showLongName} compact={true} />
 	</h2>
 
 	<!-- Alerts with sidebar and vertical ticker -->
@@ -653,7 +638,6 @@
 		display: inline-block;
 		vertical-align: middle;
 	}
-
 
 	.route-long-name {
 		font-size: 0.4em;

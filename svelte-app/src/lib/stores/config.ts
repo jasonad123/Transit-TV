@@ -25,7 +25,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
-	viewMode: 'card' | 'table';
+	viewMode: 'card' | 'compact' | 'list';
 }
 
 const defaultConfig: Config = {
