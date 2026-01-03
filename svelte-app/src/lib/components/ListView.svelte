@@ -346,7 +346,7 @@
 		display: grid;
 		grid-template-columns: 1fr auto;
 		gap: 0.8em;
-		padding: 0.3em 0.6em;
+		padding: 0.4em 0.6em;
 		font-size: 0.8em;
 		font-weight: 700;
 		background: rgba(255, 255, 255, 0.08);
@@ -364,7 +364,7 @@
 		display: grid;
 		grid-template-columns: 1fr auto;
 		gap: 0.8em;
-		padding: 0.3em 0.6em;
+		padding: 0.4em 0.6em;
 		font-size: 0.8em;
 		align-items: center;
 
@@ -439,7 +439,7 @@
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
-	/* Light mode: dark waves on white routes */
+	/* Light mode: dark waves on white background */
 	.list-view.white .time-item::before {
 		background-image: url('/assets/images/real_time_wave_small@2x.png');
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
@@ -450,14 +450,14 @@
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
-	/* Dark mode: dark waves on light-colored routes */
+	/* Dark mode with light-colored routes: white waves */
 	.list-view.light-in-dark .time-item::before {
-		background-image: url('/assets/images/real_time_wave_small@2x.png');
+		background-image: url('/assets/images/real_time_wave_small-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
 	.list-view.light-in-dark .time-item::after {
-		background-image: url('/assets/images/real_time_wave_big@2x.png');
+		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
@@ -507,22 +507,25 @@
 		padding: 0.25em 0.5em;
 		font-size: 0.85em;
 		font-weight: 600;
-		border-bottom: 1.5px solid currentColor;
+		border-bottom: 1.5px solid;
+		background-color: transparent;
+		color: var(--text-primary);
+		border-color: var(--text-primary);
 	}
 
 	.alert-header.severe {
-		background-color: transparent;
 		color: #e30613;
+		border-color: #e30613;
 	}
 
 	.alert-header.warning {
-		background-color: transparent;
 		color: #ffa700;
+		border-color: #ffa700;
 	}
 
 	.alert-header.info {
-		background-color: transparent;
 		color: var(--text-secondary);
+		border-color: var(--text-secondary);
 	}
 
 	.alert-header iconify-icon {
