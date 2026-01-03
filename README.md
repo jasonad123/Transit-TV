@@ -24,6 +24,9 @@ A real-time transit display application that shows arrival times for nearby publ
 ## Prerequisites
 
 - An API key from Transit - [keys can be requested here](https://transitapp.com/partners/apis)
+
+Optional, for local deployment or development only
+
 - Docker (recommended)
 - Node.js (version specified in .node-version, for development/local deployment purposes only)
 - pnpm (preferred package manager, for development/local deployment purposes only)
@@ -31,7 +34,7 @@ A real-time transit display application that shows arrival times for nearby publ
 ## Getting started
 
 > [!TIP]
-> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page.
+> If you just want to deploy Transit TV, skip these steps and follow the instructions on the [Deployment](https://github.com/jasonad123/Transit-TV/wiki/Deployment) page for all available options, including a one-click deployment option.
 
 1. Request API access
 
@@ -199,7 +202,6 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080
 │   ├── components/       # Custom server components
 │   └── routes.js         # Express routing
 ├── .env.example          # Example environment variables
-├── .env.railway		  # Example environment variables for Railway deployments
 ├── Dockerfile            # Docker build file
 ├── compose.yaml          # Docker Compose file (production)
 └── compose.dev.yaml      # Docker Compose (development)
