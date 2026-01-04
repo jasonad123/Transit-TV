@@ -281,10 +281,6 @@
 		height: 100%;
 	}
 
-	.list-view.white {
-		/* border-color: rgba(0, 0, 0, 0.1); */
-	}
-
 	h2.list-header {
 		padding: 0.25em 0em 0.2em 0.2em;
 		background: transparent;
@@ -325,7 +321,6 @@
 	}
 
 	.list-view.white .stop-header {
-		/* background: rgba(0, 0, 0, 0.03); */
 		border-color: rgba(0, 0, 0, 0.08);
 	}
 
@@ -544,12 +539,12 @@
 		}
 	}
 
-	.alert-ticker.grouped-alerts {
+	.alert-ticker:global(.grouped-alerts) {
 		height: clamp(5em, 19.5vh, 22em);
 	}
 
 	@media (orientation: portrait) {
-		.alert-ticker.grouped-alerts {
+		.alert-ticker:global(.grouped-alerts) {
 			height: clamp(5em, 10vh, 15em);
 		}
 	}
