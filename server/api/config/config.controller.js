@@ -84,6 +84,7 @@ exports.getUnattendedConfig = function (req, res) {
 		customLogo: config.unattendedSetup.customLogo,
 		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
 		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus,
-		showRouteLongName: config.unattendedSetup.showRouteLongName
+		showRouteLongName: config.unattendedSetup.showRouteLongName,
+		viewMode: config.unattendedSetup.viewMode
 	});
 };
