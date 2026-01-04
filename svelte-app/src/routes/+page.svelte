@@ -1144,32 +1144,6 @@
 		opacity: 1;
 	}
 
-	.view-toggle {
-		padding: 0;
-		margin-right: 1em;
-		display: inline-block;
-		width: 2em;
-		height: auto;
-		background: none;
-		border: none;
-		outline: none;
-		cursor: pointer;
-		opacity: 0.8;
-		vertical-align: middle;
-		transform: translateX(7em);
-	}
-
-	.view-toggle:hover {
-		opacity: 1;
-	}
-
-	.view-toggle iconify-icon {
-		width: 30%;
-		font-size: 1.8em;
-		color: var(--text-header);
-		display: block;
-	}
-
 	#utilities {
 		width: 30%;
 		min-width: 15em;
@@ -1334,20 +1308,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.3em;
-	}
-
-	.toggle-label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-	}
-
-	.toggle-label > span {
-		flex-shrink: 0;
-	}
-
-	.toggle-label .button-group {
-		flex-shrink: 0;
 	}
 
 	.option-container {
