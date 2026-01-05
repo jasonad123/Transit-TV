@@ -223,7 +223,7 @@ exports.nearby = async function (req, res) {
 	const fetchPromise = (async () => {
 		try {
 			const response = await fetch(
-				`https://external.transitapp.com/v4/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}`,
+				`https://external.transitapp.com/v4/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}&max_num_departures=6`,
 				{
 					headers: {
 						Accept: 'application/json',
