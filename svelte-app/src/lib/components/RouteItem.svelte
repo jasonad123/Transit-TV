@@ -1029,9 +1029,7 @@
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-								>{dir.merged_headsign || dir.direction_headsign || 'Unknown destination'}{#if dir.variant_id}<span
-										class="variant-debug">&nbsp;[v{dir.variant_id}]</span
-									>{/if}</span
+								>{dir.merged_headsign || dir.direction_headsign || 'Unknown destination'}</span
 							>
 						</h3>
 
