@@ -5,7 +5,7 @@ const config = require('../../config/environment');
 /**
  * Transforms v4 API response to v3 format for frontend compatibility.
  * v4 wraps itineraries in merged_itineraries with additional nesting.
- * This function flattens it back to v3 structure.
+ * This function flattens it back to v3 structure while preserving stop information.
  * @param {Object} v4Response - The v4 API response
  * @returns {Object} - Transformed response in v3 format
  */
@@ -21,13 +21,19 @@ function transformV4ToV3Format(v4Response) {
 		delete flattenedRoute.merged_itineraries;
 
 		// Combine all itineraries and schedule_items from merged_itineraries
+		// Preserve closest_stop from merged_itinerary on each itinerary
 		const allItineraries = [];
 		const allScheduleItems = [];
 
 		if (Array.isArray(route.merged_itineraries)) {
 			for (const merged of route.merged_itineraries) {
 				if (Array.isArray(merged.itineraries)) {
-					allItineraries.push(...merged.itineraries);
+					// Add closest_stop from merged_itinerary to each itinerary
+					const itinerariesWithStop = merged.itineraries.map((itinerary) => ({
+						...itinerary,
+						closest_stop: merged.closest_stop
+					}));
+					allItineraries.push(...itinerariesWithStop);
 				}
 				if (Array.isArray(merged.schedule_items)) {
 					allScheduleItems.push(...merged.schedule_items);
