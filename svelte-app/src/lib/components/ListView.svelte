@@ -7,6 +7,7 @@
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance } from '$lib/utils/colorUtils';
+	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -241,7 +242,17 @@
 				<div class="alert-content">
 					{#each [0, 1] as _}
 						<div class="alert-text">
-							{getAlertText()}
+							{#each parseAlertContent(getAlertText()) as content}
+								{#if content.type === 'text'}
+									{content.value}
+								{:else if content.type === 'image'}
+									<img
+										src="/api/images/{extractImageId(content.value)}"
+										alt="transit icon"
+										class="alert-image"
+									/>
+								{/if}
+							{/each}
 						</div>
 						{#if relevantAlertCount > 1 || (relevantAlertCount === 1 && getAlertText().length > 100)}
 							<div class="separator-line">---</div>
@@ -546,5 +557,12 @@
 		text-align: center;
 		margin: 0.2em 0;
 		font-size: 0.7em;
+	}
+
+	.alert-image {
+		height: 1em;
+		display: inline-block;
+		margin: 0 0.2em;
+		vertical-align: middle;
 	}
 </style>
