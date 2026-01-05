@@ -22,21 +22,39 @@ function transformV4ToV3Format(v4Response) {
 
 		// Combine all itineraries and schedule_items from merged_itineraries
 		// Preserve closest_stop from merged_itinerary on each itinerary
+		// Associate schedule_items with their itineraries using internal_itinerary_id
 		const allItineraries = [];
 		const allScheduleItems = [];
+		const scheduleItemsByItineraryId = {};
 
 		if (Array.isArray(route.merged_itineraries)) {
+			// First pass: collect all schedule items grouped by internal_itinerary_id
+			for (const merged of route.merged_itineraries) {
+				if (Array.isArray(merged.schedule_items)) {
+					for (const scheduleItem of merged.schedule_items) {
+						const itineraryId = scheduleItem.internal_itinerary_id;
+						if (!scheduleItemsByItineraryId[itineraryId]) {
+							scheduleItemsByItineraryId[itineraryId] = [];
+						}
+						// Remove internal_itinerary_id from schedule_item (v3 doesn't have it at item level)
+						const { internal_itinerary_id, ...scheduleItemWithoutId } = scheduleItem;
+						scheduleItemsByItineraryId[itineraryId].push(scheduleItemWithoutId);
+					}
+					allScheduleItems.push(...merged.schedule_items);
+				}
+			}
+
+			// Second pass: create itineraries with their associated schedule_items
 			for (const merged of route.merged_itineraries) {
 				if (Array.isArray(merged.itineraries)) {
 					// Add closest_stop from merged_itinerary to each itinerary
-					const itinerariesWithStop = merged.itineraries.map((itinerary) => ({
+					// Also add schedule_items that belong to this itinerary
+					const itinerariesWithData = merged.itineraries.map((itinerary) => ({
 						...itinerary,
-						closest_stop: merged.closest_stop
+						closest_stop: merged.closest_stop,
+						schedule_items: scheduleItemsByItineraryId[itinerary.internal_itinerary_id] || []
 					}));
-					allItineraries.push(...itinerariesWithStop);
-				}
-				if (Array.isArray(merged.schedule_items)) {
-					allScheduleItems.push(...merged.schedule_items);
+					allItineraries.push(...itinerariesWithData);
 				}
 			}
 		}
