@@ -3,6 +3,50 @@
 const config = require('../../config/environment');
 
 /**
+ * Transforms v4 API response to v3 format for frontend compatibility.
+ * v4 wraps itineraries in merged_itineraries with additional nesting.
+ * This function flattens it back to v3 structure.
+ * @param {Object} v4Response - The v4 API response
+ * @returns {Object} - Transformed response in v3 format
+ */
+function transformV4ToV3Format(v4Response) {
+	if (!v4Response || !v4Response.nearby_routes) {
+		return v4Response;
+	}
+
+	// Transform nearby_routes to routes format
+	const routes = v4Response.nearby_routes.map((route) => {
+		// Flatten merged_itineraries structure
+		const flattenedRoute = { ...route };
+		delete flattenedRoute.merged_itineraries;
+
+		// Combine all itineraries and schedule_items from merged_itineraries
+		const allItineraries = [];
+		const allScheduleItems = [];
+
+		if (Array.isArray(route.merged_itineraries)) {
+			for (const merged of route.merged_itineraries) {
+				if (Array.isArray(merged.itineraries)) {
+					allItineraries.push(...merged.itineraries);
+				}
+				if (Array.isArray(merged.schedule_items)) {
+					allScheduleItems.push(...merged.schedule_items);
+				}
+			}
+		}
+
+		// Return route in v3 format
+		return {
+			...flattenedRoute,
+			itineraries: allItineraries,
+			schedule_items: allScheduleItems
+		};
+	});
+
+	return { routes };
+}
+
+/**
  * Analyzes Transit API response to detect if it contains real-time predictions
  * @param {Object} data - The API response data
  * @returns {boolean} - True if any schedule items have is_real_time: true
@@ -155,7 +199,7 @@ exports.nearby = async function (req, res) {
 	const fetchPromise = (async () => {
 		try {
 			const response = await fetch(
-				`https://external.transitapp.com/v3/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}`,
+				`https://external.transitapp.com/v4/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}`,
 				{
 					headers: {
 						Accept: 'application/json',
@@ -203,7 +247,10 @@ exports.nearby = async function (req, res) {
 				throw error;
 			}
 
-			const data = await response.json();
+			const v4Data = await response.json();
+
+			// Transform v4 response to v3 format for frontend compatibility
+			const data = transformV4ToV3Format(v4Data);
 
 			// Store in cache if enabled
 			if (CACHE_ENABLED) {
