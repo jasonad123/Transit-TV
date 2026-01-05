@@ -542,7 +542,7 @@
 
 	<!-- Alerts with sidebar and vertical ticker -->
 	{#if hasRelevantAlerts()}
-		<div class="route-alert-container">
+		<div class="route-alert-container" class:grouped-alerts={$config.groupItinerariesByStop}>
 			<div
 				class="alert-sidebar"
 				class:severe={getMostSevereAlertLevel() === 'severe'}
@@ -616,20 +616,20 @@
 	h2 {
 		position: relative;
 		padding-left: 0.15em;
-		padding-bottom: 0;
-		padding-top: 0.15em;
+		padding-bottom: -0.2em;
+		padding-top: 0.25em;
 		display: flex;
 		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0;
-		line-height: 0.75em;
+		line-height: 0.82em;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
 		margin: 0 0 0.3em 0;
 	}
 
-	/* .route-icon {
+	.route-icon {
 		white-space: nowrap;
 		flex-shrink: 0;
 		display: flex;
@@ -658,19 +658,20 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
+	} 
 
 	.img28,
 	.img34 {
 		height: 0.875em;
 		display: inline-block;
 		vertical-align: middle;
-	} */
+		line-height: 1;
+	}
 
-	i {
+	/* i {
 		font-style: normal;
 		font-weight: 600;
-	}
+	} */
 
 	/* Light text color adjustments */
 	.table-view-route.white h2 {
@@ -871,6 +872,17 @@
 	@media (orientation: portrait) {
 		.route-alert-container {
 			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	/* When grouping is enabled */
+	.route-alert-container.grouped-alerts {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-container.grouped-alerts {
+			height: clamp(5em, 10vh, 15em);
 		}
 	}
 

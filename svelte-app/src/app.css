@@ -94,6 +94,23 @@ button {
 	background-color: rgba(0, 0, 0, 0.08) !important;
 }
 
+/* ListView real-time wave styling - page-level mode-based only */
+[data-theme='dark'] .time-item::before {
+	background-image: url('/assets/images/real_time_wave_small-w@2x.png') !important;
+}
+
+[data-theme='dark'] .time-item::after {
+	background-image: url('/assets/images/real_time_wave_big-w@2x.png') !important;
+}
+
+[data-theme='light'] .time-item::before {
+	background-image: url('/assets/images/real_time_wave_small@2x.png') !important;
+}
+
+[data-theme='light'] .time-item::after {
+	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
+}
+
 @media (min-width: 1300px) {
 	body {
 		font-size: 15px;

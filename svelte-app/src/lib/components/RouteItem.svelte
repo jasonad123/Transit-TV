@@ -1317,12 +1317,16 @@
 
 	.route .img28 {
 		height: 0.875em;
-		display: block;
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 1;
 	}
 
 	.route .img34 {
 		height: 0.875em;
-		display: block;
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 1;
 	}
 
 	.route i {
