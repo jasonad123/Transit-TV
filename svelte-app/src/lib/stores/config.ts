@@ -25,8 +25,6 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
-	enableHeadsignDemerge: boolean;
-	viewMode: 'card' | 'table';
 }
 
 const defaultConfig: Config = {
@@ -49,9 +47,7 @@ const defaultConfig: Config = {
 	customLogo: null,
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
-	showRouteLongName: false,
-	enableHeadsignDemerge: true,
-	viewMode: 'card'
+	showRouteLongName: false
 };
 
 function createConfigStore() {
