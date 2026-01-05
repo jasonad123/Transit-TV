@@ -262,7 +262,7 @@ export function hasShownDeparture(route: Route, itinerary?: Itinerary): boolean 
 
 export function shouldShowDeparture(departure: number): boolean {
 	const diff = departure * 1000 - Date.now();
-	return diff > 0 && diff <= 240 * 60000;
+	return diff > 0 && diff <= 130 * 60000;
 }
 
 const stopIdCache = new WeakMap<Route[], Set<string>>();
