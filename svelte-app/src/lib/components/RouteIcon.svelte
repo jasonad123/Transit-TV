@@ -531,9 +531,15 @@
 
 	:global(.img28) {
 		height: 0.875em;
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 1;
 	}
 
 	:global(.img34) {
 		height: 0.875em;
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 1;
 	}
 </style>

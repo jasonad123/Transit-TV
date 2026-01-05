@@ -163,15 +163,6 @@
 		return 'ix:about-filled';
 	}
 
-	// Wave icon selection based on route colors
-	function getWaveIcon(): string {
-		// Dark routes need white waves
-		if (getRelativeLuminance(route.route_color) < 0.3) {
-			return '/assets/images/real_time_wave_small-w@2x.png';
-		}
-		// Light routes need dark waves
-		return '/assets/images/real_time_wave_small@2x.png';
-	}
 </script>
 
 <div
@@ -212,14 +203,6 @@
 									?.filter(shouldShowDeparture)
 									.slice(0, 3) || [] as item, itemIndex}
 									<span class="time-item" class:cancelled={item.is_cancelled}>
-										{#if item.is_real_time}
-											<img
-												src={getWaveIcon()}
-												alt="realtime"
-												class="wave-icon"
-												class:wave-dark={isDarkMode && hasLightColor}
-											/>
-										{/if}
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
 									{#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).length || 0) - 1}
@@ -254,8 +237,8 @@
 				</span>
 			</div>
 
-			<div class="alert-ticker">
-				<div class="alert-content" class:grouped-alerts={$config.groupItinerariesByStop}>
+			<div class="alert-ticker" class:grouped-alerts={$config.groupItinerariesByStop}>
+				<div class="alert-content">
 					{#each [0, 1] as _}
 						<div class="alert-text">
 							{getAlertText()}
@@ -296,13 +279,13 @@
 	h2 {
 		position: relative;
 		padding-left: 0.15em;
-		padding-bottom: 0;
-		padding-top: 0.15em;
+		padding-bottom: -0.2em;
+		padding-top: 0.25em;
 		display: flex;
 		align-items: center;
 		flex-wrap: nowrap;
 		gap: 0;
-		line-height: 0.75em;
+		line-height: 0.82em;
 		flex-shrink: 0;
 		font-weight: 700;
 		letter-spacing: -0.02em;
@@ -426,34 +409,13 @@
 		background-size: 100%;
 	}
 
-	/* Dark mode: white waves */
+	/* Wave animation - styling controlled by global [data-theme] rules in app.css */
 	.time-item::before {
-		background-image: url('/assets/images/real_time_wave_small-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
 	.time-item::after {
-		background-image: url('/assets/images/real_time_wave_big-w@2x.png');
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
-	}
-
-	/* Light mode: dark waves */
-	.list-view.white .time-item::before {
-		background-image: url('/assets/images/real_time_wave_small@2x.png');
-		animation: realtimeAnim 1.4s linear 0s infinite alternate;
-	}
-
-	.list-view.white .time-item::after {
-		background-image: url('/assets/images/real_time_wave_big@2x.png');
-		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
-	}
-
-	.wave-icon {
-		display: none;
-	}
-
-	.wave-icon.wave-dark {
-		filter: brightness(0.3);
 	}
 
 	@keyframes realtimeAnim {
@@ -528,9 +490,10 @@
 	}
 
 	.alert-ticker {
-		max-height: clamp(5em, 15vh, 18em);
+		height: clamp(5em, 15vh, 18em);
 		overflow: hidden;
 		position: relative;
+		flex-shrink: 0;
 	}
 
 	@media (orientation: portrait) {
