@@ -41,7 +41,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.2'); // Fallback version
+	let appVersion = $state<string>('1.3.3'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -308,7 +308,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.2';
+				appVersion = healthData.version || '1.3.3';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
