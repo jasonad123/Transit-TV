@@ -1,7 +1,6 @@
 import { get } from 'svelte/store';
 import { apiCache } from '$lib/utils/apiCache';
 import { config } from '$lib/stores/config';
-import { demergeItineraries } from '$lib/utils/itineraryUtils';
 
 export interface Route {
 	global_route_id: string;
