@@ -276,6 +276,13 @@ exports.nearby = async function (req, res) {
 			});
 		}
 
+		if (error.status === 401 || error.status === 403) {
+			return res.status(error.status).json({
+				error: 'Authentication error',
+				message: 'Invalid or missing Transit API key. Please check server configuration.'
+			});
+		}
+
 		if (error.status) {
 			return res.status(error.status).json({ error: 'Transit API error' });
 		}

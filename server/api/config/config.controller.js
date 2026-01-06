@@ -1,6 +1,10 @@
 'use strict';
 
 var config = require('../../config/environment');
+var logger = require('../../config/logger');
+
+// Default coordinates (New York City)
+var DEFAULT_COORDINATES = { latitude: 40.75426683398718, longitude: -73.98672703719805 };
 
 // Validate coordinate format (lat,lng)
 function validateCoordinates(locationStr) {
@@ -28,18 +32,6 @@ function validateCoordinates(locationStr) {
 	return { latitude: lat, longitude: lng };
 }
 
-// Validate time format
-function validateTimeFormat(format) {
-	var validFormats = ['HH:mm', 'hh:mm A', 'hh:mm']; // Added 'hh:mm' for 12-hour without AM/PM
-	return validFormats.includes(format);
-}
-
-// Validate language code
-function validateLanguage(lang) {
-	var validLanguages = ['en', 'fr', 'es', 'de'];
-	return validLanguages.includes(lang);
-}
-
 // Get unattended setup configuration
 exports.getUnattendedConfig = function (req, res) {
 	if (!config.unattendedSetup.enabled) {
@@ -48,28 +40,32 @@ exports.getUnattendedConfig = function (req, res) {
 		});
 	}
 
-	// Validate coordinates
+	// Use default coordinates if not provided (New York City)
 	var coordinates = validateCoordinates(config.unattendedSetup.location);
 	if (!coordinates) {
-		return res.status(400).json({
-			error: 'Invalid coordinates format. Expected: "latitude,longitude"'
-		});
+		// Log warning about falling back to default coordinates
+		if (config.unattendedSetup.location) {
+			logger.warn(
+				{
+					providedLocation: config.unattendedSetup.location,
+					defaultLatitude: DEFAULT_COORDINATES.latitude,
+					defaultLongitude: DEFAULT_COORDINATES.longitude
+				},
+				'Invalid UNATTENDED_LOCATION format. Falling back to default coordinates (New York City).'
+			);
+		} else {
+			logger.warn(
+				{
+					defaultLatitude: DEFAULT_COORDINATES.latitude,
+					defaultLongitude: DEFAULT_COORDINATES.longitude
+				},
+				'UNATTENDED_LOCATION not provided. Using default coordinates (New York City).'
+			);
+		}
+		coordinates = DEFAULT_COORDINATES;
 	}
 
-	// Validate time format
-	if (!validateTimeFormat(config.unattendedSetup.timeFormat)) {
-		return res.status(400).json({
-			error: 'Invalid time format. Expected: "HH:mm", "hh:mm A", or "hh:mm"'
-		});
-	}
-
-	// Validate language
-	if (!validateLanguage(config.unattendedSetup.language)) {
-		return res.status(400).json({
-			error: 'Invalid language. Expected: "en", "fr", "es", or "de"'
-		});
-	}
-
+	// All other values are pre-validated and defaulted by environment/index.js
 	res.json({
 		enabled: true,
 		latLng: coordinates,
@@ -80,7 +76,7 @@ exports.getUnattendedConfig = function (req, res) {
 		headerColor: config.unattendedSetup.headerColor,
 		columns: config.unattendedSetup.columns,
 		showQRCode: config.unattendedSetup.showQRCode,
-		maxDistance: config.unattendedSetup.maxDistance || 500,
+		maxDistance: config.unattendedSetup.maxDistance,
 		customLogo: config.unattendedSetup.customLogo,
 		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
 		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus,
