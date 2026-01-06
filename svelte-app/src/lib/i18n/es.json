@@ -60,11 +60,16 @@
 			"scanPrompt2": "Escanea para abrir en la aplicación Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta",
+			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (Esta función no es compatible con el modo Compacto. Esta función está habilitada de forma predeterminada en el modo Lista.)",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
+			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización.",
+			"viewMode": "Modo de vista",
+			"card": "Tarjeta",
+			"compact": "Compacto",
+			"list": "Lista",
+			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales) o el modo Lista (mejor para grandes cantidades de rutas)."
 		},
 		"buttons": {
 			"cancel": "Cancelar",

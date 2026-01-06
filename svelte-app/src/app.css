@@ -8,6 +8,7 @@
 	--bg-header: #30b566;
 	--text-primary: #000000;
 	--text-secondary: #666666;
+	--text-tertiary: #4d4d4d;
 	--text-header: #ffffff;
 	--border-color: #ddd;
 	--shadow-color: rgba(0, 0, 0, 0.1);
@@ -19,6 +20,7 @@
 	--bg-header: #1f7a42;
 	--text-primary: #ffffff;
 	--text-secondary: #999999;
+	--text-tertiary: #bbbbbb;
 	--text-header: #ffffff;
 	--border-color: #444;
 	--shadow-color: rgba(0, 0, 0, 0.3);
@@ -82,6 +84,56 @@ h4 {
 button {
 	cursor: pointer;
 	outline: 0;
+}
+
+[data-theme='dark'] .table-header {
+	background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme='light'] .table-header {
+	background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ListView real-time wave styling - page-level mode-based only */
+[data-theme='dark'] .time-item::before {
+	background-image: url('/assets/images/real_time_wave_small-w@2x.png') !important;
+}
+
+[data-theme='dark'] .time-item::after {
+	background-image: url('/assets/images/real_time_wave_big-w@2x.png') !important;
+}
+
+[data-theme='light'] .time-item::before {
+	background-image: url('/assets/images/real_time_wave_small@2x.png') !important;
+}
+
+[data-theme='light'] .time-item::after {
+	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
+}
+
+/* Consolidated alert height for compact views (CompactView, ListView) */
+.route-alert-container,
+.alert-ticker {
+	height: clamp(5em, 15vh, 18em);
+}
+
+@media (orientation: portrait) {
+	.route-alert-container,
+	.alert-ticker {
+		height: clamp(5em, 8vh, 12em);
+	}
+}
+
+.route-alert-container.grouped-alerts,
+.alert-ticker.grouped-alerts {
+	height: clamp(5em, 19.5vh, 22em);
+}
+
+@media (orientation: portrait) {
+	.route-alert-container.grouped-alerts,
+	.alert-ticker.grouped-alerts {
+		height: clamp(5em, 10vh, 15em);
+	}
 }
 
 @media (min-width: 1300px) {

@@ -124,6 +124,26 @@ function validateTheme(theme) {
 }
 
 /**
+ * Validates and returns a view mode value
+ * @param {string} viewMode - The view mode to validate
+ * @returns {string} - Valid view mode or default (card)
+ */
+function validateViewMode(viewMode) {
+	var allowed = ['card', 'compact', 'list'];
+	if (allowed.includes(viewMode)) {
+		return viewMode;
+	}
+	console.warn(
+		'Invalid VIEW_MODE value: ' +
+			viewMode +
+			'. Must be one of: ' +
+			allowed.join(', ') +
+			'. Using default: card'
+	);
+	return 'card';
+}
+
+/**
  * Validates and returns a safe columns value
  * @param {string} columns - The columns value to validate
  * @returns {string} - Valid columns or default (auto)
@@ -227,7 +247,8 @@ var all = {
 		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null,
 		groupItinerariesByStop: parseBoolean(process.env.UNATTENDED_GROUP_ITINERARIES),
 		filterRedundantTerminus: parseBoolean(process.env.UNATTENDED_FILTER_TERMINUS),
-		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES)
+		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES),
+		viewMode: validateViewMode(process.env.VIEW_MODE || 'card')
 	},
 
 	// Security settings

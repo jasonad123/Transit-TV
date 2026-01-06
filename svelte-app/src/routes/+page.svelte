@@ -7,6 +7,8 @@
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import CompactView from '$lib/components/CompactView.svelte';
+	import ListView from '$lib/components/ListView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
@@ -41,7 +43,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.3'); // Fallback version
+	let appVersion = $state<string>('1.3.4'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -308,7 +310,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.3';
+				appVersion = healthData.version || '1.3.4';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
@@ -805,6 +807,57 @@
 						</div>
 					</SolidSection>
 
+					<div class="option-container">
+						<label class="option-label">
+							<span>{$_('config.routeDisplay.viewMode')}</span>
+							<div class="button-group inline-buttons">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'card'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'card',
+											groupItinerariesByStop: false
+										}))}
+								>
+									<iconify-icon icon="ix:application-screen"></iconify-icon>
+									{$_('config.routeDisplay.card')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'compact'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'compact',
+											groupItinerariesByStop: false
+										}))}
+								>
+									<iconify-icon icon="ix:frames"></iconify-icon>
+									{$_('config.routeDisplay.compact')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'list'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'list',
+											groupItinerariesByStop: true
+										}))}
+								>
+									<iconify-icon icon="ix:table"></iconify-icon>
+									{$_('config.routeDisplay.list')}
+								</button>
+							</div>
+						</label>
+						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
+					</div>
+
 					<CollapsibleSection
 						title={$_('config.hiddenRoutes.title')}
 						helpText={$_('config.hiddenRoutes.helpText')}
@@ -901,10 +954,17 @@
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if $config.viewMode === 'card'}
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'compact'}
+							<CompactView {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'list'}
+							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -1250,6 +1310,33 @@
 		gap: 0.3em;
 	}
 
+	.option-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+	}
+
+	.option-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.option-label > span {
+		flex-shrink: 0;
+		order: -1;
+	}
+
+	.option-label .button-group {
+		flex-shrink: 0;
+		order: 0;
+	}
+
+	.option-label .button-group,
+	.option-label .inline-buttons {
+		width: 100%;
+	}
+
 	.toggle-help-text {
 		display: block !important;
 		margin-top: 0.25em;
@@ -1268,6 +1355,21 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.5em 0.5em;
+	}
+
+	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
+	#routes.compact-view {
+		display: flex;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		justify-content: flex-start;
+	}
+
+	#routes.compact-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 0.5em;
 	}
 
 	/* Responsive auto-layout defaults */
@@ -1404,11 +1506,15 @@
 	.button-group {
 		display: flex;
 		gap: 0.5em;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
+	}
+
+	.button-group.inline-buttons {
+		width: 100%;
 	}
 
 	.btn-option {
-		flex: 2;
+		flex: 1 1 auto;
 		min-width: 60px;
 		padding: 0.6em 1em;
 		border: 2px solid var(--border-color);
@@ -1416,13 +1522,14 @@
 		background: var(--bg-secondary);
 		color: var(--text-primary);
 		cursor: pointer;
-		transition: all 0.2s;
+		transition:
+			border-color 0.2s,
+			background-color 0.2s;
 		font-size: 0.95em;
 	}
 
-	.btn-option:hover {
-		border-color: var(--bg-header);
-		background: var(--bg-primary);
+	.btn-option:active {
+		transform: scale(0.98);
 	}
 
 	.btn-option.active {
@@ -1430,6 +1537,27 @@
 		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	.inline-buttons {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.inline-buttons .btn-option {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4em;
+		flex: 1 1 120px;
+		min-width: unset;
+	}
+
+	.inline-buttons iconify-icon {
+		width: 1.2em;
+		height: 1.2em;
+		flex-shrink: 0;
 	}
 
 	/* Floating QR Code Styles */
