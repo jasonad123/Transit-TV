@@ -32,17 +32,13 @@ Railway provides a one-click deployment experience:
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/kYRHes?referralCode=9qzudG&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
-If you want to deploy the hardened image version:
-
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/7mScpc?referralCode=9qzudG&utm_medium=integration&utm_source=template&utm_campaign=generic)
-
 **What happens when you click**:
 
 1. You'll be guided through creating a Railway account (if needed)
-2. Railway creates a new project for Transit-TV
-3. You'll configure your API key and settings
-4. Railway automatically deploys the *latest* Docker image
-5. Your Transit-TV instance is live behind a Caddy reverse proxy
+2. You'll configure your API key and settings for Transit TV
+3. Railway creates a new project for Transit TV
+4. Railway automatically deploys the *latest* Docker image for Transit TV
+5. Your Transit TV instance is live behind a Caddy reverse proxy
 
 **Configuration**:
 
@@ -53,13 +49,12 @@ If you want to deploy the hardened image version:
 **Costs**: Railway charges based on usage. Check [Railway's pricing](https://railway.com/pricing) for current rates.
 
 **Demo instance**: [see it in action](https://transit-tv-demo.up.railway.app/)
-**Beta demo instance**: [see it in action](https://transit-tv-beta.up.railway.app/)
 
 ### Option 2: Manual Cloud Platform Deployment
 
 **Best for**: Organizations preferring other PaaS providers or needing specific features
 
-Transit-TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway but it *should* be supported on **Render** and **Fly.io**.
+Transit TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway but it *should* be supported on **Render** and **Fly.io**.
 
 - **Railway** - Recommended, full template support
 - **Render** - Good alternative, straightforward setup
@@ -71,15 +66,15 @@ Transit-TV works with any Docker-compatible PaaS platform. Currently it has only
 2. **Create new service** from Docker image
 3. **Configure Docker image**: 
    - Repository: `ghcr.io/jasonad123/transit-tv`
-   - Tag: `latest` (for stable) or specific version tag
+   - Tag: `latest` (for stable), `hardened-latest` (for stable hardened image), or specific version tag
 4. **Set environment variables**:
    ```bash
    TRANSIT_API_KEY=your_api_key_here
-   SESSION_SECRET=${{secret()}}
+   SESSION_SECRET=any-long-secret-however-the-platform-generates-it
    PORT=8080
    NODE_ENV=production
    ```
-5. **Optional: Configure [unattended setup](/config/unattended-setup.md)** 
+5. **Optional: Configure [unattended setup](../docs/config/unattended-setup.md)** 
 6. **Deploy** and access your instance
 
 #### Platform-Specific Guides
@@ -271,15 +266,8 @@ server {
 
 #### Reverse proxy alternatives
 
-**Cloudflare Tunnels**
-
-If your organization has a Cloudflare account and uses Cloudflare for DNS, consider using Cloudflare Tunnels to serve the Transit TV service without having to open any ports.
-
-Follow the instructions on [Cloudflare's website](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/) to get started.
-
-**Tailscale (internally or with Funnels)**
-
-Similarly, Tailscale offers two ways to serve Transit TV: either peer-to-peer, internally (like in any VPN) or with [Tailscale Funnels](https://tailscale.com/kb/1223/funnel) for exposing resources publicly without opening ports or using traditional reverse proxies.
+Transit TV has been tested to work behind both **Cloudflare Tunnels** and Tailscale (both natively and behind Tailscale Funnels). If your organization uses either of these programs, consider these as reverse proxy alternatives that don't 
+require opening ports.
 
 ### Option 4: Direct Node.js Deployment (Development Only)
 
@@ -289,16 +277,26 @@ Similarly, Tailscale offers two ways to serve Transit TV: either peer-to-peer, i
 
 See [docs/local-deployment](/docs/local-deployment.md) for more information.
 
-## Unattended Setup
+## Configuration
 
-Transit TV supports automatic configuration on first launch, ideal for deploying multiple instances or kiosk-style deployments.
+### Unattended Setup
 
-See the documentation entry for [[Unattended Setup|Unattended-Setup]] for more information on available variables.
+Transit TV supports automatic configuration on first launch, ideal for deploying multiple instances at once.
+
+See the documentation for [unattended setup](../docs/config/unattended-setup.md)] for more information on available variables.
+
+### Caching
+
+Transit TV also has built-in caching. Caching can be adjusted based on your Transit API subscription
+
+See the documentation for [caching](../docs/config/caching.md)] for more information on the caching setup.
 
 ## Updating Your Deployment
 
 ### Railway
 Updates are automatic when new versions are tagged, or you can manually redeploy from the dashboard.
+
+If you're using the Railway template, the default settings will automatically update the Docker image at 7 AM UTC (3 AM EST, 12 AM PST).
 
 ### PaaS Platforms
 Most platforms support automatic updates or can be configured to pull the latest image on a schedule.
