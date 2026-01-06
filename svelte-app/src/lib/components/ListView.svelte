@@ -206,7 +206,7 @@
 									<span class="time-item" class:cancelled={item.is_cancelled}>
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
-									{#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).length || 0) - 1}
+									{#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 3).length || 0) - 1}
 										<span class="separator">,</span>
 									{/if}
 								{/each}
@@ -230,7 +230,6 @@
 				class:severe={getMostSevereAlertLevel() === 'severe'}
 				class:warning={getMostSevereAlertLevel() === 'warning'}
 				class:info={getMostSevereAlertLevel() === 'info'}
-				style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}
 			>
 				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
 				<span class="alert-title">
@@ -370,7 +369,7 @@
 		display: block;
 		overflow-wrap: break-word;
 		font-weight: 600;
-		color: var(--text-secondary);
+		color: var(--text-tertiary);
 	}
 
 	.times-col {
