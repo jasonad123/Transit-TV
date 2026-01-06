@@ -38,16 +38,23 @@ Optional, for local deployment or development only
 
 Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment `.env` file or however variables/secrets are managed.
 
-2. Create your `.env` files
+2. Create your `.env` files - if working locally
 
-For testing/deployment with `pnpm` or Docker:
+Clone the repository locally:
+
+```bash
+# clone the repo locally
+https://github.com/jasonad123/Transit-TV.git
+```
+
+Then create `.env` files using the template
 
 ```bash
 # create .env for local deployment with pnpm or Docker
 cp .env.example .env
 ```
 
-## Deployment with Docker (recommended)
+## Deployment with Docker (recommended for local deployments)
 
 1. **Configure environment variables:**
 

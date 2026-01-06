@@ -496,7 +496,7 @@
 
 	.route-icon-text {
 		display: inline-block;
-		font-weight: 600;
+		font-weight: 700;
 		font-size: inherit;
 	}
 

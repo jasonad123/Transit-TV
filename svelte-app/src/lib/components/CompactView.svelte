@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
@@ -279,7 +280,7 @@
 		if (!isDarkMode) return false;
 		const routeColorLum = getRelativeLuminance(route.route_color);
 		const textColorLum = getRelativeLuminance(route.route_text_color);
-		return routeColorLum < 0.05 && textColorLum > 0.8;
+		return routeColorLum < 0.05 && textColorLum > 0.5;
 	});
 
 	// Check if route has light color
@@ -350,6 +351,27 @@
 		}
 	});
 
+	let stopNameColor = $derived.by(() => {
+		// Get the route display color (remove # prefix)
+		const routeColorHex = routeDisplayColor.replace('#', '');
+		const routeColorLum = getRelativeLuminance(routeColorHex);
+
+		// Background luminance (light mode: white ~1.0, dark mode: dark ~0.05)
+		const bgLum = isDarkMode ? 0.03 : 1.0;
+
+		// Check contrast ratio with mode-specific thresholds
+		// Light mode: 2.0:1 (stricter - light colors on white are harder to see)
+		//   Allows: Green (3.59:1), Blue (5.65:1), Orange (2.54:1)
+		//   Forces default: Yellow (1.52:1), Silver (1.61:1)
+		// Dark mode: 1.5:1 (more lenient - most colors pop on dark backgrounds)
+		//   Allows: Blue (1.86:1), Green (2.93:1), Orange (4.13:1)
+		const contrast = getContrastRatio(routeColorLum, bgLum);
+		const threshold = isDarkMode ? 1.5 : 2.0;
+
+		// If contrast is sufficient, use route color; otherwise use default text color
+		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
+	});
+
 	// Check if route uses route icon image (not text)
 	function isRouteIconImage(): boolean {
 		// Check if first element is an image (has getImageUrl)
@@ -366,7 +388,7 @@
 	function groupItinerariesByStop(): ItineraryGroup[] {
 		if (!route.itineraries) return [];
 
-		const groups = new Map<string, ItineraryGroup>();
+		const groups = new SvelteMap<string, ItineraryGroup>();
 
 		route.itineraries.forEach((itinerary) => {
 			const stopId =
@@ -401,7 +423,7 @@
 
 	// Alert Relevance Logic (transplanted from RouteItem)
 	function getLocalStopIds(): Set<string> {
-		const stopIds = new Set<string>();
+		const stopIds = new SvelteSet<string>();
 		route.itineraries?.forEach((itinerary) => {
 			const stopId = itinerary.closest_stop?.global_stop_id;
 			if (stopId) {
@@ -501,8 +523,8 @@
 	</h2>
 
 	<!-- Direction Cards -->
-	{#each itineraryGroups as group}
-		{#each group.itineraries as itinerary}
+	{#each itineraryGroups as group (group.stopId)}
+		{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
 				<div class="direction-card" style={cellStyle}>
@@ -510,12 +532,12 @@
 						<div class="card-destination">
 							{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
-						<div class="card-stop-location">
+						<div class="card-stop-location" style="color: {stopNameColor}">
 							<span>{group.stopName}</span>
 						</div>
 					</div>
 					<div class="card-times">
-						{#each departures as item}
+						{#each departures as item (item.departure_time)}
 							<div class="time-card">
 								<span class:cancelled={item.is_cancelled}>
 									{getMinutesUntil(item.departure_time)}
@@ -528,7 +550,7 @@
 								>
 							</div>
 						{/each}
-						{#each Array(Math.max(0, 3 - departures.length)) as _}
+						{#each Array(Math.max(0, 3 - departures.length)) as _, idx (idx)}
 							<div class="time-card inactive">
 								<span>&nbsp;</span>
 								<small>&nbsp;</small>
@@ -554,14 +576,14 @@
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text scrolling">
-					{#each relevantAlerts as alert}
+					{#each relevantAlerts as alert (alert.id || alert.title)}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content}
+							{#each parsedContent as content, idx (idx)}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -574,14 +596,14 @@
 							{/each}
 						</div>
 					{/each}
-					{#each relevantAlerts as alert}
+					{#each relevantAlerts as alert, alertIdx (`repeat-${alertIdx}`)}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content}
+							{#each parsedContent as content, idx (`repeat-${alertIdx}-${idx}`)}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -658,7 +680,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	} 
+	}
 
 	.img28,
 	.img34 {
@@ -758,7 +780,7 @@
 
 	.time-card .cancelled {
 		text-decoration: line-through;
-		opacity: 0.6;
+		opacity: 0.8;
 	}
 
 	.time-card small {
@@ -865,25 +887,8 @@
 		margin-bottom: 0.5em;
 		border-radius: 0.5em;
 		overflow: hidden;
-		height: clamp(5em, 15vh, 18em);
 		flex-shrink: 0;
-	}
-
-	@media (orientation: portrait) {
-		.route-alert-container {
-			height: clamp(5em, 8vh, 12em);
-		}
-	}
-
-	/* When grouping is enabled */
-	.route-alert-container.grouped-alerts {
-		height: clamp(5em, 19.5vh, 22em);
-	}
-
-	@media (orientation: portrait) {
-		.route-alert-container.grouped-alerts {
-			height: clamp(5em, 10vh, 15em);
-		}
+		/* Height rules consolidated in app.css */
 	}
 
 	/* Alert sidebar with severity-based coloring */

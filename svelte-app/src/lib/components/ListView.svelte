@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { config } from '$lib/stores/config';
 	import RouteIcon from './RouteIcon.svelte';
@@ -20,6 +21,7 @@
 	let useBlackText = $derived(route.route_text_color === '000000');
 	let isDarkMode = $state(false);
 	let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
+	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let themeObserver: MutationObserver | null = null;
 
 	if (typeof document !== 'undefined') {
@@ -45,7 +47,7 @@
 	function groupItinerariesByStop(): ItineraryGroup[] {
 		if (!route.itineraries) return [];
 
-		const groups = new Map<string, ItineraryGroup>();
+		const groups = new SvelteMap<string, ItineraryGroup>();
 
 		route.itineraries.forEach((itinerary) => {
 			const stopId =
@@ -80,7 +82,7 @@
 
 	// Alert handling (copied from RouteItem)
 	function getLocalStopIds(): Set<string> {
-		const stopIds = new Set<string>();
+		const stopIds = new SvelteSet<string>();
 		route.itineraries?.forEach((itinerary) => {
 			if (itinerary.closest_stop?.global_stop_id) {
 				stopIds.add(itinerary.closest_stop.global_stop_id);
@@ -163,7 +165,6 @@
 		if (level === 'warning') return 'ix:warning-filled';
 		return 'ix:about-filled';
 	}
-
 </script>
 
 <div
@@ -179,7 +180,7 @@
 
 	<!-- Itinerary groups (stops and departures) -->
 	{#if itineraryGroups.length > 0}
-		{#each itineraryGroups as group, groupIndex}
+		{#each itineraryGroups as group, groupIndex (group.stopId)}
 			<!-- Stop name header -->
 			<div class="stop-header">
 				<iconify-icon icon="ix:location-filled"></iconify-icon>
@@ -193,7 +194,7 @@
 					<div class="times-col">Arrives in (min)</div>
 				</div>
 
-				{#each group.itineraries as itinerary}
+				{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
 					<div class="destination-row">
 						<div class="destination-col">
 							{itinerary.headsign}
@@ -202,7 +203,7 @@
 							<div class="times-list">
 								{#each itinerary.schedule_items
 									?.filter(shouldShowDeparture)
-									.slice(0, 3) || [] as item, itemIndex}
+									.slice(0, 3) || [] as item, itemIndex (item.departure_time)}
 									<span class="time-item" class:cancelled={item.is_cancelled}>
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
@@ -230,7 +231,7 @@
 				class:severe={getMostSevereAlertLevel() === 'severe'}
 				class:warning={getMostSevereAlertLevel() === 'warning'}
 				class:info={getMostSevereAlertLevel() === 'info'}
-				style={getMostSevereAlertLevel() === 'info' ? '' : `border-color: #${route.route_color}`}
+				style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}
 			>
 				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
 				<span class="alert-title">
@@ -240,9 +241,9 @@
 
 			<div class="alert-ticker" class:grouped-alerts={$config.groupItinerariesByStop}>
 				<div class="alert-content">
-					{#each [0, 1] as _}
+					{#each [0, 1] as _, idx (idx)}
 						<div class="alert-text">
-							{#each parseAlertContent(getAlertText()) as content}
+							{#each parseAlertContent(getAlertText()) as content, contentIdx (contentIdx)}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -466,10 +467,9 @@
 		padding: 0.25em 0.5em;
 		font-size: 0.85em;
 		font-weight: 600;
-		border-bottom: 1.5px solid;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		background-color: transparent;
 		color: var(--text-primary);
-		border-color: var(--text-primary);
 	}
 
 	.alert-header.severe {
@@ -488,10 +488,16 @@
 	}
 
 	.alert-header iconify-icon {
+		display: block;
 		width: 0.9em;
 		height: 0.9em;
 		flex-shrink: 0;
 		transform: translateY(-0.1em);
+		position: relative;
+		z-index: 1;
+		padding-left: 0.5em;
+		padding-right: 0.5em;
+		margin-left: -0.5em;
 	}
 
 	.alert-title {
@@ -501,26 +507,10 @@
 	}
 
 	.alert-ticker {
-		height: clamp(5em, 15vh, 18em);
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-	}
-
-	@media (orientation: portrait) {
-		.alert-ticker {
-			height: clamp(5em, 8vh, 12em);
-		}
-	}
-
-	.alert-ticker:global(.grouped-alerts) {
-		height: clamp(5em, 19.5vh, 22em);
-	}
-
-	@media (orientation: portrait) {
-		.alert-ticker:global(.grouped-alerts) {
-			height: clamp(5em, 10vh, 15em);
-		}
+		/* Height rules consolidated in app.css */
 	}
 
 	.alert-section {
