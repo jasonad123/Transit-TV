@@ -1,6 +1,7 @@
 'use strict';
 
 var config = require('../../config/environment');
+var logger = require('../../config/logger');
 
 // Validate coordinate format (lat,lng)
 function validateCoordinates(locationStr) {
@@ -48,34 +49,65 @@ exports.getUnattendedConfig = function (req, res) {
 		});
 	}
 
-	// Validate coordinates
+	// Use default coordinates if not provided (New York City)
 	var coordinates = validateCoordinates(config.unattendedSetup.location);
 	if (!coordinates) {
-		return res.status(400).json({
-			error: 'Invalid coordinates format. Expected: "latitude,longitude"'
-		});
+		// Log warning about falling back to default coordinates
+		if (config.unattendedSetup.location) {
+			logger.warn({
+				providedLocation: config.unattendedSetup.location,
+				defaultLatitude: 40.75426683398718,
+				defaultLongitude: -73.98672703719805
+			}, 'Invalid UNATTENDED_LOCATION format. Falling back to default coordinates (New York City).');
+		} else {
+			logger.warn({
+				defaultLatitude: 40.75426683398718,
+				defaultLongitude: -73.98672703719805
+			}, 'UNATTENDED_LOCATION not provided. Using default coordinates (New York City).');
+		}
+		coordinates = { latitude: 40.75426683398718, longitude: -73.98672703719805 };
 	}
 
-	// Validate time format
-	if (!validateTimeFormat(config.unattendedSetup.timeFormat)) {
-		return res.status(400).json({
-			error: 'Invalid time format. Expected: "HH:mm", "hh:mm A", or "hh:mm"'
-		});
+	// Use default time format if not provided
+	var timeFormat = config.unattendedSetup.timeFormat;
+	if (!validateTimeFormat(timeFormat)) {
+		// Log warning about falling back to default time format
+		if (config.unattendedSetup.timeFormat) {
+			logger.warn({
+				providedTimeFormat: config.unattendedSetup.timeFormat,
+				defaultTimeFormat: 'HH:mm'
+			}, 'Invalid UNATTENDED_TIME_FORMAT. Falling back to default format (HH:mm).');
+		} else {
+			logger.warn({
+				defaultTimeFormat: 'HH:mm'
+			}, 'UNATTENDED_TIME_FORMAT not provided. Using default format (HH:mm).');
+		}
+		timeFormat = 'HH:mm';
 	}
 
-	// Validate language
-	if (!validateLanguage(config.unattendedSetup.language)) {
-		return res.status(400).json({
-			error: 'Invalid language. Expected: "en", "fr", "es", or "de"'
-		});
+	// Use default language if not provided
+	var language = config.unattendedSetup.language;
+	if (!validateLanguage(language)) {
+		// Log warning about falling back to default language
+		if (config.unattendedSetup.language) {
+			logger.warn({
+				providedLanguage: config.unattendedSetup.language,
+				defaultLanguage: 'en'
+			}, 'Invalid UNATTENDED_LANGUAGE. Falling back to default language (en).');
+		} else {
+			logger.warn({
+				defaultLanguage: 'en'
+			}, 'UNATTENDED_LANGUAGE not provided. Using default language (en).');
+		}
+		language = 'en';
 	}
 
 	res.json({
 		enabled: true,
 		latLng: coordinates,
 		title: config.unattendedSetup.title,
-		timeFormat: config.unattendedSetup.timeFormat,
-		language: config.unattendedSetup.language,
+		timeFormat: timeFormat,
+		language: language,
 		theme: config.unattendedSetup.theme,
 		headerColor: config.unattendedSetup.headerColor,
 		columns: config.unattendedSetup.columns,
