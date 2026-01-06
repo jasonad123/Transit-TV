@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
@@ -388,7 +387,7 @@
 	function groupItinerariesByStop(): ItineraryGroup[] {
 		if (!route.itineraries) return [];
 
-		const groups = new SvelteMap<string, ItineraryGroup>();
+		const groups = new Map<string, ItineraryGroup>();
 
 		route.itineraries.forEach((itinerary) => {
 			const stopId =
@@ -423,7 +422,7 @@
 
 	// Alert Relevance Logic (transplanted from RouteItem)
 	function getLocalStopIds(): Set<string> {
-		const stopIds = new SvelteSet<string>();
+		const stopIds = new Set<string>();
 		route.itineraries?.forEach((itinerary) => {
 			const stopId = itinerary.closest_stop?.global_stop_id;
 			if (stopId) {
