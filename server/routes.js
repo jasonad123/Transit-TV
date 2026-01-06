@@ -10,6 +10,7 @@ module.exports = function (app) {
 	// Insert routes below
 	app.use('/api/images', require('./api/image'));
 	app.use('/api/routes', require('./api/routes'));
+	app.use('/api/placemarks', require('./api/placemarks'));
 	app.use('/api/config', require('./api/config'));
 
 	// Health check endpoint for monitoring and orchestration
