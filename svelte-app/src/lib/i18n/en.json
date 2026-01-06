@@ -125,7 +125,7 @@
 	},
 	"errors": {
 		"rateLimit": "Checking for updates. Retrying in {seconds} seconds...",
-		"auth": "Can't connect to the Transit API. Agency staff - contact your IT department for assistance.",
+		"auth": "Can't connect to the Transit API. Agency staff should contact the IT department for assistance.",
 		"timeout": "Checking for updates..",
 		"backend": "Transit TV is out of service. Retrying...",
 		"generic": "Transit TV ran into a problem. Retrying..."
