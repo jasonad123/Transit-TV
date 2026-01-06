@@ -586,7 +586,8 @@
 		return minutes >= 0 && minutes <= 120;
 	}
 
-	function getLocalStopIds(): Set<string> {
+	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
+	let localStopIds = $derived.by(() => {
 		const stopIds = new Set<string>();
 		route.itineraries?.forEach((itinerary) => {
 			const stopId = itinerary.closest_stop?.global_stop_id;
@@ -595,14 +596,12 @@
 			}
 		});
 		return stopIds;
-	}
+	});
 
 	function isAlertRelevantToRoute(alert: any): boolean {
 		if (!alert.informed_entities || alert.informed_entities.length === 0) {
 			return true;
 		}
-
-		const localStopIds = getLocalStopIds();
 
 		return alert.informed_entities.some((entity: any) => {
 			const hasRouteId = !!entity.global_route_id;
@@ -619,17 +618,14 @@
 		});
 	}
 
-	function getRelevantAlerts() {
+	// PERFORMANCE FIX: Cache filtered alerts instead of calling filter multiple times
+	let relevantAlerts = $derived.by(() => {
 		if (!route.alerts?.length) return [];
 		return route.alerts.filter(isAlertRelevantToRoute);
-	}
+	});
 
-	function hasRelevantAlerts(): boolean {
-		return getRelevantAlerts().length > 0;
-	}
-
-	function getAlertText(): string {
-		const relevantAlerts = getRelevantAlerts();
+	// PERFORMANCE FIX: Cache alert text to avoid regenerating on every render
+	let alertText = $derived.by(() => {
 		if (!relevantAlerts.length) return '';
 
 		return relevantAlerts
@@ -648,32 +644,30 @@
 				}
 			})
 			.join('\n\n---\n\n');
-	}
+	});
 
-	let relevantAlertCount = $derived(getRelevantAlerts().length);
+	let relevantAlertCount = $derived(relevantAlerts.length);
 
-	// Get the most severe alert level for styling
-	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
-		const alerts = getRelevantAlerts();
-		if (!alerts.length) return 'info';
+	// PERFORMANCE FIX: Cache severity level instead of recomputing multiple times per template render
+	let mostSevereLevel = $derived.by(() => {
+		if (!relevantAlerts.length) return 'info';
 
 		// Check for severe first, then warning, then info
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 			return 'severe';
 		}
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 			return 'warning';
 		}
 		return 'info';
-	}
+	});
 
-	// Get the icon for the most severe alert
-	function getMostSevereAlertIcon(): string {
-		const level = getMostSevereAlertLevel();
-		if (level === 'severe') return 'ix:warning-octagon-filled';
-		if (level === 'warning') return 'ix:warning-filled';
+	// PERFORMANCE FIX: Cache icon based on severity level
+	let mostSevereIcon = $derived.by(() => {
+		if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
+		if (mostSevereLevel === 'warning') return 'ix:warning-filled';
 		return 'ix:about-filled';
-	}
+	});
 
 	let alertElement: HTMLElement | null = null;
 	let isAlertOverflowing = $state(false);
@@ -1059,18 +1053,18 @@
 		{/each}
 	{/if}
 
-	{#if hasRelevantAlerts()}
+	{#if relevantAlerts.length > 0}
 		<div>
 			<div
 				class="route-alert-header"
-				class:severe={getMostSevereAlertLevel() === 'severe'}
-				class:warning={getMostSevereAlertLevel() === 'warning'}
-				class:info={getMostSevereAlertLevel() === 'info'}
-				style={getMostSevereAlertLevel() === 'info'
+				class:severe={mostSevereLevel === 'severe'}
+				class:warning={mostSevereLevel === 'warning'}
+				class:info={mostSevereLevel === 'info'}
+				style={mostSevereLevel === 'info'
 					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
 					: ''}
 			>
-				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 				<span
 					class="alert-header-text"
 					class:scrolling={isAlertHeaderOverflowing}
@@ -1084,7 +1078,7 @@
 				style={cellStyle}
 			>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
-					{#each parseAlertContent(getAlertText()) as content}
+					{#each parseAlertContent(alertText) as content}
 						{#if content.type === 'text'}
 							{content.value}
 						{:else if content.type === 'image'}
