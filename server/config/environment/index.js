@@ -62,7 +62,7 @@ function validateMaxDistance(distance) {
 /**
  * Validates and returns a safe time format value
  * @param {string} format - The time format to validate
- * @returns {string} - Valid format or default (HH:mm)
+ * @returns {string} - Valid format or default (hh:mm A)
  */
 function validateTimeFormat(format) {
 	var allowed = ['HH:mm', 'hh:mm A', 'hh:mm'];
@@ -74,9 +74,9 @@ function validateTimeFormat(format) {
 			format +
 			'. Must be one of: ' +
 			allowed.join(', ') +
-			'. Using default: HH:mm'
+			'. Using default: hh:mm A'
 	);
-	return 'HH:mm';
+	return 'hh:mm A';
 }
 
 /**
