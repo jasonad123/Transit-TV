@@ -516,10 +516,6 @@
 		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
 	});
 
-	function getMinutesUntil(departure: number): number {
-		return Math.round((departure * 1000 - Date.now()) / 60000);
-	}
-
 	function shouldShowDeparture(item: ScheduleItem): boolean {
 		const minutes = getMinutesUntil(item.departure_time);
 		return minutes >= 0 && minutes <= 120;
