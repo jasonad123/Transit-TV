@@ -79,7 +79,7 @@ Transit-TV works with any Docker-compatible PaaS platform. Currently it has only
    PORT=8080
    NODE_ENV=production
    ```
-5. **Optional: Configure [unattended setup](docs/config/unattended-setup.md)** 
+5. **Optional: Configure [unattended setup](/config/unattended-setup.md)** 
 6. **Deploy** and access your instance
 
 #### Platform-Specific Guides
