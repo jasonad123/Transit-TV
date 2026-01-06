@@ -9,7 +9,9 @@ var path = require('path');
 // Note: API key is validated in validateEnvironment() below
 // Server will start but API requests will fail with 401/403 if key is missing
 if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
-	console.warn('WARNING: TRANSIT_API_KEY is not set. API requests will fail with authentication errors.');
+	console.warn(
+		'WARNING: TRANSIT_API_KEY is not set. API requests will fail with authentication errors.'
+	);
 }
 
 // Configuration validation helpers

@@ -45,16 +45,22 @@ exports.getUnattendedConfig = function (req, res) {
 	if (!coordinates) {
 		// Log warning about falling back to default coordinates
 		if (config.unattendedSetup.location) {
-			logger.warn({
-				providedLocation: config.unattendedSetup.location,
-				defaultLatitude: DEFAULT_COORDINATES.latitude,
-				defaultLongitude: DEFAULT_COORDINATES.longitude
-			}, 'Invalid UNATTENDED_LOCATION format. Falling back to default coordinates (New York City).');
+			logger.warn(
+				{
+					providedLocation: config.unattendedSetup.location,
+					defaultLatitude: DEFAULT_COORDINATES.latitude,
+					defaultLongitude: DEFAULT_COORDINATES.longitude
+				},
+				'Invalid UNATTENDED_LOCATION format. Falling back to default coordinates (New York City).'
+			);
 		} else {
-			logger.warn({
-				defaultLatitude: DEFAULT_COORDINATES.latitude,
-				defaultLongitude: DEFAULT_COORDINATES.longitude
-			}, 'UNATTENDED_LOCATION not provided. Using default coordinates (New York City).');
+			logger.warn(
+				{
+					defaultLatitude: DEFAULT_COORDINATES.latitude,
+					defaultLongitude: DEFAULT_COORDINATES.longitude
+				},
+				'UNATTENDED_LOCATION not provided. Using default coordinates (New York City).'
+			);
 		}
 		coordinates = DEFAULT_COORDINATES;
 	}
