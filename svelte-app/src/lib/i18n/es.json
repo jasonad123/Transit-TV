@@ -119,7 +119,7 @@
 	},
 	"errors": {
 		"rateLimit": "Buscando actualizaciones. Reintentando en {seconds} segundos...",
-		"auth": "No se puede conectar al servicio de datos de Transit",
+		"auth": "No se puede conectar al API de Transit. Empleados del transporte público: pónganse en contacto con su departamento de IT para obtener asistencia.",
 		"timeout": "Buscando actualizaciones...",
 		"backend": "Transit TV está fuera de servicio. Reintentando...",
 		"generic": "Transit TV tuvo un problema. Reintentando..."

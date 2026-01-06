@@ -884,7 +884,7 @@
 				class:error-timeout={errorType === 'timeout'}
 				class:error-backend={errorType === 'backend'}
 			>
-				<iconify-icon icon={errorType === 'auth' ? 'ix:unlock-filled' : 'ix:warning-rhomb'}
+				<iconify-icon icon={errorType === 'auth' ? 'ix:disconnected' : 'ix:warning-rhomb'}
 				></iconify-icon>
 				{errorMessage}
 			</div>

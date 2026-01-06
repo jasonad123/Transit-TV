@@ -6,8 +6,10 @@ var path = require('path');
 // or injected by the deployment platform (Railway, Docker, etc.)
 
 // Check for Transit API key in production
+// Note: API key is validated in validateEnvironment() below
+// Server will start but API requests will fail with 401/403 if key is missing
 if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
-	console.error('ERROR: TRANSIT_API_KEY is not set. The application will not function correctly.');
+	console.warn('WARNING: TRANSIT_API_KEY is not set. API requests will fail with authentication errors.');
 }
 
 // Configuration validation helpers
@@ -250,9 +252,11 @@ function validateEnvironment() {
 		warnings.push('NODE_ENV should be "production" or "development", got: ' + process.env.NODE_ENV);
 	}
 
-	// Critical: Transit API key in production
+	// Transit API key in production
+	// Note: Changed from error to warning - server will start but API calls will fail with 401/403
+	// Frontend has proper error handling to display auth errors to users
 	if (process.env.NODE_ENV === 'production' && !process.env.TRANSIT_API_KEY) {
-		errors.push('TRANSIT_API_KEY is required in production');
+		warnings.push('TRANSIT_API_KEY is not set. API requests will fail with authentication errors.');
 	}
 
 	// Validate TRUST_PROXY if set
