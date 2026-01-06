@@ -5,14 +5,6 @@
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
-	import { getMinutesUntil } from '$lib/utils/timeUtils';
-	import { shouldShowDeparture } from '$lib/utils/departureFilters';
-	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
-	import {
-		COMPLEX_LOGOS,
-		COLOR_OVERRIDES,
-		ROUTE_COLOR_OVERRIDES
-	} from '$lib/constants/routeOverrides';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -366,6 +358,23 @@
 		headerCheckTimeouts = [];
 	});
 
+	// Calculate relative luminance (0-1) from hex color
+	function getRelativeLuminance(hex: string): number {
+		const rgb = parseInt(hex, 16);
+		const r = ((rgb >> 16) & 0xff) / 255;
+		const g = ((rgb >> 8) & 0xff) / 255;
+		const b = (rgb & 0xff) / 255;
+
+		// Convert to linear RGB
+		const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+		const rLinear = toLinear(r);
+		const gLinear = toLinear(g);
+		const bLinear = toLinear(b);
+
+		// Calculate luminance
+		return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+	}
+
 	// Check if we should invert in dark mode:
 	// Only invert if route_color is extremely dark (near black) AND route_text_color is light
 	// This catches cases like SamTrans 292 (luminance 0.022, dark navy with white text)
@@ -416,6 +425,51 @@
 			isRouteIconImage() &&
 			!hasAdjacentText()
 	);
+
+	// Complex logos that should not be recolored (contain their own internal colors)
+	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
+
+	// Manual color overrides for specific logos
+	// Options:
+	//   - alwaysUseDarkModeColor: boolean - Always use the dark mode color calculation
+	//   - alwaysUseLightModeColor: boolean - Always use the light mode color calculation
+	//   - color: string - Always use this specific hex color (e.g., 'FF0000')
+	const COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseDarkModeColor?: boolean;
+			alwaysUseLightModeColor?: boolean;
+			color?: string;
+		}
+	>([
+		// Example: Always use dark mode color (even in light mode)
+		// ['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
+		// ['mla-j', { alwaysUseDarkModeColor: true }],
+		// ['bart-y', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-n', { alwaysUseDarkModeColor: true }],
+		// ['stm-metro', { alwaysUseDarkModeColor: true }],
+		// Example: Always use light mode color (even in dark mode)
+		// ['another-logo', { alwaysUseLightModeColor: true }],
+		// Example: Always use a specific color
+		// ['third-logo', { color: 'FF0000' }],
+	]);
+
+	// Route color overrides for route backgrounds and text
+	// Options:
+	//   - alwaysUseLightModeColors: boolean - Use light mode colors even in dark mode
+	//   - alwaysUseDarkModeColors: boolean - Use dark mode colors even in light mode
+	const ROUTE_COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseLightModeColors?: boolean;
+			alwaysUseDarkModeColors?: boolean;
+		}
+	>([
+		// Certain routes with orange backgrounds need to keep black text in dark mode
+		// ['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
+		// ['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
+		['MUNI:4578', { alwaysUseDarkModeColors: true }] // Route 27
+	]);
 
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
@@ -493,6 +547,13 @@
 			return shouldInvertInDarkMode ? `#${route.route_text_color}` : `#${route.route_color}`;
 		}
 	});
+
+	// Calculate contrast ratio between two colors (WCAG formula)
+	function getContrastRatio(lum1: number, lum2: number): number {
+		const lighter = Math.max(lum1, lum2);
+		const darker = Math.min(lum1, lum2);
+		return (lighter + 0.05) / (darker + 0.05);
+	}
 
 	// Stop name color: use route color if contrast is acceptable, otherwise use default text
 	let stopNameColor = $derived.by(() => {
@@ -958,7 +1019,7 @@
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-								>{dir.merged_headsign || dir.direction_headsign || 'Unknown destination'}</span
+								>{dir.merged_headsign || 'Unknown destination'}</span
 							>
 						</h3>
 
@@ -1316,16 +1377,12 @@
 
 	.route .img28 {
 		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
+		display: block;
 	}
 
 	.route .img34 {
 		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
+		display: block;
 	}
 
 	.route i {

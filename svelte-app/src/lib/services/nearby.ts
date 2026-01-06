@@ -1,7 +1,6 @@
 import { get } from 'svelte/store';
 import { apiCache } from '$lib/utils/apiCache';
 import { config } from '$lib/stores/config';
-import { mergeItineraries } from '$lib/utils/itineraryUtils';
 
 export interface Route {
 	global_route_id: string;
@@ -38,12 +37,6 @@ export interface Itinerary {
 		parent_station_global_stop_id?: string;
 	};
 	merged_headsign?: string;
-	direction_id?: number;
-	direction_headsign?: string;
-	variant_id?: string;
-	canonical_itinerary?: boolean;
-	branch_code?: string;
-	internal_itinerary_id?: string;
 	schedule_items?: ScheduleItem[];
 }
 
@@ -163,15 +156,6 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			// Let cache determine TTL based on real-time vs schedule data (3s vs 120s)
 		)
 		.then((routes) => {
-			// Merge itineraries with same direction_id and merged_headsign
-			// v4 API returns separate itineraries for variants, even when they serve the same destination
-			// (e.g., two different routes both going to Ashburn). Merging combines their schedule_items.
-			return routes.map((route: Route) => ({
-				...route,
-				itineraries: route.itineraries ? mergeItineraries(route.itineraries) : undefined
-			}));
-		})
-		.then((routes) => {
 			// Filter out itineraries with no shown departures
 			// Prevents displaying commuter route directions with no active trips (e.g., morning-only routes in PM)
 			return routes.map((route: Route) => ({
@@ -260,7 +244,7 @@ export function hasShownDeparture(route: Route, itinerary?: Itinerary): boolean 
 
 export function shouldShowDeparture(departure: number): boolean {
 	const diff = departure * 1000 - Date.now();
-	return diff > 0 && diff <= 240 * 60000;
+	return diff > 0 && diff <= 130 * 60000;
 }
 
 const stopIdCache = new WeakMap<Route[], Set<string>>();
