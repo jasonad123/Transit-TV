@@ -155,6 +155,16 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			}
 			// Let cache determine TTL based on real-time vs schedule data (3s vs 120s)
 		)
+		.then((routes) => {
+			// Filter out itineraries with no shown departures
+			// Prevents displaying commuter route directions with no active trips (e.g., morning-only routes in PM)
+			return routes.map((route: Route) => ({
+				...route,
+				itineraries: route.itineraries?.filter((itinerary) =>
+					hasShownDeparture(route, itinerary)
+				)
+			}));
+		})
 		.then((routes) => applyFilters(routes));
 }
 
@@ -199,7 +209,11 @@ function applyFilters(routes: Route[]): Route[] {
 				);
 			}
 
-			result.push(routeCopy);
+			// Only include routes that have at least one itinerary
+			// Prevents showing route headers with no directions (e.g., commuter routes with all trips filtered)
+			if (routeCopy.itineraries && routeCopy.itineraries.length > 0) {
+				result.push(routeCopy);
+			}
 		}
 	}
 
