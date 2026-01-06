@@ -31,7 +31,7 @@ Optional, for local deployment or development only
 
 ## Getting started
 
-Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment `.env` file or however variables/secrets are managed.
+Go to the [Transit API page](https://transitapp.com/partners/apis) and request access to the API. When you have the API key, you can place it in your environment `.env` file or however variables/secrets are managed for your deployment method.
 
 Once you have your API key, see [docs/getting-started](docs/getting-started.md) for more info on how to get started.
 
@@ -41,7 +41,7 @@ Once you have your API key, see [docs/getting-started](docs/getting-started.md) 
 .
 ├── docs/                 # Documentation
 ├── docker-legacy/        # Legacy Docker files for backwards compatibility
-├── e23/                  # Testing-related files
+├── e2e/                  # end-to-end testing related files
 ├── server/
 │   ├── api/              # API endpoints
 │   ├── config/           # Server configuration
