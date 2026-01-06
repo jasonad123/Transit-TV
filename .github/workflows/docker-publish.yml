@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'  # Semantic version tags (v1.2.3, v1.2.3-beta.1, v1.2.3-rc.2, etc.)
-    branches:
-      - 'main' # Edge releases (bleeding edge, post-release commits)
     paths-ignore: # Skip builds for doc-only changes (saves build minutes)
       - '**.md'
       - 'docs/**'
