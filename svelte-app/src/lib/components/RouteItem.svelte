@@ -7,12 +7,6 @@
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
-	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
-	import {
-		COMPLEX_LOGOS,
-		COLOR_OVERRIDES,
-		ROUTE_COLOR_OVERRIDES
-	} from '$lib/constants/routeOverrides';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -366,6 +360,23 @@
 		headerCheckTimeouts = [];
 	});
 
+	// Calculate relative luminance (0-1) from hex color
+	function getRelativeLuminance(hex: string): number {
+		const rgb = parseInt(hex, 16);
+		const r = ((rgb >> 16) & 0xff) / 255;
+		const g = ((rgb >> 8) & 0xff) / 255;
+		const b = (rgb & 0xff) / 255;
+
+		// Convert to linear RGB
+		const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+		const rLinear = toLinear(r);
+		const gLinear = toLinear(g);
+		const bLinear = toLinear(b);
+
+		// Calculate luminance
+		return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+	}
+
 	// Check if we should invert in dark mode:
 	// Only invert if route_color is extremely dark (near black) AND route_text_color is light
 	// This catches cases like SamTrans 292 (luminance 0.022, dark navy with white text)
@@ -416,6 +427,51 @@
 			isRouteIconImage() &&
 			!hasAdjacentText()
 	);
+
+	// Complex logos that should not be recolored (contain their own internal colors)
+	const COMPLEX_LOGOS = new Set(['ccjpaca-logo']);
+
+	// Manual color overrides for specific logos
+	// Options:
+	//   - alwaysUseDarkModeColor: boolean - Always use the dark mode color calculation
+	//   - alwaysUseLightModeColor: boolean - Always use the light mode color calculation
+	//   - color: string - Always use this specific hex color (e.g., 'FF0000')
+	const COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseDarkModeColor?: boolean;
+			alwaysUseLightModeColor?: boolean;
+			color?: string;
+		}
+	>([
+		// Example: Always use dark mode color (even in light mode)
+		// ['wmata-metrorail-orange-v2', { alwaysUseDarkModeColor: true }],
+		// ['mla-j', { alwaysUseDarkModeColor: true }],
+		// ['bart-y', { alwaysUseDarkModeColor: true }],
+		// ['mta-subway-n', { alwaysUseDarkModeColor: true }],
+		// ['stm-metro', { alwaysUseDarkModeColor: true }],
+		// Example: Always use light mode color (even in dark mode)
+		// ['another-logo', { alwaysUseLightModeColor: true }],
+		// Example: Always use a specific color
+		// ['third-logo', { color: 'FF0000' }],
+	]);
+
+	// Route color overrides for route backgrounds and text
+	// Options:
+	//   - alwaysUseLightModeColors: boolean - Use light mode colors even in dark mode
+	//   - alwaysUseDarkModeColors: boolean - Use dark mode colors even in light mode
+	const ROUTE_COLOR_OVERRIDES = new Map<
+		string,
+		{
+			alwaysUseLightModeColors?: boolean;
+			alwaysUseDarkModeColors?: boolean;
+		}
+	>([
+		// Certain routes with orange backgrounds need to keep black text in dark mode
+		// ['GOTRANSIT:1115', { alwaysUseDarkModeColors: true }], // Route 19
+		// ['GOTRANSIT:1120', { alwaysUseDarkModeColors: true }],
+		['MUNI:4578', { alwaysUseDarkModeColors: true }] // Route 27
+	]);
 
 	function getImageUrl(index: number): string | null {
 		if (route.route_display_short_name?.elements?.[index]) {
@@ -494,6 +550,13 @@
 		}
 	});
 
+	// Calculate contrast ratio between two colors (WCAG formula)
+	function getContrastRatio(lum1: number, lum2: number): number {
+		const lighter = Math.max(lum1, lum2);
+		const darker = Math.min(lum1, lum2);
+		return (lighter + 0.05) / (darker + 0.05);
+	}
+
 	// Stop name color: use route color if contrast is acceptable, otherwise use default text
 	let stopNameColor = $derived.by(() => {
 		// Get the route display color (remove # prefix)
@@ -516,7 +579,8 @@
 		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
 	});
 
-	function getLocalStopIds(): Set<string> {
+	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
+	let localStopIds = $derived.by(() => {
 		const stopIds = new Set<string>();
 		route.itineraries?.forEach((itinerary) => {
 			const stopId = itinerary.closest_stop?.global_stop_id;
@@ -525,14 +589,12 @@
 			}
 		});
 		return stopIds;
-	}
+	});
 
 	function isAlertRelevantToRoute(alert: any): boolean {
 		if (!alert.informed_entities || alert.informed_entities.length === 0) {
 			return true;
 		}
-
-		const localStopIds = getLocalStopIds();
 
 		return alert.informed_entities.some((entity: any) => {
 			const hasRouteId = !!entity.global_route_id;
@@ -549,17 +611,14 @@
 		});
 	}
 
-	function getRelevantAlerts() {
+	// PERFORMANCE FIX: Cache filtered alerts instead of calling filter multiple times
+	let relevantAlerts = $derived.by(() => {
 		if (!route.alerts?.length) return [];
 		return route.alerts.filter(isAlertRelevantToRoute);
-	}
+	});
 
-	function hasRelevantAlerts(): boolean {
-		return getRelevantAlerts().length > 0;
-	}
-
-	function getAlertText(): string {
-		const relevantAlerts = getRelevantAlerts();
+	// PERFORMANCE FIX: Cache alert text to avoid regenerating on every render
+	let alertText = $derived.by(() => {
 		if (!relevantAlerts.length) return '';
 
 		return relevantAlerts
@@ -578,32 +637,30 @@
 				}
 			})
 			.join('\n\n---\n\n');
-	}
+	});
 
-	let relevantAlertCount = $derived(getRelevantAlerts().length);
+	let relevantAlertCount = $derived(relevantAlerts.length);
 
-	// Get the most severe alert level for styling
-	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
-		const alerts = getRelevantAlerts();
-		if (!alerts.length) return 'info';
+	// PERFORMANCE FIX: Cache severity level instead of recomputing multiple times per template render
+	let mostSevereLevel = $derived.by(() => {
+		if (!relevantAlerts.length) return 'info';
 
 		// Check for severe first, then warning, then info
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 			return 'severe';
 		}
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 			return 'warning';
 		}
 		return 'info';
-	}
+	});
 
-	// Get the icon for the most severe alert
-	function getMostSevereAlertIcon(): string {
-		const level = getMostSevereAlertLevel();
-		if (level === 'severe') return 'ix:warning-octagon-filled';
-		if (level === 'warning') return 'ix:warning-filled';
+	// PERFORMANCE FIX: Cache icon based on severity level
+	let mostSevereIcon = $derived.by(() => {
+		if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
+		if (mostSevereLevel === 'warning') return 'ix:warning-filled';
 		return 'ix:about-filled';
-	}
+	});
 
 	let alertElement: HTMLElement | null = null;
 	let isAlertOverflowing = $state(false);
@@ -989,18 +1046,18 @@
 		{/each}
 	{/if}
 
-	{#if hasRelevantAlerts()}
+	{#if relevantAlerts.length > 0}
 		<div>
 			<div
 				class="route-alert-header"
-				class:severe={getMostSevereAlertLevel() === 'severe'}
-				class:warning={getMostSevereAlertLevel() === 'warning'}
-				class:info={getMostSevereAlertLevel() === 'info'}
-				style={getMostSevereAlertLevel() === 'info'
+				class:severe={mostSevereLevel === 'severe'}
+				class:warning={mostSevereLevel === 'warning'}
+				class:info={mostSevereLevel === 'info'}
+				style={mostSevereLevel === 'info'
 					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
 					: ''}
 			>
-				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 				<span
 					class="alert-header-text"
 					class:scrolling={isAlertHeaderOverflowing}
@@ -1014,7 +1071,7 @@
 				style={cellStyle}
 			>
 				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
-					{#each parseAlertContent(getAlertText()) as content}
+					{#each parseAlertContent(alertText) as content}
 						{#if content.type === 'text'}
 							{content.value}
 						{:else if content.type === 'image'}
@@ -1317,16 +1374,12 @@
 
 	.route .img28 {
 		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
+		display: block;
 	}
 
 	.route .img34 {
 		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
+		display: block;
 	}
 
 	.route i {

@@ -209,8 +209,8 @@ var all = {
 	// Server port
 	port: process.env.PORT || 8080,
 
-	// Server IP
-	ip: process.env.IP || '0.0.0.0',
+	// Server IP - add explicit IPv6 support
+	ip: process.env.IP || '::',
 
 	// Secret for session, you will want to change this and make it an environment variable
 	secrets: {

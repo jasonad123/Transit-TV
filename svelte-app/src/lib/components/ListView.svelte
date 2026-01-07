@@ -69,18 +69,27 @@
 		return Array.from(groups.values());
 	}
 
-	let itineraryGroups = $derived(
-		$config.groupItinerariesByStop
+	let itineraryGroups = $derived.by(() => {
+		const start = performance.now();
+		const result = $config.groupItinerariesByStop
 			? groupItinerariesByStop()
 			: route.itineraries?.map((itinerary) => ({
 					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
 					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
 					itineraries: [itinerary]
-				})) || []
-	);
+				})) || [];
+		const end = performance.now();
+		if (end - start > 10) {
+			console.log(
+				`[ListView] itineraryGroups calc took ${end - start}ms, grouped=${$config.groupItinerariesByStop}`
+			);
+		}
+		return result;
+	});
 
 	// Alert handling (copied from RouteItem)
-	function getLocalStopIds(): Set<string> {
+	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
+	let localStopIds = $derived.by(() => {
 		const stopIds = new Set<string>();
 		route.itineraries?.forEach((itinerary) => {
 			if (itinerary.closest_stop?.global_stop_id) {
@@ -88,14 +97,12 @@
 			}
 		});
 		return stopIds;
-	}
+	});
 
 	function isAlertRelevantToRoute(alert: any): boolean {
 		if (!alert.informed_entities || alert.informed_entities.length === 0) {
 			return true;
 		}
-
-		const localStopIds = getLocalStopIds();
 
 		return alert.informed_entities.some((entity: any) => {
 			const hasRouteId = !!entity.global_route_id;
@@ -112,17 +119,14 @@
 		});
 	}
 
-	function getRelevantAlerts() {
+	// PERFORMANCE FIX: Cache filtered alerts instead of calling filter multiple times
+	let relevantAlerts = $derived.by(() => {
 		if (!route.alerts?.length) return [];
 		return route.alerts.filter(isAlertRelevantToRoute);
-	}
+	});
 
-	function hasRelevantAlerts(): boolean {
-		return getRelevantAlerts().length > 0;
-	}
-
-	function getAlertText(): string {
-		const relevantAlerts = getRelevantAlerts();
+	// PERFORMANCE FIX: Cache alert text to avoid regenerating on every render
+	let alertText = $derived.by(() => {
 		if (!relevantAlerts.length) return '';
 
 		return relevantAlerts
@@ -141,29 +145,29 @@
 				}
 			})
 			.join('\n\n---\n\n');
-	}
+	});
 
-	let relevantAlertCount = $derived(getRelevantAlerts().length);
+	let relevantAlertCount = $derived(relevantAlerts.length);
 
-	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
-		const alerts = getRelevantAlerts();
-		if (!alerts.length) return 'info';
+	// PERFORMANCE FIX: Cache severity level instead of recomputing 4x per template render
+	let mostSevereLevel = $derived.by(() => {
+		if (!relevantAlerts.length) return 'info';
 
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 			return 'severe';
 		}
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 			return 'warning';
 		}
 		return 'info';
-	}
+	});
 
-	function getMostSevereAlertIcon(): string {
-		const level = getMostSevereAlertLevel();
-		if (level === 'severe') return 'ix:warning-octagon-filled';
-		if (level === 'warning') return 'ix:warning-filled';
+	// PERFORMANCE FIX: Cache icon based on severity level
+	let mostSevereIcon = $derived.by(() => {
+		if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
+		if (mostSevereLevel === 'warning') return 'ix:warning-filled';
 		return 'ix:about-filled';
-	}
+	});
 </script>
 
 <div
@@ -179,7 +183,7 @@
 
 	<!-- Itinerary groups (stops and departures) -->
 	{#if itineraryGroups.length > 0}
-		{#each itineraryGroups as group, groupIndex (group.stopId)}
+		{#each itineraryGroups as group, groupIndex}
 			<!-- Stop name header -->
 			<div class="stop-header">
 				<iconify-icon icon="ix:location-filled"></iconify-icon>
@@ -193,20 +197,22 @@
 					<div class="times-col">Arrives in (min)</div>
 				</div>
 
-				{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
+				{#each group.itineraries as itinerary}
 					<div class="destination-row">
 						<div class="destination-col">
-							{itinerary.headsign}
+							{itinerary.merged_headsign}
 						</div>
 						<div class="times-col">
 							<div class="times-list">
 								{#each itinerary.schedule_items
 									?.filter(shouldShowDeparture)
-									.slice(0, 3) || [] as item, itemIndex (item.departure_time)}
+									.slice(0, 3) || [] as item, itemIndex}
 									<span class="time-item" class:cancelled={item.is_cancelled}>
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
-									{#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 3).length || 0) - 1}
+									{#if itemIndex < (itinerary.schedule_items
+											?.filter(shouldShowDeparture)
+											.slice(0, 3).length || 0) - 1}
 										<span class="separator">,</span>
 									{/if}
 								{/each}
@@ -223,15 +229,15 @@
 	{/if}
 
 	<!-- Alerts section -->
-	{#if hasRelevantAlerts()}
+	{#if relevantAlerts.length > 0}
 		<div class="alert-section">
 			<div
 				class="alert-header"
-				class:severe={getMostSevereAlertLevel() === 'severe'}
-				class:warning={getMostSevereAlertLevel() === 'warning'}
-				class:info={getMostSevereAlertLevel() === 'info'}
+				class:severe={mostSevereLevel === 'severe'}
+				class:warning={mostSevereLevel === 'warning'}
+				class:info={mostSevereLevel === 'info'}
 			>
-				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 				<span class="alert-title">
 					{$_('alerts.title')}
 				</span>
@@ -239,9 +245,9 @@
 
 			<div class="alert-ticker" class:grouped-alerts={$config.groupItinerariesByStop}>
 				<div class="alert-content">
-					{#each [0, 1] as _, idx (idx)}
+					{#each [0, 1] as _}
 						<div class="alert-text">
-							{#each parseAlertContent(getAlertText()) as content, contentIdx (contentIdx)}
+							{#each parseAlertContent(alertText) as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -253,7 +259,7 @@
 								{/if}
 							{/each}
 						</div>
-						{#if relevantAlertCount > 1 || (relevantAlertCount === 1 && getAlertText().length > 100)}
+						{#if relevantAlertCount > 1 || (relevantAlertCount === 1 && alertText.length > 100)}
 							<div class="separator-line">---</div>
 						{/if}
 					{/each}
@@ -508,8 +514,26 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		/* Height rules consolidated in app.css */
+		height: clamp(5em, 16.5vh, 18em)
 	}
+
+	/* Adjust alert height for portrait displays */
+	@media (orientation: portrait) {
+		.alert-ticker {
+			height: clamp(5em, 10vh, 12em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	.alert-ticker.grouped-alerts {
+		height: clamp(5em, 16vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.alert-ticker.grouped-alerts {
+			height: clamp(5em, 8vh, 15em);
+		}
+	} 
 
 	.alert-section {
 		margin-top: 0;

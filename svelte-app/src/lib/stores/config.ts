@@ -78,6 +78,8 @@ function createConfigStore() {
 						set({
 							...defaultConfig,
 							...parsed,
+							// Ensure viewMode is set (migration for old configs)
+							viewMode: parsed.viewMode || defaultConfig.viewMode,
 							isEditing: false
 						});
 

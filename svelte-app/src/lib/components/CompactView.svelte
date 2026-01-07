@@ -8,7 +8,7 @@
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
-	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
+	import { getRelativeLuminance } from '$lib/utils/colorUtils';
 	import {
 		COMPLEX_LOGOS,
 		COLOR_OVERRIDES,
@@ -350,27 +350,6 @@
 		}
 	});
 
-	let stopNameColor = $derived.by(() => {
-		// Get the route display color (remove # prefix)
-		const routeColorHex = routeDisplayColor.replace('#', '');
-		const routeColorLum = getRelativeLuminance(routeColorHex);
-
-		// Background luminance (light mode: white ~1.0, dark mode: dark ~0.05)
-		const bgLum = isDarkMode ? 0.03 : 1.0;
-
-		// Check contrast ratio with mode-specific thresholds
-		// Light mode: 2.0:1 (stricter - light colors on white are harder to see)
-		//   Allows: Green (3.59:1), Blue (5.65:1), Orange (2.54:1)
-		//   Forces default: Yellow (1.52:1), Silver (1.61:1)
-		// Dark mode: 1.5:1 (more lenient - most colors pop on dark backgrounds)
-		//   Allows: Blue (1.86:1), Green (2.93:1), Orange (4.13:1)
-		const contrast = getContrastRatio(routeColorLum, bgLum);
-		const threshold = isDarkMode ? 1.5 : 2.0;
-
-		// If contrast is sufficient, use route color; otherwise use default text color
-		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
-	});
-
 	// Check if route uses route icon image (not text)
 	function isRouteIconImage(): boolean {
 		// Check if first element is an image (has getImageUrl)
@@ -410,18 +389,27 @@
 		return Array.from(groups.values());
 	}
 
-	let itineraryGroups = $derived(
-		$config.groupItinerariesByStop
+	let itineraryGroups = $derived.by(() => {
+		const start = performance.now();
+		const result = $config.groupItinerariesByStop
 			? groupItinerariesByStop()
 			: route.itineraries?.map((itinerary) => ({
 					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
 					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
 					itineraries: [itinerary]
-				})) || []
-	);
+				})) || [];
+		const end = performance.now();
+		if (end - start > 10) {
+			console.log(
+				`[CompactView] itineraryGroups calc took ${end - start}ms, grouped=${$config.groupItinerariesByStop}`
+			);
+		}
+		return result;
+	});
 
 	// Alert Relevance Logic (transplanted from RouteItem)
-	function getLocalStopIds(): Set<string> {
+	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
+	let localStopIds = $derived.by(() => {
 		const stopIds = new Set<string>();
 		route.itineraries?.forEach((itinerary) => {
 			const stopId = itinerary.closest_stop?.global_stop_id;
@@ -430,14 +418,12 @@
 			}
 		});
 		return stopIds;
-	}
+	});
 
 	function isAlertRelevantToRoute(alert: any): boolean {
 		if (!alert.informed_entities || alert.informed_entities.length === 0) {
 			return true;
 		}
-
-		const localStopIds = getLocalStopIds();
 
 		return alert.informed_entities.some((entity: any) => {
 			const hasRouteId = !!entity.global_route_id;
@@ -454,18 +440,14 @@
 		});
 	}
 
-	function getRelevantAlerts() {
+	// PERFORMANCE FIX: Cache filtered alerts instead of calling filter multiple times
+	let relevantAlerts = $derived.by(() => {
 		if (!route.alerts?.length) return [];
 		return route.alerts.filter(isAlertRelevantToRoute);
-	}
+	});
 
-	let relevantAlerts = $derived(getRelevantAlerts());
-
-	function hasRelevantAlerts(): boolean {
-		return relevantAlerts.length > 0;
-	}
-
-	function getAlertText(): string {
+	// PERFORMANCE FIX: Cache alert text to avoid regenerating on every render
+	let alertText = $derived.by(() => {
 		if (!relevantAlerts.length) return '';
 
 		return relevantAlerts
@@ -484,31 +466,30 @@
 				}
 			})
 			.join('\n\n---\n\n');
-	}
+	});
 
 	let relevantAlertCount = $derived(relevantAlerts.length);
 
-	// Get the most severe alert level for styling (transplanted severity logic from RouteItem)
-	function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
-		const alerts = getRelevantAlerts();
-		if (!alerts.length) return 'info';
+	// PERFORMANCE FIX: Cache severity level instead of recomputing multiple times per template render
+	let mostSevereLevel = $derived.by(() => {
+		if (!relevantAlerts.length) return 'info';
 
 		// Check for severe first, then warning, then info
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 			return 'severe';
 		}
-		if (alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 			return 'warning';
 		}
 		return 'info';
-	}
+	});
 
-	function getMostSevereAlertIcon(): string {
-		const level = getMostSevereAlertLevel();
-		if (level === 'severe') return 'ix:warning-octagon-filled';
-		if (level === 'warning') return 'ix:warning-filled';
+	// PERFORMANCE FIX: Cache icon based on severity level
+	let mostSevereIcon = $derived.by(() => {
+		if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
+		if (mostSevereLevel === 'warning') return 'ix:warning-filled';
 		return 'ix:about-filled';
-	}
+	});
 </script>
 
 <div
@@ -522,8 +503,8 @@
 	</h2>
 
 	<!-- Direction Cards -->
-	{#each itineraryGroups as group (group.stopId)}
-		{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
+	{#each itineraryGroups as group}
+		{#each group.itineraries as itinerary}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
 				<div class="direction-card" style={cellStyle}>
@@ -531,12 +512,12 @@
 						<div class="card-destination">
 							{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
-						<div class="card-stop-location" style="color: {stopNameColor}">
+						<div class="card-stop-location">
 							<span>{group.stopName}</span>
 						</div>
 					</div>
 					<div class="card-times">
-						{#each departures as item (item.departure_time)}
+						{#each departures as item}
 							<div class="time-card">
 								<span class:cancelled={item.is_cancelled}>
 									{getMinutesUntil(item.departure_time)}
@@ -549,7 +530,7 @@
 								>
 							</div>
 						{/each}
-						{#each Array(Math.max(0, 3 - departures.length)) as _, idx (idx)}
+						{#each Array(Math.max(0, 3 - departures.length)) as _}
 							<div class="time-card inactive">
 								<span>&nbsp;</span>
 								<small>&nbsp;</small>
@@ -562,27 +543,27 @@
 	{/each}
 
 	<!-- Alerts with sidebar and vertical ticker -->
-	{#if hasRelevantAlerts()}
+	{#if relevantAlerts.length > 0}
 		<div class="route-alert-container" class:grouped-alerts={$config.groupItinerariesByStop}>
 			<div
 				class="alert-sidebar"
-				class:severe={getMostSevereAlertLevel() === 'severe'}
-				class:warning={getMostSevereAlertLevel() === 'warning'}
-				class:info={getMostSevereAlertLevel() === 'info'}
-				style={getMostSevereAlertLevel() === 'info' ? cellStyle : ''}
+				class:severe={mostSevereLevel === 'severe'}
+				class:warning={mostSevereLevel === 'warning'}
+				class:info={mostSevereLevel === 'info'}
+				style={mostSevereLevel === 'info' ? cellStyle : ''}
 			>
-				<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text scrolling">
-					{#each relevantAlerts as alert (alert.id || alert.title)}
+					{#each relevantAlerts as alert}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content, idx (idx)}
+							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -595,14 +576,14 @@
 							{/each}
 						</div>
 					{/each}
-					{#each relevantAlerts as alert, alertIdx (`repeat-${alertIdx}`)}
+					{#each relevantAlerts as alert}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content, idx (`repeat-${alertIdx}-${idx}`)}
+							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -633,6 +614,11 @@
 		flex-direction: column;
 	}
 
+	.table-view-route > div:last-child {
+		flex-shrink: 0;
+		/* padding: 0 0.25em 0; */
+	}
+
 	/* Route header styles (from RouteItem) */
 	h2 {
 		position: relative;
@@ -649,50 +635,6 @@
 		letter-spacing: -0.02em;
 		margin: 0 0 0.3em 0;
 	}
-
-	.route-icon {
-		white-space: nowrap;
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.1em;
-	}
-
-	.route-icon-text {
-		display: inline-block;
-		vertical-align: middle;
-	}
-
-	.route-long-name {
-		font-size: 0.4em;
-		font-weight: 600;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 12em;
-		margin-left: 0;
-		align-self: center;
-		padding: 0.25em 0.35em 0.1em;
-		border-radius: 0.5em;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-		line-height: 1.1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.img28,
-	.img34 {
-		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
-	}
-
-	/* i {
-		font-style: normal;
-		font-weight: 600;
-	} */
 
 	/* Light text color adjustments */
 	.table-view-route.white h2 {
@@ -926,6 +868,26 @@
 		padding: 0.5em;
 		overflow: hidden;
 		position: relative;
+		height: clamp(5em, 15vh, 18em);
+		flex-shrink: 0;
+	}
+
+	/* Adjust alert height for portrait displays */
+	@media (orientation: portrait) {
+		.route-alert-ticker {
+		height: clamp(5em, 7vh, 18em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	.route-alert-container.grouped-alerts .route-alert-ticker {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-container.grouped-alerts .route-alert-ticker {
+			height: clamp(5em, 7vh, 15em);
+		}
 	}
 
 	@keyframes scroll-alert-vertical {
@@ -951,13 +913,6 @@
 
 	.route-alert-ticker .alert-content {
 		margin-bottom: 1em;
-	}
-
-	.alert-item {
-		display: inline-block;
-		white-space: normal;
-		max-width: 60ch;
-		flex-shrink: 0;
 	}
 
 	.alert-image {

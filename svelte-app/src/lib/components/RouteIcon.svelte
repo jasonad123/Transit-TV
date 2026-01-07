@@ -124,7 +124,7 @@
 		// SF Muni: Combined route designation
 		if (route.mode_name?.includes('Muni')) {
 			const displayName =
-				route.route_display_short_name?.primary_text || route.route_short_name || '';
+				route.route_display_short_name?.boxed_text || route.route_short_name || '';
 			const longName = route.route_long_name?.split(' - ')[0] || '';
 			if (longName && longName !== 'Local') {
 				return `${displayName} ${longName}`;

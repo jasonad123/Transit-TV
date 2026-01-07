@@ -11,16 +11,40 @@ var server = require('http').createServer(app);
 require('./config/express')(app);
 require('./routes')(app);
 
-// Start server
-server.listen(config.port, config.ip, function () {
-	logger.info(
-		{
-			port: config.port,
-			env: app.get('env')
-		},
-		'Express server started'
-	);
-});
+// Start server with IPv6/IPv4 fallback
+function startServer() {
+	server.once('error', function (err) {
+		if (err.code === 'EAFNOSUPPORT' || err.code === 'EADDRNOTAVAIL') {
+			logger.warn(
+				{ err: err, attempted_ip: config.ip },
+				'IPv6 not available - falling back to IPv4'
+			);
+			config.ip = '0.0.0.0';
+			server.listen(config.port, config.ip, function () {
+				logger.info(
+					{ port: config.port, ip: config.ip, env: app.get('env') },
+					'Express server started (IPv4 fallback)'
+				);
+			});
+		} else {
+			logger.fatal({ err: err }, 'Server failed to start');
+			process.exit(1);
+		}
+	});
+
+	server.listen(config.port, config.ip, function () {
+		logger.info(
+			{
+				port: config.port,
+				ip: config.ip,
+				env: app.get('env')
+			},
+			'Express server started'
+		);
+	});
+}
+
+startServer();
 
 // Global error handlers
 process.on('uncaughtException', function (err) {
