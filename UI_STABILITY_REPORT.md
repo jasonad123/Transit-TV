@@ -19,12 +19,14 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Issue:** The branch attempted to use Svelte 5's reactive `SvelteMap` and `SvelteSet` but had to revert back to standard JavaScript `Map` and `Set`.
 
 **Files Affected:**
+
 - `svelte-app/src/lib/components/CompactView.svelte:390`
 - `svelte-app/src/lib/components/CompactView.svelte:425`
 - `svelte-app/src/lib/components/ListView.svelte:49`
 - `svelte-app/src/lib/components/ListView.svelte:84`
 
 **Impact:** This suggests compatibility issues with Svelte 5's reactive collections. The revert means that changes to these Maps/Sets won't automatically trigger reactivity, which could lead to:
+
 - Stale data display when itineraries are grouped by stop
 - UI not updating when alerts change
 - Missed re-renders when route data updates
@@ -38,6 +40,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Issue:** A last-minute "critical" fix modified separator logic in ListView.
 
 **Change:**
+
 ```javascript
 // Before: Checked against full filtered array length
 {#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).length || 0) - 1}
@@ -49,6 +52,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Location:** `svelte-app/src/lib/components/ListView.svelte:209`
 
 **Impact:** This fix suggests that:
+
 - Original separator logic was causing crashes or visual bugs
 - The display logic was not properly synchronized with the actual rendering
 - There may be additional edge cases not yet discovered
@@ -62,6 +66,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Issue:** Real-time wave indicators now load different images based on theme, using CSS attribute selectors.
 
 **Changes:**
+
 ```css
 /* In app.css - global theme-based rules */
 [data-theme='dark'] .time-item::before {
@@ -74,12 +79,14 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 ```
 
 **Local Deployment Concerns:**
+
 - **Missing assets:** These wave image files must exist in `/assets/images/` or display will break
 - **Path resolution:** Local deployments might have different base paths
 - **!important overrides:** Makes debugging difficult and could conflict with component styles
 - **No fallbacks:** If images don't load, no graceful degradation
 
 **Recommendation:**
+
 - Verify all wave image assets exist in repository
 - Add fallback styles if images fail to load
 - Consider using SVG waves instead of PNG for better scaling and smaller bundle size
@@ -91,6 +98,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Issue:** Alert container heights use complex viewport-based calculations with multiple breakpoints.
 
 **Code:**
+
 ```css
 .route-alert-container {
 	height: clamp(5em, 15vh, 18em);
@@ -108,6 +116,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 ```
 
 **Local Deployment Concerns:**
+
 - Different screen sizes/resolutions could cause:
   - Content overflow
   - Alerts being cut off
@@ -116,6 +125,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 - The `clamp()` values are duplicated in both `app.css` and component styles
 
 **Recommendation:** Test on multiple screen sizes, especially:
+
 - Small screens (1024x768)
 - Ultra-wide displays (3440x1440)
 - Portrait orientation tablets
@@ -128,6 +138,7 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Issue:** The `server/config/local.env.sample.js` file was deleted.
 
 **Impact on Local Deployments:**
+
 - No reference for required environment variables
 - Developers setting up locally won't know what to configure
 - Could lead to misconfigured local instances
@@ -145,11 +156,13 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Location:** `server/config/environment/index.js:213-223`
 
 **Local Deployment Concerns:**
+
 - If `VIEW_MODE` is set to invalid value, falls back to 'card' silently
 - No documentation about which view mode is best for which screen sizes
 - Switching view modes dynamically could expose bugs in each view
 
 **Recommendation:**
+
 - Document recommended view modes for different deployment scenarios
 - Add validation warnings to logs when invalid values are used
 - Test all three view modes thoroughly
@@ -159,7 +172,9 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 ## Potential Stability Issues by Component
 
 ### ListView Component
+
 **Concerns:**
+
 - Separator index calculation bug (recently fixed but may have edge cases)
 - Loss of reactivity from SvelteMap revert
 - Theme-based wave icons might not load properly
@@ -168,7 +183,9 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Files:** `svelte-app/src/lib/components/ListView.svelte`
 
 ### CompactView Component
+
 **Concerns:**
+
 - Loss of reactivity from SvelteMap revert for itinerary grouping
 - Alert relevance filtering might not update properly
 - Responsive layout calculations could fail on edge-case screen sizes
@@ -176,7 +193,9 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 **Files:** `svelte-app/src/lib/components/CompactView.svelte`
 
 ### Global CSS (app.css)
+
 **Concerns:**
+
 - Heavy use of `!important` flags makes debugging difficult
 - Theme-dependent asset URLs could fail if paths are wrong
 - Duplicated alert height styles between global CSS and components
@@ -189,19 +208,23 @@ The `feature/table-view-v4` branch introduces significant UI changes including n
 ## Testing Recommendations for Local Deployments
 
 ### 1. Asset Loading Tests
+
 ```bash
 # Verify all required assets exist
 ls -la svelte-app/static/assets/images/real_time_wave*
 ```
 
 Expected files:
+
 - `real_time_wave_small@2x.png`
 - `real_time_wave_small-w@2x.png` (white version)
 - `real_time_wave_big@2x.png`
 - `real_time_wave_big-w@2x.png` (white version)
 
 ### 2. View Mode Testing
+
 Test each view mode thoroughly:
+
 ```javascript
 // In browser console or via environment variable
 // Test: VIEW_MODE=card
@@ -210,13 +233,16 @@ Test each view mode thoroughly:
 ```
 
 ### 3. Theme Switching
+
 - Switch between light and dark themes multiple times
 - Verify wave icons change correctly
 - Check for console errors about missing assets
 - Verify alert styling updates properly
 
 ### 4. Screen Size Testing
+
 Test on these viewport sizes:
+
 - 1024x768 (small landscape)
 - 1920x1080 (standard desktop)
 - 2560x1440 (QHD)
@@ -224,12 +250,14 @@ Test on these viewport sizes:
 - 768x1024 (tablet portrait)
 
 ### 5. Itinerary Grouping
+
 - Enable `groupItinerariesByStop` setting
 - Verify routes group correctly
 - Check that updates to routes trigger re-grouping
 - Monitor for stale data (due to Map/Set reactivity issue)
 
 ### 6. Alert Updates
+
 - Monitor routes with active alerts
 - Verify alerts update when new data arrives
 - Check that alert filtering by stop works correctly
@@ -240,11 +268,13 @@ Test on these viewport sizes:
 ## Configuration Issues
 
 ### Missing Documentation
+
 1. No documentation for new `VIEW_MODE` variable
 2. Deleted `local.env.sample.js` removes setup reference
 3. No guidance on which view mode works best for specific use cases
 
 ### Environment Variables to Document
+
 ```bash
 # Add to documentation:
 VIEW_MODE=card|compact|list  # Default: card
@@ -257,20 +287,21 @@ UNATTENDED_SHOW_ROUTE_NAMES=true|false
 
 ## Risk Assessment
 
-| Issue | Severity | Likelihood | Impact on Local Deploy |
-|-------|----------|------------|----------------------|
-| SvelteMap revert reactivity | High | Medium | Data staleness, missed updates |
-| ListView separator bug | Medium | Low | Visual glitches, potential crashes |
-| Missing wave assets | High | High | Broken real-time indicators |
-| Alert height overflow | Medium | Medium | Cut-off content on some screens |
-| Missing env sample | Low | High | Setup confusion for new devs |
-| Invalid VIEW_MODE | Low | Low | Silent fallback to card view |
+| Issue                       | Severity | Likelihood | Impact on Local Deploy             |
+| --------------------------- | -------- | ---------- | ---------------------------------- |
+| SvelteMap revert reactivity | High     | Medium     | Data staleness, missed updates     |
+| ListView separator bug      | Medium   | Low        | Visual glitches, potential crashes |
+| Missing wave assets         | High     | High       | Broken real-time indicators        |
+| Alert height overflow       | Medium   | Medium     | Cut-off content on some screens    |
+| Missing env sample          | Low      | High       | Setup confusion for new devs       |
+| Invalid VIEW_MODE           | Low      | Low        | Silent fallback to card view       |
 
 ---
 
 ## Recommended Actions
 
 ### Immediate (Before Merge)
+
 1. ✅ Verify all wave image assets exist in repository
 2. ✅ Restore `local.env.sample.js` with VIEW_MODE documentation
 3. ✅ Test all three view modes on multiple screen sizes
@@ -278,6 +309,7 @@ UNATTENDED_SHOW_ROUTE_NAMES=true|false
 5. ✅ Review ListView separator logic for additional edge cases
 
 ### Short-term (After Merge)
+
 1. Monitor for reactivity issues with Maps/Sets in grouped views
 2. Consider migrating to Svelte 5 reactive collections properly
 3. Consolidate duplicate alert height CSS rules
@@ -285,6 +317,7 @@ UNATTENDED_SHOW_ROUTE_NAMES=true|false
 5. Document recommended view modes for different scenarios
 
 ### Long-term
+
 1. Replace PNG wave icons with SVG for better scaling
 2. Refactor alert height calculations to be more robust
 3. Add comprehensive E2E tests for view switching
@@ -302,6 +335,7 @@ The `feature/table-view-v4` branch introduces valuable new features but has seve
 4. **Complex CSS calculations** that could break on edge-case screen sizes
 
 **For local deployments specifically**, the main risks are:
+
 - Missing wave image assets
 - Misconfigured environment variables (no sample file)
 - Screen size compatibility issues

@@ -14,6 +14,7 @@ The UI becomes unresponsive in local development because **expensive computation
 ### Performance Complexity
 
 For a typical display with:
+
 - **20 routes** visible on screen
 - **5 alerts** per route
 - **10 itineraries** per route
@@ -43,6 +44,7 @@ function getLocalStopIds(): Set<string> {
 **Problem:** This function is called inside `isAlertRelevantToRoute()`, which is called for EVERY alert during filtering.
 
 **Impact:** If a route has 10 itineraries and 5 alerts:
+
 - Creates 5 new Sets
 - Iterates through 10 itineraries × 5 times = 50 iterations
 - **Per route, per render!**
@@ -90,6 +92,7 @@ function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
 ```
 
 Each call triggers the entire chain:
+
 1. `getMostSevereAlertLevel()`
 2. → calls `getRelevantAlerts()`
 3. → calls `route.alerts.filter(isAlertRelevantToRoute)`
@@ -149,6 +152,7 @@ If Svelte re-renders on scroll, data updates, or theme changes → **instant bro
 ### Step 1: Cache Stop IDs (Memoization)
 
 **Before:**
+
 ```javascript
 function getLocalStopIds(): Set<string> {
     const stopIds = new Set<string>();
@@ -162,6 +166,7 @@ function getLocalStopIds(): Set<string> {
 ```
 
 **After:**
+
 ```javascript
 // Cache using $derived - only recomputes when route.itineraries changes
 let localStopIds = $derived.by(() => {
@@ -201,23 +206,25 @@ function isAlertRelevantToRoute(alert: any): boolean {
 ### Step 2: Cache Relevant Alerts
 
 **Before (ListView):**
+
 ```javascript
 function getRelevantAlerts() {
-    if (!route.alerts?.length) return [];
-    return route.alerts.filter(isAlertRelevantToRoute);
+	if (!route.alerts?.length) return [];
+	return route.alerts.filter(isAlertRelevantToRoute);
 }
 
-let relevantAlertCount = $derived(getRelevantAlerts().length);  // Redundant call
+let relevantAlertCount = $derived(getRelevantAlerts().length); // Redundant call
 ```
 
 **After:**
+
 ```javascript
 let relevantAlerts = $derived.by(() => {
-    if (!route.alerts?.length) return [];
-    return route.alerts.filter(isAlertRelevantToRoute);
+	if (!route.alerts?.length) return [];
+	return route.alerts.filter(isAlertRelevantToRoute);
 });
 
-let relevantAlertCount = $derived(relevantAlerts.length);  // ✅ Use cached value
+let relevantAlertCount = $derived(relevantAlerts.length); // ✅ Use cached value
 ```
 
 ---
@@ -225,6 +232,7 @@ let relevantAlertCount = $derived(relevantAlerts.length);  // ✅ Use cached val
 ### Step 3: Cache Alert Level and Use Cached Values
 
 **Before:**
+
 ```javascript
 function getMostSevereAlertLevel(): 'severe' | 'warning' | 'info' {
     const alerts = getRelevantAlerts();  // ❌ Redundant call
@@ -239,6 +247,7 @@ class:info={getMostSevereAlertLevel() === 'info'}        // Call #3
 ```
 
 **After:**
+
 ```javascript
 let mostSevereLevel = $derived.by(() => {
     if (!relevantAlerts.length) return 'info';  // ✅ Use cached relevantAlerts
@@ -269,22 +278,30 @@ class:info={mostSevereLevel === 'info'}        // ✅ Single cached value
 ### Step 4: Update Template References
 
 **Before:**
+
 ```svelte
-{#if hasRelevantAlerts()}  <!-- Function call -->
-    <iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>  <!-- Function call -->
-    {#each parseAlertContent(getAlertText()) as content}  <!-- Function call -->
-        <!-- ... -->
-    {/each}
+{#if hasRelevantAlerts()}
+	<!-- Function call -->
+	<iconify-icon icon={getMostSevereAlertIcon()}></iconify-icon>
+	<!-- Function call -->
+	{#each parseAlertContent(getAlertText()) as content}
+		<!-- Function call -->
+		<!-- ... -->
+	{/each}
 {/if}
 ```
 
 **After:**
+
 ```svelte
-{#if relevantAlerts.length > 0}  <!-- ✅ Cached value -->
-    <iconify-icon icon={mostSevereIcon}></iconify-icon>  <!-- ✅ Cached value -->
-    {#each parseAlertContent(alertText) as content}  <!-- ✅ Cached value -->
-        <!-- ... -->
-    {/each}
+{#if relevantAlerts.length > 0}
+	<!-- ✅ Cached value -->
+	<iconify-icon icon={mostSevereIcon}></iconify-icon>
+	<!-- ✅ Cached value -->
+	{#each parseAlertContent(alertText) as content}
+		<!-- ✅ Cached value -->
+		<!-- ... -->
+	{/each}
 {/if}
 ```
 
@@ -322,6 +339,7 @@ The performance bug **exists in the original RouteItem.svelte too**, but it's no
 3. **Multiplication effect** - 3× more routes = 3³ = 27× more computations due to O(n²) complexity
 
 So when you switch from Card view (8 routes) to List view (24 routes):
+
 - Old computation: 8 routes × 350 iterations = 2,800 iterations
 - New computation: 24 routes × 350 iterations = 8,400 iterations
 - **3× more routes = 3× worse freeze!**
@@ -331,10 +349,12 @@ So when you switch from Card view (8 routes) to List view (24 routes):
 ## Files to Fix
 
 ### High Priority (Causes Freeze)
+
 1. ✅ `svelte-app/src/lib/components/ListView.svelte`
 2. ✅ `svelte-app/src/lib/components/CompactView.svelte`
 
 ### Medium Priority (Same Issue, Less Impact)
+
 3. `svelte-app/src/lib/components/RouteItem.svelte` - Should also be fixed for consistency
 
 ---
@@ -342,6 +362,7 @@ So when you switch from Card view (8 routes) to List view (24 routes):
 ## Testing Instructions
 
 ### Before Fix
+
 1. Switch to `feature/table-view-v4` branch
 2. Set view mode to "List" or "Compact"
 3. Load 20+ routes
@@ -350,6 +371,7 @@ So when you switch from Card view (8 routes) to List view (24 routes):
 6. **Observe:** Long tasks, dropped frames, unresponsive UI
 
 ### After Fix
+
 1. Apply the fixes above
 2. Repeat steps 2-5
 3. **Expected:** Smooth scrolling, no dropped frames, responsive UI
@@ -359,6 +381,7 @@ So when you switch from Card view (8 routes) to List view (24 routes):
 ## Related Issues
 
 This performance issue is **independent** of the other stability issues found:
+
 - SvelteMap revert (reactivity issue)
 - ListView separator bug (visual issue)
 - Theme asset loading (path issue)

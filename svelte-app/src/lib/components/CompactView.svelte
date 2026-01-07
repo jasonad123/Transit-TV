@@ -517,7 +517,7 @@
 
 	<!-- Direction Cards -->
 	{#each itineraryGroups as group (group.stopId)}
-		{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
+		{#each group.itineraries as itinerary (itinerary.merged_headsign || itinerary.closest_stop?.global_stop_id)}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
 				<div class="direction-card" style={cellStyle}>
@@ -569,7 +569,7 @@
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text scrolling">
-					{#each relevantAlerts as alert (alert.id || alert.title)}
+					{#each relevantAlerts as alert (alert.created_at)}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`

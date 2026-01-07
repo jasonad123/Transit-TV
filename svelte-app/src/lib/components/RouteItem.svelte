@@ -5,6 +5,8 @@
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import { getMinutesUntil } from '$lib/utils/timeUtils';
+	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -576,11 +578,6 @@
 		// If contrast is sufficient, use route color; otherwise use default text color
 		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
 	});
-
-	function shouldShowDeparture(item: ScheduleItem): boolean {
-		const minutes = getMinutesUntil(item.departure_time);
-		return minutes >= 0 && minutes <= 120;
-	}
 
 	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
 	let localStopIds = $derived.by(() => {

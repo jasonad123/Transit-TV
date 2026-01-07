@@ -17,11 +17,13 @@ All performance fixes implemented in this PR use **Svelte 5 runes syntax** and f
 ### 1. `$props()` - Component Props ✅
 
 **Usage:**
+
 ```typescript
 let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 ```
 
 **Compliance:**
+
 - ✅ Proper TypeScript typing
 - ✅ Default values supported
 - ✅ Destructuring syntax correct
@@ -34,6 +36,7 @@ let { route, showLongName = false }: { route: Route; showLongName?: boolean } = 
 ### 2. `$state()` - Reactive State ✅
 
 **Usage:**
+
 ```typescript
 let isDarkMode = $state(false);
 let isAlertOverflowing = $state(false);
@@ -41,6 +44,7 @@ let overflowingDestinations = $state<Set<number>>(new Set());
 ```
 
 **Compliance:**
+
 - ✅ Proper initialization with default values
 - ✅ TypeScript generics supported (`$state<Set<number>>`)
 - ✅ All mutations trigger reactivity
@@ -53,6 +57,7 @@ let overflowingDestinations = $state<Set<number>>(new Set());
 ### 3. `$derived()` - Simple Derived Values ✅
 
 **Usage:**
+
 ```typescript
 let useBlackText = $derived(route.route_text_color === '000000');
 let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
@@ -61,6 +66,7 @@ let relevantAlertCount = $derived(relevantAlerts.length);
 ```
 
 **Compliance:**
+
 - ✅ Used for simple expressions (single line)
 - ✅ Automatically tracks dependencies (route, relevantAlerts)
 - ✅ Recalculates only when dependencies change
@@ -74,68 +80,70 @@ let relevantAlertCount = $derived(relevantAlerts.length);
 ### 4. `$derived.by()` - Complex Derived Values ✅
 
 **Usage:**
+
 ```typescript
 // Example 1: Cache stop IDs
 let localStopIds = $derived.by(() => {
-    const stopIds = new Set<string>();
-    route.itineraries?.forEach((itinerary) => {
-        if (itinerary.closest_stop?.global_stop_id) {
-            stopIds.add(itinerary.closest_stop.global_stop_id);
-        }
-    });
-    return stopIds;
+	const stopIds = new Set<string>();
+	route.itineraries?.forEach((itinerary) => {
+		if (itinerary.closest_stop?.global_stop_id) {
+			stopIds.add(itinerary.closest_stop.global_stop_id);
+		}
+	});
+	return stopIds;
 });
 
 // Example 2: Cache filtered alerts
 let relevantAlerts = $derived.by(() => {
-    if (!route.alerts?.length) return [];
-    return route.alerts.filter(isAlertRelevantToRoute);
+	if (!route.alerts?.length) return [];
+	return route.alerts.filter(isAlertRelevantToRoute);
 });
 
 // Example 3: Cache alert text
 let alertText = $derived.by(() => {
-    if (!relevantAlerts.length) return '';
+	if (!relevantAlerts.length) return '';
 
-    return relevantAlerts
-        .map((alert) => {
-            const hasTitle = alert.title && alert.title.trim().length > 0;
-            const hasDescription = alert.description && alert.description.trim().length > 0;
+	return relevantAlerts
+		.map((alert) => {
+			const hasTitle = alert.title && alert.title.trim().length > 0;
+			const hasDescription = alert.description && alert.description.trim().length > 0;
 
-            if (hasTitle && hasDescription) {
-                return `${alert.title}\n\n${alert.description}`;
-            } else if (hasTitle) {
-                return alert.title;
-            } else if (hasDescription) {
-                return alert.description;
-            } else {
-                return $_('alerts.default');
-            }
-        })
-        .join('\n\n---\n\n');
+			if (hasTitle && hasDescription) {
+				return `${alert.title}\n\n${alert.description}`;
+			} else if (hasTitle) {
+				return alert.title;
+			} else if (hasDescription) {
+				return alert.description;
+			} else {
+				return $_('alerts.default');
+			}
+		})
+		.join('\n\n---\n\n');
 });
 
 // Example 4: Cache severity level
 let mostSevereLevel = $derived.by(() => {
-    if (!relevantAlerts.length) return 'info';
+	if (!relevantAlerts.length) return 'info';
 
-    if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
-        return 'severe';
-    }
-    if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
-        return 'warning';
-    }
-    return 'info';
+	if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		return 'severe';
+	}
+	if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		return 'warning';
+	}
+	return 'info';
 });
 
 // Example 5: Cache icon based on severity
 let mostSevereIcon = $derived.by(() => {
-    if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
-    if (mostSevereLevel === 'warning') return 'ix:warning-filled';
-    return 'ix:about-filled';
+	if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
+	if (mostSevereLevel === 'warning') return 'ix:warning-filled';
+	return 'ix:about-filled';
 });
 ```
 
 **Compliance:**
+
 - ✅ Used for multi-line computations requiring function body
 - ✅ All functions have explicit `return` statements
 - ✅ No side effects (no external state mutations)
@@ -149,6 +157,7 @@ let mostSevereIcon = $derived.by(() => {
   - `mostSevereIcon` → depends on `mostSevereLevel`
 
 **Count:**
+
 - ListView: 5 uses
 - CompactView: 11 uses
 - RouteItem: 10 uses
@@ -183,6 +192,7 @@ let mostSevereLevel = $derived.by(() => {
 ```
 
 **This ensures:**
+
 - ✅ Values update immediately when data changes
 - ✅ No manual dependency tracking needed
 - ✅ No stale data
@@ -195,6 +205,7 @@ let mostSevereLevel = $derived.by(() => {
 ### Using Cached Values (Not Functions) ✅
 
 **Before (Functions - Bad):**
+
 ```svelte
 {#if hasRelevantAlerts()}                          <!-- Function call ❌ -->
     <div class:severe={getMostSevereAlertLevel() === 'severe'}>  <!-- Function call ❌ -->
@@ -203,6 +214,7 @@ let mostSevereLevel = $derived.by(() => {
 ```
 
 **After (Cached Values - Good):**
+
 ```svelte
 {#if relevantAlerts.length > 0}                    <!-- Cached value ✅ -->
     <div class:severe={mostSevereLevel === 'severe'}>  <!-- Cached value ✅ -->
@@ -211,6 +223,7 @@ let mostSevereLevel = $derived.by(() => {
 ```
 
 **Compliance:**
+
 - ✅ All template bindings use cached values
 - ✅ No function calls in templates (except pure utils like `parseAlertContent`)
 - ✅ Eliminates redundant computations
@@ -222,6 +235,7 @@ let mostSevereLevel = $derived.by(() => {
 ### Reactive Statements Removed ✅
 
 **Deprecated (Svelte 4):**
+
 ```typescript
 // ❌ Not used in our code
 $: localStopIds = getLocalStopIds();
@@ -229,6 +243,7 @@ $: relevantAlerts = getRelevantAlerts();
 ```
 
 **Modern (Svelte 5):**
+
 ```typescript
 // ✅ What we actually use
 let localStopIds = $derived.by(() => { ... });
@@ -236,6 +251,7 @@ let relevantAlerts = $derived.by(() => { ... });
 ```
 
 **Verification:**
+
 - ✅ `$:` reactive statements found: **0**
 - ✅ All reactive code uses Svelte 5 runes
 
@@ -246,6 +262,7 @@ let relevantAlerts = $derived.by(() => { ... });
 ### 1. No Side Effects in Derived Values ✅
 
 All `$derived.by()` functions are **pure**:
+
 - ✅ No external state mutations
 - ✅ No DOM manipulation
 - ✅ No API calls
@@ -263,13 +280,14 @@ let overflowingDestinations = $state<Set<number>>(new Set());
 
 // Derived with type inference
 let mostSevereLevel = $derived.by((): 'severe' | 'warning' | 'info' => {
-    // Type is automatically inferred from return
+	// Type is automatically inferred from return
 });
 ```
 
 ### 3. Efficient Dependency Chains ✅
 
 Dependencies flow in one direction:
+
 ```
 route.itineraries → localStopIds
 route.alerts + localStopIds → relevantAlerts
@@ -278,6 +296,7 @@ mostSevereLevel → mostSevereIcon
 ```
 
 This ensures:
+
 - ✅ Minimal recalculations
 - ✅ No circular dependencies
 - ✅ Predictable update order
@@ -285,12 +304,13 @@ This ensures:
 ### 4. Lifecycle Management ✅
 
 Proper cleanup in `onDestroy`:
+
 ```typescript
 onDestroy(() => {
-    if (themeObserver) {
-        themeObserver.disconnect();
-        themeObserver = null;
-    }
+	if (themeObserver) {
+		themeObserver.disconnect();
+		themeObserver = null;
+	}
 });
 ```
 
@@ -299,16 +319,19 @@ onDestroy(() => {
 ## Performance Characteristics
 
 ### Before (Functions)
+
 - Computation: O(n²) - redundant calls
 - Iterations per render: ~7,000 (20 routes)
 - Result: Browser freeze
 
 ### After ($derived caching)
+
 - Computation: O(n) - cached values
 - Iterations per render: ~200 (20 routes)
 - Result: Smooth, responsive UI
 
 **Key Improvement:**
+
 - ✅ 97% reduction in operations
 - ✅ No impact on data freshness
 - ✅ Automatic updates when data changes
@@ -318,17 +341,20 @@ onDestroy(() => {
 ## Verification Commands
 
 ### Check for Svelte 5 runes usage:
+
 ```bash
 grep -h "\$props\|\$state\|\$derived" svelte-app/src/lib/components/{ListView,CompactView,RouteItem}.svelte | head -10
 ```
 
 ### Check for deprecated patterns:
+
 ```bash
 grep -h "\$:" svelte-app/src/lib/components/{ListView,CompactView,RouteItem}.svelte | wc -l
 # Should return: 0
 ```
 
 ### Check performance fix count:
+
 ```bash
 grep -h "PERFORMANCE FIX" svelte-app/src/lib/components/{ListView,CompactView,RouteItem}.svelte | wc -l
 # Should return: 15 (5 per component × 3 components)
@@ -341,6 +367,7 @@ grep -h "PERFORMANCE FIX" svelte-app/src/lib/components/{ListView,CompactView,Ro
 ✅ **All performance fixes are fully compliant with Svelte 5**
 
 **Summary:**
+
 - ✅ Modern runes syntax (`$props`, `$state`, `$derived`, `$derived.by`)
 - ✅ No deprecated Svelte 4 patterns (`$:`, `export let`)
 - ✅ Proper TypeScript typing
@@ -351,5 +378,6 @@ grep -h "PERFORMANCE FIX" svelte-app/src/lib/components/{ListView,CompactView,Ro
 - ✅ Follows official Svelte 5 best practices
 
 **References:**
+
 - [Svelte 5 Runes Documentation](https://svelte-5-preview.vercel.app/docs/runes)
 - [Svelte 5 Migration Guide](https://svelte-5-preview.vercel.app/docs/migration-guide)

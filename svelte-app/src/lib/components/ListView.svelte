@@ -189,10 +189,10 @@
 					<div class="times-col">Arrives in (min)</div>
 				</div>
 
-				{#each group.itineraries as itinerary (itinerary.id || itinerary.headsign)}
+				{#each group.itineraries as itinerary (itinerary.merged_headsign || itinerary.closest_stop?.global_stop_id)}
 					<div class="destination-row">
 						<div class="destination-col">
-							{itinerary.headsign}
+							{itinerary.merged_headsign}
 						</div>
 						<div class="times-col">
 							<div class="times-list">
@@ -202,7 +202,9 @@
 									<span class="time-item" class:cancelled={item.is_cancelled}>
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
-									{#if itemIndex < (itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 3).length || 0) - 1}
+									{#if itemIndex < (itinerary.schedule_items
+											?.filter(shouldShowDeparture)
+											.slice(0, 3).length || 0) - 1}
 										<span class="separator">,</span>
 									{/if}
 								{/each}
