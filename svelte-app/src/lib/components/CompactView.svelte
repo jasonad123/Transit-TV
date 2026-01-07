@@ -410,15 +410,23 @@
 		return Array.from(groups.values());
 	}
 
-	let itineraryGroups = $derived(
-		$config.groupItinerariesByStop
+	let itineraryGroups = $derived.by(() => {
+		const start = performance.now();
+		const result = $config.groupItinerariesByStop
 			? groupItinerariesByStop()
 			: route.itineraries?.map((itinerary) => ({
 					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
 					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
 					itineraries: [itinerary]
-				})) || []
-	);
+				})) || [];
+		const end = performance.now();
+		if (end - start > 10) {
+			console.log(
+				`[CompactView] itineraryGroups calc took ${end - start}ms, grouped=${$config.groupItinerariesByStop}`
+			);
+		}
+		return result;
+	});
 
 	// Alert Relevance Logic (transplanted from RouteItem)
 	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
@@ -516,8 +524,8 @@
 	</h2>
 
 	<!-- Direction Cards -->
-	{#each itineraryGroups as group (group.stopId)}
-		{#each group.itineraries as itinerary (itinerary.merged_headsign || itinerary.closest_stop?.global_stop_id)}
+	{#each itineraryGroups as group}
+		{#each group.itineraries as itinerary}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
 				<div class="direction-card" style={cellStyle}>
@@ -530,7 +538,7 @@
 						</div>
 					</div>
 					<div class="card-times">
-						{#each departures as item (item.departure_time)}
+						{#each departures as item}
 							<div class="time-card">
 								<span class:cancelled={item.is_cancelled}>
 									{getMinutesUntil(item.departure_time)}
@@ -543,7 +551,7 @@
 								>
 							</div>
 						{/each}
-						{#each Array(Math.max(0, 3 - departures.length)) as _, idx (idx)}
+						{#each Array(Math.max(0, 3 - departures.length)) as _}
 							<div class="time-card inactive">
 								<span>&nbsp;</span>
 								<small>&nbsp;</small>
@@ -569,14 +577,14 @@
 			</div>
 			<div class="route-alert-ticker" style={cellStyle}>
 				<div class="alert-text scrolling">
-					{#each relevantAlerts as alert (alert.created_at)}
+					{#each relevantAlerts as alert}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content, idx (idx)}
+							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -589,14 +597,14 @@
 							{/each}
 						</div>
 					{/each}
-					{#each relevantAlerts as alert, alertIdx (`repeat-${alertIdx}`)}
+					{#each relevantAlerts as alert}
 						{@const fullText =
 							alert.title && alert.description
 								? `${alert.title}\n\n${alert.description}`
 								: alert.title || alert.description || $_('alerts.default')}
 						{@const parsedContent = parseAlertContent(fullText)}
 						<div class="alert-content">
-							{#each parsedContent as content, idx (`repeat-${alertIdx}-${idx}`)}
+							{#each parsedContent as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -625,6 +633,11 @@
 		height: 100%;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.table-view-route > div:last-child {
+		flex-shrink: 0;
+		/* padding: 0 0.25em 0; */
 	}
 
 	/* Route header styles (from RouteItem) */
@@ -920,6 +933,26 @@
 		padding: 0.5em;
 		overflow: hidden;
 		position: relative;
+		height: clamp(5em, 15vh, 18em);
+		flex-shrink: 0;
+	}
+
+	/* Adjust alert height for portrait displays */
+	@media (orientation: portrait) {
+		.route-alert-ticker {
+			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	.route-alert-container.grouped-alerts .route-alert-ticker {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.route-alert-container.grouped-alerts .route-alert-ticker {
+			height: clamp(5em, 10vh, 15em);
+		}
 	}
 
 	@keyframes scroll-alert-vertical {

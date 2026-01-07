@@ -7,6 +7,8 @@
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import CompactView from '$lib/components/CompactView.svelte';
+	import ListView from '$lib/components/ListView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
 	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
@@ -41,7 +43,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.3'); // Fallback version
+	let appVersion = $state<string>('1.4.0'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -308,7 +310,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.3';
+				appVersion = healthData.version || '1.4.0';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
@@ -677,6 +679,57 @@
 							</div>
 						</label>
 
+						<div class="option-container">
+							<label class="option-label">
+								<span>{$_('config.routeDisplay.viewMode')}</span>
+								<div class="button-group inline-buttons">
+									<button
+										type="button"
+										class="btn-option"
+										class:active={$config.viewMode === 'card'}
+										onclick={() =>
+											config.update((c) => ({
+												...c,
+												viewMode: 'card',
+												groupItinerariesByStop: false
+											}))}
+									>
+										<iconify-icon icon="ix:application-screen"></iconify-icon>
+										{$_('config.routeDisplay.card')}
+									</button>
+									<button
+										type="button"
+										class="btn-option"
+										class:active={$config.viewMode === 'compact'}
+										onclick={() =>
+											config.update((c) => ({
+												...c,
+												viewMode: 'compact',
+												groupItinerariesByStop: false
+											}))}
+									>
+										<iconify-icon icon="ix:frames"></iconify-icon>
+										{$_('config.routeDisplay.compact')}
+									</button>
+									<button
+										type="button"
+										class="btn-option"
+										class:active={$config.viewMode === 'list'}
+										onclick={() =>
+											config.update((c) => ({
+												...c,
+												viewMode: 'list',
+												groupItinerariesByStop: true
+											}))}
+									>
+										<iconify-icon icon="ix:table"></iconify-icon>
+										{$_('config.routeDisplay.list')}
+									</button>
+								</div>
+							</label>
+							<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
+						</div>
+
 						<div class="toggle-container">
 							<Toggle bind:checked={$config.showQRCode}>
 								{#snippet label()}
@@ -901,10 +954,17 @@
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each routes as route, index (route.global_route_id)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if $config.viewMode === 'card'}
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'compact'}
+							<CompactView {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'list'}
+							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -1111,7 +1171,7 @@
 		height: 100%;
 		background: rgba(0, 0, 0, 0.1);
 		backdrop-filter: blur(1px);
-		z-index: 1000;
+		z-index: 10000;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1302,6 +1362,21 @@
 
 	#routes.cols-5 .route-wrapper {
 		width: 20%;
+	}
+
+	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
+	#routes.compact-view {
+		display: flex;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		justify-content: flex-start;
+	}
+
+	#routes.compact-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 0.5em;
 	}
 
 	.route-controls {

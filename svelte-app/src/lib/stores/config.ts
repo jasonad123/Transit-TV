@@ -25,6 +25,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
+	viewMode: 'card' | 'compact' | 'list';
 }
 
 const defaultConfig: Config = {
@@ -47,7 +48,8 @@ const defaultConfig: Config = {
 	customLogo: null,
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
-	showRouteLongName: false
+	showRouteLongName: false,
+	viewMode: 'card'
 };
 
 function createConfigStore() {
@@ -76,6 +78,8 @@ function createConfigStore() {
 						set({
 							...defaultConfig,
 							...parsed,
+							// Ensure viewMode is set (migration for old configs)
+							viewMode: parsed.viewMode || defaultConfig.viewMode,
 							isEditing: false
 						});
 

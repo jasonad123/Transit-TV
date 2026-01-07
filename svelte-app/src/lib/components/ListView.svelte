@@ -69,15 +69,23 @@
 		return Array.from(groups.values());
 	}
 
-	let itineraryGroups = $derived(
-		$config.groupItinerariesByStop
+	let itineraryGroups = $derived.by(() => {
+		const start = performance.now();
+		const result = $config.groupItinerariesByStop
 			? groupItinerariesByStop()
 			: route.itineraries?.map((itinerary) => ({
 					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
 					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
 					itineraries: [itinerary]
-				})) || []
-	);
+				})) || [];
+		const end = performance.now();
+		if (end - start > 10) {
+			console.log(
+				`[ListView] itineraryGroups calc took ${end - start}ms, grouped=${$config.groupItinerariesByStop}`
+			);
+		}
+		return result;
+	});
 
 	// Alert handling (copied from RouteItem)
 	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
@@ -175,7 +183,7 @@
 
 	<!-- Itinerary groups (stops and departures) -->
 	{#if itineraryGroups.length > 0}
-		{#each itineraryGroups as group, groupIndex (group.stopId)}
+		{#each itineraryGroups as group, groupIndex}
 			<!-- Stop name header -->
 			<div class="stop-header">
 				<iconify-icon icon="ix:location-filled"></iconify-icon>
@@ -189,7 +197,7 @@
 					<div class="times-col">Arrives in (min)</div>
 				</div>
 
-				{#each group.itineraries as itinerary (itinerary.merged_headsign || itinerary.closest_stop?.global_stop_id)}
+				{#each group.itineraries as itinerary}
 					<div class="destination-row">
 						<div class="destination-col">
 							{itinerary.merged_headsign}
@@ -198,7 +206,7 @@
 							<div class="times-list">
 								{#each itinerary.schedule_items
 									?.filter(shouldShowDeparture)
-									.slice(0, 3) || [] as item, itemIndex (item.departure_time)}
+									.slice(0, 3) || [] as item, itemIndex}
 									<span class="time-item" class:cancelled={item.is_cancelled}>
 										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
 									</span>
@@ -237,9 +245,9 @@
 
 			<div class="alert-ticker" class:grouped-alerts={$config.groupItinerariesByStop}>
 				<div class="alert-content">
-					{#each [0, 1] as _, idx (idx)}
+					{#each [0, 1] as _}
 						<div class="alert-text">
-							{#each parseAlertContent(alertText) as content, contentIdx (contentIdx)}
+							{#each parseAlertContent(alertText) as content}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -506,7 +514,25 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		/* Height rules consolidated in app.css */
+		height: clamp(5em, 15vh, 18em);
+	}
+
+	/* Adjust alert height for portrait displays */
+	@media (orientation: portrait) {
+		.alert-ticker {
+			height: clamp(5em, 8vh, 12em);
+		}
+	}
+
+	/* Increase alert ticker height when stop grouping is enabled */
+	.alert-ticker.grouped-alerts {
+		height: clamp(5em, 19.5vh, 22em);
+	}
+
+	@media (orientation: portrait) {
+		.alert-ticker.grouped-alerts {
+			height: clamp(5em, 10vh, 15em);
+		}
 	}
 
 	.alert-section {
