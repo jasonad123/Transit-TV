@@ -592,7 +592,11 @@
 	});
 
 	function isAlertRelevantToRoute(alert: any): boolean {
-		if (!alert.informed_entities || alert.informed_entities.length === 0) {
+		if (
+			!alert.informed_entities ||
+			!Array.isArray(alert.informed_entities) ||
+			alert.informed_entities.length === 0
+		) {
 			return true;
 		}
 
