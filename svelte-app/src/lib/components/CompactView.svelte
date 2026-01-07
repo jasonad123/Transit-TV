@@ -636,7 +636,7 @@
 		margin: 0 0 0.3em 0;
 	}
 
-	.route-icon {
+	/* .route-icon {
 		white-space: nowrap;
 		flex-shrink: 0;
 		display: flex;
@@ -673,7 +673,7 @@
 		display: inline-block;
 		vertical-align: middle;
 		line-height: 1;
-	}
+	} */
 
 	/* i {
 		font-style: normal;
@@ -957,13 +957,6 @@
 
 	.route-alert-ticker .alert-content {
 		margin-bottom: 1em;
-	}
-
-	.alert-item {
-		display: inline-block;
-		white-space: normal;
-		max-width: 60ch;
-		flex-shrink: 0;
 	}
 
 	.alert-image {
