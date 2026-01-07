@@ -636,50 +636,6 @@
 		margin: 0 0 0.3em 0;
 	}
 
-	/* .route-icon {
-		white-space: nowrap;
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.1em;
-	}
-
-	.route-icon-text {
-		display: inline-block;
-		vertical-align: middle;
-	}
-
-	.route-long-name {
-		font-size: 0.4em;
-		font-weight: 600;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 12em;
-		margin-left: 0;
-		align-self: center;
-		padding: 0.25em 0.35em 0.1em;
-		border-radius: 0.5em;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-		line-height: 1.1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.img28,
-	.img34 {
-		height: 0.875em;
-		display: inline-block;
-		vertical-align: middle;
-		line-height: 1;
-	} */
-
-	/* i {
-		font-style: normal;
-		font-weight: 600;
-	} */
-
 	/* Light text color adjustments */
 	.table-view-route.white h2 {
 		color: #000000;
