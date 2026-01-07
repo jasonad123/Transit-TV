@@ -1023,7 +1023,7 @@
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(index)}
 								use:bindDestinationElement={index}
-								>{dir.merged_headsign || dir.direction_headsign ||'Unknown destination'}</span
+								>{dir.merged_headsign || dir.direction_headsign || 'Unknown destination'}</span
 							>
 						</h3>
 
@@ -1202,10 +1202,6 @@
 	.route-alert-header.warning {
 		background-color: #ffa700;
 		color: #000000;
-	}
-
-	.route-alert-header.info {
-		/* Inherits from inline style (cellStyle) */
 	}
 
 	.route-alert-header .alert-header-text {

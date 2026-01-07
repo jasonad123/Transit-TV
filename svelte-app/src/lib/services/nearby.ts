@@ -43,7 +43,7 @@ export interface Itinerary {
 	variant_id?: string;
 	canonical_itinerary?: boolean;
 	branch_code?: string;
-	internal_itinerary_id?:string;
+	internal_itinerary_id?: string;
 	schedule_items?: ScheduleItem[];
 }
 
@@ -176,9 +176,7 @@ export async function findNearbyRoutes(location: LatLng, radius: number): Promis
 			// Prevents displaying commuter route directions with no active trips (e.g., morning-only routes in PM)
 			return routes.map((route: Route) => ({
 				...route,
-				itineraries: route.itineraries?.filter((itinerary) =>
-					hasShownDeparture(route, itinerary)
-				)
+				itineraries: route.itineraries?.filter((itinerary) => hasShownDeparture(route, itinerary))
 			}));
 		})
 		.then((routes) => applyFilters(routes));

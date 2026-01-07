@@ -2,7 +2,7 @@
 
 This documentation walks through how to deploy Transit TV using `pnpm`.
 
-> [!CAUTION] 
+> [!CAUTION]
 > This method is **not recommended** for production deployments. Use Docker or a PaaS platform instead.
 > **Only use this if** you're actively developing Transit TV or need to make custom modifications.
 
@@ -11,19 +11,20 @@ This documentation walks through how to deploy Transit TV using `pnpm`.
 ```bash
 # Install Node.js 24.x
 # See: https://nodejs.org/en/download/package-manager
-   
+
 # Install pnpm
 npm install -g pnpm
 ```
 
 2. **Clone and setup**:
+
 ```bash
 git clone https://github.com/jasonad123/Transit-TV.git
 cd transit-tv
-   
+
 # Install dependencies
 pnpm install
-   
+
 # Create environment file
 cp .env.example .env
 # Edit .env with your API key
@@ -37,7 +38,7 @@ cd svelte-app
 pnpm install
 pnpm build
 cd ..
-   
+
 # Start the server
 pnpm start
 ```
