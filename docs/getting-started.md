@@ -8,9 +8,9 @@ Transit TV is a web application that can be deployed in various ways to suit dif
 
 Regardless of deployment method, you'll need an API key from Transit:
 
-* Request a key from the [Transit API page](https://transitapp.com/partners/apis)
-  * **For testing or very limited use**: The default free tier **should be adequate**
-  * **For production deployments**: You'll need a paid tier
+- Request a key from the [Transit API page](https://transitapp.com/partners/apis)
+  - **For testing or very limited use**: The default free tier **should be adequate**
+  - **For production deployments**: You'll need a paid tier
 
 **Transit partners**: If your agency subscribes to Transit Royale or has other relationships with Transit, contact your account representative for API access information.
 
@@ -37,7 +37,7 @@ Railway provides a one-click deployment experience:
 1. You'll be guided through creating a Railway account (if needed)
 2. You'll configure your API key and settings for Transit TV
 3. Railway creates a new project for Transit TV
-4. Railway automatically deploys the *latest* Docker image for Transit TV
+4. Railway automatically deploys the _latest_ Docker image for Transit TV
 5. Your Transit TV instance is live behind a Caddy reverse proxy
 
 **Configuration**:
@@ -54,7 +54,7 @@ Railway provides a one-click deployment experience:
 
 **Best for**: Organizations preferring other PaaS providers or needing specific features
 
-Transit TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway but it *should* be supported on **Render** and **Fly.io**.
+Transit TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway but it _should_ be supported on **Render** and **Fly.io**.
 
 - **Railway** - Recommended, full template support
 - **Render** - Good alternative, straightforward setup
@@ -64,7 +64,7 @@ Transit TV works with any Docker-compatible PaaS platform. Currently it has only
 
 1. **Create account** on your chosen platform
 2. **Create new service** from Docker image
-3. **Configure Docker image**: 
+3. **Configure Docker image**:
    - Repository: `ghcr.io/jasonad123/transit-tv`
    - Tag: `latest` (for stable), `hardened-latest` (for stable hardened image), or specific version tag
 4. **Set environment variables**:
@@ -74,12 +74,13 @@ Transit TV works with any Docker-compatible PaaS platform. Currently it has only
    PORT=8080
    NODE_ENV=production
    ```
-5. **Optional: Configure [unattended setup](../docs/config/unattended-setup.md)** 
+5. **Optional: Configure [unattended setup](../docs/config/unattended-setup.md)**
 6. **Deploy** and access your instance
 
 #### Platform-Specific Guides
 
 **Render**:
+
 ```yaml
 # render.yaml
 services:
@@ -99,6 +100,7 @@ services:
 ```
 
 **Fly.io**:
+
 ```toml
 # fly.toml
 app = "your-transit-tv"
@@ -125,7 +127,7 @@ app = "your-transit-tv"
 **Best for**: Organizations with existing infrastructure, on-premise requirements, or cost optimization
 
 > [!TIP]
-> Which image should I use? As of version 1.3.2, this project offers two types of Docker images - *standard* images built on Node.js 24 on Alpine Linux and *hardened* images built using Docker's new [hardened images](https://www.docker.com/products/hardened-images/) - also based on Node.js 24 and Alpine Linux. For most users the standard images should work just fine, but if your organization has stricter security requirements, consider using the *hardened* image.
+> Which image should I use? As of version 1.3.2, this project offers two types of Docker images - _standard_ images built on Node.js 24 on Alpine Linux and _hardened_ images built using Docker's new [hardened images](https://www.docker.com/products/hardened-images/) - also based on Node.js 24 and Alpine Linux. For most users the standard images should work just fine, but if your organization has stricter security requirements, consider using the _hardened_ image.
 
 #### Prerequisites
 
@@ -136,30 +138,32 @@ app = "your-transit-tv"
 #### Installation Steps
 
 1. **Install Docker** (if not already installed):
+
    ```bash
    # Follow instructions on https://docs.docker.com/engine/install/ to add the Docker repositories for your package manager
    # Once the repositories are added - install Docker according to the right method for your distro
-   
+
    # Ubuntu/Debian based
    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-   
+
    # RHEL/Fedora based
    sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
    # Start the Docker service
    sudo systemctl start docker
-   
+
    # Test Docker
    sudo docker run hello-world
-   
+
    ```
 
 2. **Create environment file**:
+
    ```bash
    # Create a directory for Transit-TV
    mkdir -p ~/transit-tv
    cd ~/transit-tv
-   
+
    # Create .env file
    cat > .env << EOF
    TRANSIT_API_KEY=your_api_key_here
@@ -170,10 +174,11 @@ app = "your-transit-tv"
    ```
 
 3. **Pull and run the Docker image**:
+
    ```bash
    # Pull the latest image
    docker pull ghcr.io/jasonad123/transit-tv:latest
-   
+
    # Run the container
    docker run -d \
      --name transit-tv \
@@ -184,10 +189,11 @@ app = "your-transit-tv"
    ```
 
 4. **Verify deployment**:
+
    ```bash
    # Check container status
    docker ps
-   
+
    # View logs
    docker logs transit-tv
    ```
@@ -201,6 +207,7 @@ app = "your-transit-tv"
 For easier management, use Docker Compose:
 
 1. **Create `compose.yaml`**:
+
    ```yaml
    services:
      transit-tv:
@@ -208,7 +215,7 @@ For easier management, use Docker Compose:
        container_name: transit-tv
        restart: unless-stopped
        ports:
-         - "8080:8080"
+         - '8080:8080'
        environment:
          - TRANSIT_API_KEY=${TRANSIT_API_KEY}
          - SESSION_SECRET=${SESSION_SECRET}
@@ -221,26 +228,28 @@ For easier management, use Docker Compose:
    ```
 
 2. **Deploy**:
+
    ```bash
    # Start
    docker compose up -d
-   
+
    # View logs
    docker compose logs -f
-   
+
    # Stop
    docker compose down
-   
+
    # Update to latest version
    docker compose pull
    docker compose up -d
    ```
 
-#### Reverse Proxy Setup (Recommended for Production)
+### Reverse Proxy Setup (Recommended for Production)
 
 For SSL/TLS and custom domains, use a reverse proxy like Nginx or Caddy:
 
 **Caddy** (easiest, automatic HTTPS):
+
 ```
 transit-tv.youragency.com {
     reverse_proxy localhost:8080
@@ -248,11 +257,12 @@ transit-tv.youragency.com {
 ```
 
 **Nginx**:
+
 ```nginx
 server {
     listen 80;
     server_name transit-tv.youragency.com;
-    
+
     location / {
         proxy_pass http://localhost:8080;
         proxy_http_version 1.1;
@@ -266,7 +276,7 @@ server {
 
 #### Reverse proxy alternatives
 
-Transit TV has been tested to work behind both **Cloudflare Tunnels** and Tailscale (both natively and behind Tailscale Funnels). If your organization uses either of these programs, consider these as reverse proxy alternatives that don't 
+Transit TV has been tested to work behind both **Cloudflare Tunnels** and Tailscale (both natively and behind Tailscale Funnels). If your organization uses either of these programs, consider these as reverse proxy alternatives that don't
 require opening ports.
 
 ### Option 4: Direct Node.js Deployment (Development Only)
@@ -294,20 +304,24 @@ See the documentation for [caching](../docs/config/caching.md)] for more informa
 ## Updating Your Deployment
 
 ### Railway
+
 Updates are automatic when new versions are tagged, or you can manually redeploy from the dashboard.
 
 If you're using the Railway template, the default settings will automatically update the Docker image at 7 AM UTC (3 AM EST, 12 AM PST).
 
 ### PaaS Platforms
+
 Most platforms support automatic updates or can be configured to pull the latest image on a schedule.
 
 ### Docker Compose
+
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
 ### Docker (Manual)
+
 ```bash
 # Pull latest image
 docker pull ghcr.io/jasonad123/transit-tv:latest
@@ -325,6 +339,7 @@ docker run -d --name transit-tv --restart unless-stopped -p 8080:8080 --env-file
 ### Health Checks
 
 Transit-TV exposes a health check endpoint at `/health` that returns:
+
 ```json
 {
 	"status": "healthy",
@@ -343,6 +358,7 @@ Use this for monitoring:
 ### Logs
 
 **Docker (including Docker Compose)**:
+
 ```bash
 # View logs
 docker logs transit-tv
@@ -355,6 +371,7 @@ docker logs --tail 100 transit-tv
 ```
 
 **Docker Compose**:
+
 ```bash
 docker compose logs -f
 ```
@@ -362,11 +379,13 @@ docker compose logs -f
 ### Resource requirements
 
 **Minimum**:
+
 - 512 MB RAM
 - 1 CPU core
 - 500 MB disk space
 
 **Recommended** (for smooth operation):
+
 - 1 GB RAM
 - 2 CPU cores
 - 1 GB disk space
@@ -374,6 +393,7 @@ docker compose logs -f
 ### Quick Checks
 
 1. **Container not starting**:
+
    ```bash
    docker logs transit-tv
    ```
@@ -399,4 +419,4 @@ docker compose logs -f
 
 ---
 
-*This documentation was prepared with assistance from agentic coding tools.*
+_This documentation was prepared with assistance from agentic coding tools._
