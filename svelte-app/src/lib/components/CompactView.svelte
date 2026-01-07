@@ -875,7 +875,7 @@
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-		height: clamp(5em, 7vh, 18em);
+			height: clamp(5em, 7vh, 18em);
 		}
 	}
 

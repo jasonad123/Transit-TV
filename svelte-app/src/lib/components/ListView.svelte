@@ -514,7 +514,7 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(5em, 16.5vh, 18em)
+		height: clamp(5em, 16.5vh, 18em);
 	}
 
 	/* Adjust alert height for portrait displays */
@@ -533,7 +533,7 @@
 		.alert-ticker.grouped-alerts {
 			height: clamp(5em, 8vh, 15em);
 		}
-	} 
+	}
 
 	.alert-section {
 		margin-top: 0;
