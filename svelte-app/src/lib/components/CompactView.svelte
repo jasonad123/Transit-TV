@@ -8,7 +8,7 @@
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
-	import { getRelativeLuminance, getContrastRatio } from '$lib/utils/colorUtils';
+	import { getRelativeLuminance } from '$lib/utils/colorUtils';
 	import {
 		COMPLEX_LOGOS,
 		COLOR_OVERRIDES,
@@ -350,27 +350,6 @@
 		}
 	});
 
-	let stopNameColor = $derived.by(() => {
-		// Get the route display color (remove # prefix)
-		const routeColorHex = routeDisplayColor.replace('#', '');
-		const routeColorLum = getRelativeLuminance(routeColorHex);
-
-		// Background luminance (light mode: white ~1.0, dark mode: dark ~0.05)
-		const bgLum = isDarkMode ? 0.03 : 1.0;
-
-		// Check contrast ratio with mode-specific thresholds
-		// Light mode: 2.0:1 (stricter - light colors on white are harder to see)
-		//   Allows: Green (3.59:1), Blue (5.65:1), Orange (2.54:1)
-		//   Forces default: Yellow (1.52:1), Silver (1.61:1)
-		// Dark mode: 1.5:1 (more lenient - most colors pop on dark backgrounds)
-		//   Allows: Blue (1.86:1), Green (2.93:1), Orange (4.13:1)
-		const contrast = getContrastRatio(routeColorLum, bgLum);
-		const threshold = isDarkMode ? 1.5 : 2.0;
-
-		// If contrast is sufficient, use route color; otherwise use default text color
-		return contrast >= threshold ? routeDisplayColor : 'var(--text-primary)';
-	});
-
 	// Check if route uses route icon image (not text)
 	function isRouteIconImage(): boolean {
 		// Check if first element is an image (has getImageUrl)
@@ -533,7 +512,7 @@
 						<div class="card-destination">
 							{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
-						<div class="card-stop-location" style="color: {stopNameColor}">
+						<div class="card-stop-location">
 							<span>{group.stopName}</span>
 						</div>
 					</div>

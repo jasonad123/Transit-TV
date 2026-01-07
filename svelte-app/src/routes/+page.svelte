@@ -1507,6 +1507,27 @@
 		font-weight: 600;
 	}
 
+	.inline-buttons {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.inline-buttons .btn-option {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4em;
+		flex: 1 1 120px;
+		min-width: unset;
+	}
+
+	.inline-buttons iconify-icon {
+		width: 1.2em;
+		height: 1.2em;
+		flex-shrink: 0;
+	}
+
 	/* Floating QR Code Styles */
 	.floating-qr {
 		position: fixed;
