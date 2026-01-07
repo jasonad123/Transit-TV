@@ -1,4 +1,4 @@
-# Render Blueprint for Transit TV - use this to jumpstart an instance on Render.io
+# Render Blueprint for Transit TV - use this to jumpstart an instance on Render
 services:
   - type: web
     name: Transit-TV
