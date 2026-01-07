@@ -54,10 +54,10 @@ Railway provides a one-click deployment experience:
 
 **Best for**: Organizations preferring other PaaS providers or needing specific features
 
-Transit TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway but it _should_ be supported on **Render** and **Fly.io**.
+Transit TV works with any Docker-compatible PaaS platform. Currently it has only been tested and deployed on Railway and has had test deployments on **Render** and _should_ be supported by **Fly.io**.
 
 - **Railway** - Recommended, full template support
-- **Render** - Good alternative, straightforward setup
+- **Render** - Good alternative, straightforward setup with template support
 - **Fly.io** - Global edge deployment, good for multi-location agencies
 
 #### General Setup Steps
@@ -85,14 +85,17 @@ Transit TV works with any Docker-compatible PaaS platform. Currently it has only
 # render.yaml
 services:
   - type: web
-    name: transit-tv
-    env: docker
-    dockerfilePath: ./Dockerfile
+    name: Transit-TV
+    runtime: docker
+    image:
+      url: ghcr.io/jasonad123/transit-tv:latest
     envVars:
       - key: TRANSIT_API_KEY
         sync: false
       - key: SESSION_SECRET
         generateValue: true
+      - key: ENABLE_SERVER_CACHE
+        sync: false
       - key: PORT
         value: 8080
       - key: NODE_ENV
