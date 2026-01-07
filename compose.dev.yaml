@@ -5,9 +5,9 @@
 # For legacy version (npm install -g pnpm), use compose.legacy.yaml instead.
 #
 # Usage:
-#   Production: docker compose --profile production up -d
-#   Development: docker compose --profile dev up
-#   Build only:  docker compose --profile build up
+#   Production: docker compose -f compose.dev.yaml --profile production up -d
+#   Development: docker compose -f compose.dev.yaml --profile dev up
+#   Build only:  docker compose -f compose.dev.yaml --profile build up
 # ==============================================================================
 
 services:
@@ -92,8 +92,9 @@ services:
     environment:
       NODE_ENV: 'development'
       CI: 'true'
+      VITE_API_PROXY: 'http://transit-tv-backend:8080'
     env_file:
-      - .env.docker
+      - .env.development.local
     volumes:
       - ./svelte-app:/app/svelte-app
       - dev_svelte_modules:/app/svelte-app/node_modules
@@ -123,7 +124,7 @@ services:
       USE_SVELTE: 'false'
       CI: 'true'
     env_file:
-      - .env.docker
+      - .env.development.local
     volumes:
       - .:/app
       - dev_modules:/app/node_modules
