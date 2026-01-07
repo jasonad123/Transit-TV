@@ -14,8 +14,9 @@
 		"pino-http": "^11.0.0"
 	},
 	"scripts": {
-		"start": "node --env-file=.env server/app.js",
 		"build": "cd svelte-app && pnpm install && pnpm build",
+		"start": "node --env-file=.env server/app.js",
+		"start-dev": "node --env-file=.env.development.local server/app.js",
 		"start-auth": "op run --env-file=\"./.env.local\" pnpm start",
 		"clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit",
 		"format": "prettier --write .",
