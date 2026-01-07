@@ -57,7 +57,7 @@ For development with hot reload:
 ```bash
 # copy the .env.example file to env.development
 # and change the variables as necessary
-cp .env.example .env.development
+cp .env.example .env.development.local
 
 # then use this command to start the Docker Compose file with the dev server
 docker compose -f compose.dev.yaml --profile dev up
