@@ -130,30 +130,6 @@ button {
 	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
 }
 
-/* Consolidated alert height for compact views (CompactView, ListView) */
-.route-alert-container,
-.alert-ticker {
-	height: clamp(5em, 15vh, 18em);
-}
-
-@media (orientation: portrait) {
-	.route-alert-container,
-	.alert-ticker {
-		height: clamp(5em, 8vh, 12em);
-	}
-}
-
-.route-alert-container.grouped-alerts,
-.alert-ticker.grouped-alerts {
-	height: clamp(5em, 19.5vh, 22em);
-}
-
-@media (orientation: portrait) {
-	.route-alert-container.grouped-alerts,
-	.alert-ticker.grouped-alerts {
-		height: clamp(5em, 10vh, 15em);
-	}
-}
 
 @media (min-width: 1300px) {
 	body {
