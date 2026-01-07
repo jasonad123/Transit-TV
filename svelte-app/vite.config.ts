@@ -25,12 +25,13 @@ export default defineConfig({
 	},
 
 	server: {
+		host: process.env.VITE_HOST || '0.0.0.0', // Allow override
 		fs: {
 			allow: ['..']
 		},
 		proxy: {
 			'/api': {
-				target: 'http://localhost:8080',
+				target: process.env.VITE_API_PROXY || 'http://localhost:8080',
 				changeOrigin: true
 			}
 		}
