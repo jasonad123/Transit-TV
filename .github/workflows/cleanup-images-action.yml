@@ -11,8 +11,8 @@ on:
         default: true
 
 env:
-  KEEP_BETA_COUNT: 3
-  KEEP_EDGE_COUNT: 2
+  KEEP_PRERELEASE_COUNT: 4  # Keep last 3 of each prerelease type (alpha, beta, rc)
+  KEEP_HARDENED_TEST_COUNT: 3  # Keep last 2 hardened test/beta builds
 
 # Prevent parallel execution on same package (per action documentation)
 concurrency:
@@ -26,37 +26,75 @@ jobs:
       packages: write
 
     steps:
-      - name: Delete old beta images
+      - name: Delete old beta prerelease images
         uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
         with:
           dry-run: ${{ inputs.dry_run == true }}
-          keep-n-tagged: ${{ env.KEEP_BETA_COUNT }}
+          keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
           token: ${{ secrets.GITHUB_TOKEN }}
           package: transit-tv
           owner: ${{ github.repository_owner }}
           use-regex: true
-          # Delete images with tags starting with "beta-" but exclude floating tags
-          delete-tags: ^beta-.*
-          exclude-tags: ^(latest|beta|edge|rc|alpha|[0-9]+\.[0-9]+\.[0-9]+.*)$
+          # Delete semver beta tags (e.g., 1.2.3-beta.1) but exclude floating tag
+          delete-tags: ^[0-9]+\.[0-9]+\.[0-9]+-beta\.
+          exclude-tags: ^(latest|beta|rc|alpha|hardened-.*)$
 
-  cleanup-edge:
+  cleanup-alpha:
     runs-on: ubuntu-latest
     permissions:
       packages: write
 
     steps:
-      - name: Delete old edge images
+      - name: Delete old alpha prerelease images
         uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
         with:
           dry-run: ${{ inputs.dry_run == true }}
-          keep-n-tagged: ${{ env.KEEP_EDGE_COUNT }}
+          keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
           token: ${{ secrets.GITHUB_TOKEN }}
           package: transit-tv
           owner: ${{ github.repository_owner }}
           use-regex: true
-          # Delete images with tags starting with "edge-" but exclude floating tag
-          delete-tags: ^edge-.*
-          exclude-tags: ^(latest|beta|edge|rc|alpha|[0-9]+\.[0-9]+\.[0-9]+.*)$
+          # Delete semver alpha tags (e.g., 1.2.3-alpha.1) but exclude floating tag
+          delete-tags: ^[0-9]+\.[0-9]+\.[0-9]+-alpha\.
+          exclude-tags: ^(latest|beta|rc|alpha|hardened-.*)$
+
+  cleanup-rc:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete old release candidate images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+          use-regex: true
+          # Delete semver rc tags (e.g., 1.2.3-rc.1) but exclude floating tag
+          delete-tags: ^[0-9]+\.[0-9]+\.[0-9]+-rc\.
+          exclude-tags: ^(latest|beta|rc|alpha|hardened-.*)$
+
+  cleanup-hardened:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete old hardened test/beta images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          keep-n-tagged: ${{ env.KEEP_HARDENED_TEST_COUNT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+          use-regex: true
+          # Delete hardened test/beta builds but exclude stable hardened releases
+          delete-tags: ^hardened-(test|beta)-.*
+          exclude-tags: ^(hardened-latest|hardened-beta|hardened-rc|hardened-alpha|[0-9]+\.[0-9]+\.[0-9]+-hardened)$
 
   cleanup-branch-test:
     runs-on: ubuntu-latest
@@ -73,21 +111,52 @@ jobs:
           package: transit-tv
           owner: ${{ github.repository_owner }}
           use-regex: true
-          # Delete all branch-test images (tags ending with 7-char SHA but not beta/edge)
+          # Delete all branch-test images (tags ending with 7-char SHA, excluding prereleases and hardened)
           delete-tags: .*-[a-f0-9]{7}$
-          exclude-tags: ^(latest|beta|edge|rc|alpha|beta-.*|edge-.*|[0-9]+\.[0-9]+\.[0-9]+.*)$
+          exclude-tags: ^(latest|beta|rc|alpha|hardened-.*|[0-9]+\.[0-9]+\.[0-9]+.*)$
 
-  # cleanup-untagged:
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     packages: write
+  validate-pre-cleanup:
+    runs-on: ubuntu-latest
+    needs: [cleanup-beta, cleanup-alpha, cleanup-rc, cleanup-hardened, cleanup-branch-test]
+    permissions:
+      packages: write
 
-  #   steps:
-  #     - name: Delete untagged images
-  #       uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
-  #       with:
-  #         dry-run: ${{ inputs.dry_run == true }}
-  #         delete-untagged: true
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         package: transit-tv
-  #         owner: ${{ github.repository_owner }}
+    steps:
+      - name: Validate multi-architecture images before orphan cleanup
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          validate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+
+  cleanup-orphans:
+    runs-on: ubuntu-latest
+    needs: validate-pre-cleanup
+    permissions:
+      packages: write
+
+    steps:
+      - name: Delete orphaned images
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          dry-run: ${{ inputs.dry_run == true }}
+          delete-orphaned-images: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
+
+  validate-post-cleanup:
+    runs-on: ubuntu-latest
+    needs: cleanup-orphans
+    permissions:
+      packages: write
+
+    steps:
+      - name: Validate multi-architecture images after orphan cleanup
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+        with:
+          validate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: transit-tv
+          owner: ${{ github.repository_owner }}
