@@ -1,6 +1,6 @@
 {
 	"name": "transit-tv-server",
-	"version": "1.3.3",
+	"version": "1.3.4",
 	"main": "server/app.js",
 	"dependencies": {
 		"compression": "^1.8.1",
