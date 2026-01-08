@@ -23,7 +23,6 @@
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let themeObserver: MutationObserver | null = null;
 
-	
 	if (typeof document !== 'undefined') {
 		isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -199,9 +198,13 @@
 				</div>
 
 				{#each group.itineraries as itinerary}
-					<div class="destination-row" style="--route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}">
+					<div
+						class="destination-row"
+						style="--route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}"
+					>
 						<div class="destination-col">
-							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span>{/if}{itinerary.merged_headsign}
+							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span
+								>{/if}{itinerary.merged_headsign}
 						</div>
 						<div class="times-col">
 							<div class="times-list">
@@ -523,7 +526,7 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(5em, 16.5vh, 18em)
+		height: clamp(5em, 16.5vh, 18em);
 	}
 
 	/* Adjust alert height for portrait displays */
@@ -542,7 +545,7 @@
 		.alert-ticker.grouped-alerts {
 			height: clamp(5em, 8vh, 15em);
 		}
-	} 
+	}
 
 	.alert-section {
 		margin-top: 0;

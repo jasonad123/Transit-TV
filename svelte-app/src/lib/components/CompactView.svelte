@@ -507,10 +507,14 @@
 		{#each group.itineraries as itinerary}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
-				<div class="direction-card" style="{cellStyle}; --route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}">
+				<div
+					class="direction-card"
+					style="{cellStyle}; --route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}"
+				>
 					<div class="card-info">
 						<div class="card-destination">
-							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span>{/if}{itinerary.merged_headsign || 'Unknown destination'}
+							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span
+								>{/if}{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
 						<div class="card-stop-location">
 							<span>{group.stopName}</span>
@@ -678,7 +682,6 @@
 		font-weight: 900;
 		margin-right: 0.35em;
 		text-decoration: left;
-
 	}
 
 	.card-stop-location {
@@ -883,7 +886,7 @@
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-		height: clamp(5em, 7vh, 18em);
+			height: clamp(5em, 7vh, 18em);
 		}
 	}
 
