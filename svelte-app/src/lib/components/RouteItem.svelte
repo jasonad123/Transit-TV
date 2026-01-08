@@ -5,6 +5,7 @@
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import MinimalAlertIndicator from './MinimalAlertIndicator.svelte';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -1058,44 +1059,50 @@
 	{/if}
 
 	{#if relevantAlerts.length > 0}
-		<div>
-			<div
-				class="route-alert-header"
-				class:severe={mostSevereLevel === 'severe'}
-				class:warning={mostSevereLevel === 'warning'}
-				class:info={mostSevereLevel === 'info'}
-				style={mostSevereLevel === 'info'
-					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
-					: ''}
-			>
-				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span
-					class="alert-header-text"
-					class:scrolling={isAlertHeaderOverflowing}
-					use:bindAlertHeaderElement
-					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
-				>
+		{#if $config.minimalAlerts}
+			<div class="minimal-alert-container" style={cellStyle}>
+				<MinimalAlertIndicator alerts={relevantAlerts} severity={mostSevereLevel} />
 			</div>
-			<div
-				class="route-alert-ticker"
-				class:grouped-alerts={$config.groupItinerariesByStop}
-				style={cellStyle}
-			>
-				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
-					{#each parseAlertContent(alertText) as content}
-						{#if content.type === 'text'}
-							{content.value}
-						{:else if content.type === 'image'}
-							<img
-								src="/api/images/{extractImageId(content.value)}"
-								alt="transit icon"
-								class="alert-image"
-							/>
-						{/if}
-					{/each}
+		{:else}
+			<div>
+				<div
+					class="route-alert-header"
+					class:severe={mostSevereLevel === 'severe'}
+					class:warning={mostSevereLevel === 'warning'}
+					class:info={mostSevereLevel === 'info'}
+					style={mostSevereLevel === 'info'
+						? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+						: ''}
+				>
+					<iconify-icon icon={mostSevereIcon}></iconify-icon>
+					<span
+						class="alert-header-text"
+						class:scrolling={isAlertHeaderOverflowing}
+						use:bindAlertHeaderElement
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
+					>
+				</div>
+				<div
+					class="route-alert-ticker"
+					class:grouped-alerts={$config.groupItinerariesByStop}
+					style={cellStyle}
+				>
+					<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
+						{#each parseAlertContent(alertText) as content}
+							{#if content.type === 'text'}
+								{content.value}
+							{:else if content.type === 'image'}
+								<img
+									src="/api/images/{extractImageId(content.value)}"
+									alt="transit icon"
+									class="alert-image"
+								/>
+							{/if}
+						{/each}
+					</div>
 				</div>
 			</div>
-		</div>
+		{/if}
 	{/if}
 </div>
 
@@ -1593,5 +1600,13 @@
 
 	.route.white .inactive {
 		background-image: url('/assets/images/inactive@2x.png');
+	}
+
+	.minimal-alert-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1em;
+		margin-top: 0.5em;
 	}
 </style>
