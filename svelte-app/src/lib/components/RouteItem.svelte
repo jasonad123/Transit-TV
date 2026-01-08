@@ -1421,30 +1421,19 @@
 		border-top: 1px solid rgba(0, 0, 0, 0.15);
 	}
 
-	.route .direction.multi-branch.first-branch {
-		border-bottom-left-radius: 0;
-		border-bottom-right-radius: 0;
-	}
-
 	.route .direction.multi-branch:not(:last-child) {
 		margin-bottom: 0;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
 	}
 
 	.route .direction.multi-branch:last-child {
 		margin-bottom: 0.25em;
 	}
 
-	/* .direction iconify-icon {
-		transform: translateY(20%);
-		width: 1em;
-		height: 1em;
-		fill: currentColor;
-	} */
-
 	.route .time {
 		white-space: nowrap;
 		display: flex;
-		/* height: clamp(6.5em, 12vh, 30em); */
 		align-items: flex-start;
 	}
 

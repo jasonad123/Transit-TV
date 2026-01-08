@@ -23,6 +23,7 @@
 	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let themeObserver: MutationObserver | null = null;
 
+	
 	if (typeof document !== 'undefined') {
 		isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -193,14 +194,14 @@
 			<!-- Destinations table -->
 			<div class="table-container">
 				<div class="table-header">
-					<div class="destination-col">Destination</div>
-					<div class="times-col">Arrives in (min)</div>
+					<div class="destination-col">{$_('table.destination')}</div>
+					<div class="times-col">{$_('table.arrivesIn')} (min)</div>
 				</div>
 
 				{#each group.itineraries as itinerary}
-					<div class="destination-row">
+					<div class="destination-row" style="--route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}">
 						<div class="destination-col">
-							{itinerary.merged_headsign}
+							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span>{/if}{itinerary.merged_headsign}
 						</div>
 						<div class="times-col">
 							<div class="times-list">
@@ -376,6 +377,14 @@
 		overflow-wrap: break-word;
 		font-weight: 600;
 		color: var(--text-tertiary);
+	}
+
+	.destination-col .branch-code {
+		color: var(--route-color);
+		font-weight: 900;
+		font-size: 1em;
+		margin-right: 0.35em;
+		vertical-align: baseline;
 	}
 
 	.times-col {

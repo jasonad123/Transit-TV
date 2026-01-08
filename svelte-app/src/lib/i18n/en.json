@@ -7,7 +7,7 @@
 		"destination": "Destination",
 		"due": "Due",
 		"mins": "mins",
-		"nextDepartures": "Next trips",
+		"arrivesIn": "Arrives in",
 		"loadingDepartures": "Loading departures..."
 	},
 	"config": {

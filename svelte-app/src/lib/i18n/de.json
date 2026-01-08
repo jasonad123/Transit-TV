@@ -3,6 +3,13 @@
 		"title": "Transit-TV",
 		"nearbyRoutes": "Routen in der Nähe"
 	},
+	"table": {
+		"destination": "Nach",
+		"due": "Heute",
+		"mins": "mins",
+		"arrivesIn": "Kommt an",
+		"loadingDepartures": "Abfahrten werden geladen..."
+	},
 	"config": {
 		"title": "Konfigurieren Transit-TV",
 		"sections": {
@@ -109,7 +116,7 @@
 	},
 	"alerts": {
 		"default": "Störungsinformation",
-		"title": "Meldungen"
+		"title": "Störungen"
 	},
 	"time": {
 		"min": "min",

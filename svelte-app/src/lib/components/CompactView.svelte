@@ -507,10 +507,10 @@
 		{#each group.itineraries as itinerary}
 			{@const departures = (itinerary.schedule_items || []).filter(shouldShowDeparture).slice(0, 3)}
 			{#if departures.length > 0}
-				<div class="direction-card" style={cellStyle}>
+				<div class="direction-card" style="{cellStyle}; --route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}">
 					<div class="card-info">
 						<div class="card-destination">
-							{itinerary.merged_headsign || 'Unknown destination'}
+							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span>{/if}{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
 						<div class="card-stop-location">
 							<span>{group.stopName}</span>
@@ -673,8 +673,16 @@
 		min-width: 0;
 	}
 
+	.card-destination .branch-code {
+		color: var(--route-text-color);
+		font-weight: 900;
+		margin-right: 0.35em;
+		text-decoration: left;
+
+	}
+
 	.card-stop-location {
-		font-size: 1.1em;
+		font-size: 1.25em;
 		display: flex;
 		align-items: flex-start;
 		gap: 0.3em;

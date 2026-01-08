@@ -3,6 +3,13 @@
 		"title": "Télé Transit",
 		"nearbyRoutes": "Lignes à proximité"
 	},
+	"table": {
+		"destination": "Destination",
+		"due": "Maintenant",
+		"mins": "mins",
+		"arrivesIn": "Arrive dans",
+		"loadingDepartures": "Chargement des départs..."
+	},
 	"config": {
 		"title": "Configurer Télé Transit",
 		"sections": {
