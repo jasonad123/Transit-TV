@@ -227,7 +227,8 @@ var all = {
 		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null,
 		groupItinerariesByStop: parseBoolean(process.env.UNATTENDED_GROUP_ITINERARIES),
 		filterRedundantTerminus: parseBoolean(process.env.UNATTENDED_FILTER_TERMINUS),
-		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES)
+		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES),
+		minimalAlerts: parseBoolean(process.env.UNATTENDED_MINIMAL_ALERTS)
 	},
 
 	// Security settings

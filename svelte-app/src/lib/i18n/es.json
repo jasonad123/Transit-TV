@@ -23,7 +23,8 @@
 			"maxDistance": "Radio de búsqueda",
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
-			"showRouteLongName": "Mostrar nombres y colores de línea"
+			"showRouteLongName": "Mostrar nombres y colores de línea",
+			"minimalAlerts": "Mostrar alertas mínimas"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -65,6 +66,9 @@
 		},
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
+		},
+		"alerts": {
+			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar solo un ícono con el recuento de alertas"
 		},
 		"buttons": {
 			"cancel": "Cancelar",
