@@ -1620,10 +1620,13 @@
 		background: rgba(255, 255, 255, 0.3);
 		color: inherit;
 		border-radius: 0.5em;
-		padding: 0.3em 0.6em;
-		font-size: 0.9em;
+		padding: 0.75em 0.5em 0.5em;
+		font-size: 1.25em;
 		font-weight: bold;
+		line-height: 1.3;
 		margin-left: auto;
+		margin-top: 0.5em;
+		transform: translateY(0.05em);
 		margin-right: 0.5em;
 		min-width: 1.5em;
 		flex-shrink: 0;
