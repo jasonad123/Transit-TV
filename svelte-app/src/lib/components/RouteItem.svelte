@@ -1060,7 +1060,7 @@
 	{#if relevantAlerts.length > 0}
 		{#if $config.minimalAlerts}
 			<div
-				class="route-alert-header"
+				class="route-alert-header minimal"
 				class:severe={mostSevereLevel === 'severe'}
 				class:warning={mostSevereLevel === 'warning'}
 				class:info={mostSevereLevel === 'info'}
@@ -1069,7 +1069,7 @@
 					: ''}
 			>
 				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span class="alert-header-text"
+				<span class="alert-header-text-minimal"
 					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
 				>
 				<span class="alert-count-badge">{relevantAlertCount}</span>
@@ -1613,6 +1613,21 @@
 		background-image: url('/assets/images/inactive@2x.png');
 	}
 
+	/* Minimal alert mode styling */
+	.route-alert-header.minimal {
+		justify-content: space-between;
+		padding: 0.75em 0.75em 0.75em 0.5em;
+	}
+
+	.route-alert-header .alert-header-text-minimal {
+		display: inline-block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		flex: 1;
+		min-width: 0;
+	}
+
 	.alert-count-badge {
 		display: inline-flex;
 		align-items: center;
@@ -1624,12 +1639,11 @@
 		font-size: 1.25em;
 		font-weight: bold;
 		line-height: 1.3;
-		margin-left: auto;
 		margin-top: 0.5em;
 		transform: translateY(0.05em);
-		margin-right: 0.5em;
-		min-width: 1.5em;
+		min-width: 2em;
 		flex-shrink: 0;
+		margin-left: 0.5em;
 	}
 
 	.route-alert-header.severe .alert-count-badge {
