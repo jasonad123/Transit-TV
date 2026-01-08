@@ -1070,6 +1070,8 @@
 			>
 				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 				<span class="alert-header-text-minimal"
+						class:scrolling={isAlertHeaderOverflowing}
+						use:bindAlertHeaderElement
 					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
 				>
 				<span class="alert-count-badge">{relevantAlertCount}</span>
@@ -1619,13 +1621,23 @@
 		padding: 0.75em 0.75em 0.75em 0.5em;
 	}
 
-	.route-alert-header .alert-header-text-minimal {
+	.route-alert-header.minimal .alert-header-text-minimal {
 		display: inline-block;
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 		flex: 1;
 		min-width: 0;
+	}
+
+	.route-alert-header.minimal .alert-header-text-minimal.scrolling {
+		animation: scroll-alert-header-horizontal 150s linear infinite;
+		will-change: transform;
+		overflow: visible;
+	}
+
+	.route-alert-header.minimal .alert-header-text-minimal:not(.scrolling) {
+		will-change: auto;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.alert-count-badge {
@@ -1639,7 +1651,6 @@
 		font-size: 1.25em;
 		font-weight: bold;
 		line-height: 1.3;
-		margin-top: 0.5em;
 		transform: translateY(0.05em);
 		min-width: 2em;
 		flex-shrink: 0;
