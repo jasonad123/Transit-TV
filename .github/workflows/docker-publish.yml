@@ -3,7 +3,7 @@ name: Build and publish Docker image
 on:
   push:
     branches: 
-      - main
+      - stable
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v0.5.0, v1.0.0, etc.
     paths-ignore: # Skip builds for doc-only changes (saves build minutes)
