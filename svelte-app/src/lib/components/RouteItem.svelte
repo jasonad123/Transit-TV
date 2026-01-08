@@ -5,7 +5,6 @@
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
 	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
-	import MinimalAlertIndicator from './MinimalAlertIndicator.svelte';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 
@@ -1060,8 +1059,20 @@
 
 	{#if relevantAlerts.length > 0}
 		{#if $config.minimalAlerts}
-			<div class="minimal-alert-container" style={cellStyle}>
-				<MinimalAlertIndicator alerts={relevantAlerts} severity={mostSevereLevel} />
+			<div
+				class="route-alert-header"
+				class:severe={mostSevereLevel === 'severe'}
+				class:warning={mostSevereLevel === 'warning'}
+				class:info={mostSevereLevel === 'info'}
+				style={mostSevereLevel === 'info'
+					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+					: ''}
+			>
+				<iconify-icon icon={mostSevereIcon}></iconify-icon>
+				<span class="alert-header-text"
+					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
+				>
+				<span class="alert-count-badge">{relevantAlertCount}</span>
 			</div>
 		{:else}
 			<div>
@@ -1602,11 +1613,31 @@
 		background-image: url('/assets/images/inactive@2x.png');
 	}
 
-	.minimal-alert-container {
-		display: flex;
+	.alert-count-badge {
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 1em;
-		margin-top: 0.5em;
+		background: rgba(255, 255, 255, 0.3);
+		color: inherit;
+		border-radius: 0.5em;
+		padding: 0.3em 0.6em;
+		font-size: 0.9em;
+		font-weight: bold;
+		margin-left: auto;
+		margin-right: 0.5em;
+		min-width: 1.5em;
+		flex-shrink: 0;
+	}
+
+	.route-alert-header.severe .alert-count-badge {
+		background: rgba(255, 255, 255, 0.25);
+	}
+
+	.route-alert-header.warning .alert-count-badge {
+		background: rgba(0, 0, 0, 0.15);
+	}
+
+	.route-alert-header.info .alert-count-badge {
+		background: rgba(0, 0, 0, 0.1);
 	}
 </style>
