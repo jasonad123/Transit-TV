@@ -1653,20 +1653,36 @@
 		line-height: 1.3;
 		transform: translateY(0.05em);
 		min-width: 2em;
-		z-index: 1;
+		z-index: 7;
 		flex-shrink: 0;
 		margin-left: 0.5em;
 	}
 
 	.route-alert-header.severe .alert-count-badge {
-		background: rgba(255, 255, 255, 0.25);
+		background: linear-gradient(
+			to left,
+			rgba(255, 255, 255, 0.25) 0%,
+			rgba(255, 255, 255, 0.25) 70%,
+			transparent 100%
+		);
 	}
 
 	.route-alert-header.warning .alert-count-badge {
-		background: rgba(0, 0, 0, 0.15);
+		background: linear-gradient(
+			to left,
+			rgba(0, 0, 0, 0.15) 0%,
+			rgba(0, 0, 0, 0.15) 70%,
+			transparent 100%
+		);
 	}
 
 	.route-alert-header.info .alert-count-badge {
-		background: rgba(0, 0, 0, 0.1);
+		background: linear-gradient(
+			to left,
+			rgba(0, 0, 0, 0.1) 0%,
+			rgba(0, 0, 0, 0.1) 70%,
+			transparent 100%
+		);
 	}
+
 </style>
