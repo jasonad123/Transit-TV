@@ -26,6 +26,7 @@ export interface Config {
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
 	viewMode: 'card' | 'compact' | 'list';
+	minimalAlerts: boolean;
 }
 
 const defaultConfig: Config = {
@@ -49,7 +50,8 @@ const defaultConfig: Config = {
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
-	viewMode: 'card'
+	viewMode: 'card',
+	minimalAlerts: false
 };
 
 function createConfigStore() {

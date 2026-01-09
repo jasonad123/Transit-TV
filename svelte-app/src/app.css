@@ -1,5 +1,8 @@
 @import '@fontsource-variable/overpass/wght-italic.css';
 @import '@fontsource-variable/overpass/wght.css';
+@import '@fontsource/overpass/100.css';
+@import '@fontsource/overpass/200.css';
+@import '@fontsource-variable/red-hat-display';
 
 :root {
 	/* Light theme (default) */

@@ -81,6 +81,7 @@ exports.getUnattendedConfig = function (req, res) {
 		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
 		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus,
 		showRouteLongName: config.unattendedSetup.showRouteLongName,
-		viewMode: config.unattendedSetup.viewMode
+		viewMode: config.unattendedSetup.viewMode,
+		minimalAlerts: config.unattendedSetup.minimalAlerts
 	});
 };

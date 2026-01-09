@@ -248,7 +248,8 @@ var all = {
 		groupItinerariesByStop: parseBoolean(process.env.UNATTENDED_GROUP_ITINERARIES),
 		filterRedundantTerminus: parseBoolean(process.env.UNATTENDED_FILTER_TERMINUS),
 		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES),
-		viewMode: validateViewMode(process.env.VIEW_MODE || 'card')
+		viewMode: validateViewMode(process.env.VIEW_MODE || 'card'),
+		minimalAlerts: parseBoolean(process.env.MINIMAL_ALERTS)
 	},
 
 	// Security settings

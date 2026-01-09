@@ -30,7 +30,8 @@
 			"maxDistance": "Rayon de recherche",
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs",
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
-			"showRouteLongName": "Afficher les noms et couleurs de ligne"
+			"showRouteLongName": "Afficher les noms et couleurs de ligne",
+			"minimalAlerts": "Afficher les alertes minimales"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -77,6 +78,9 @@
 			"compact": "Compact",
 			"list": "Liste",
 			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux) ou le mode Liste (meilleur pour de grandes quantités de lignes)."
+		},
+		"alerts": {
+			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
 		},
 		"buttons": {
 			"cancel": "Annuler",
@@ -131,7 +135,7 @@
 	},
 	"errors": {
 		"rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
-		"auth": "Impossible de se connecter au API de Transit. Personnel de l'agence : veuillez contacter votre service informatique pour obtenir de l'aide.",
+		"auth": "Impossible de se connecter au API de Transit.",
 		"timeout": "Vérification des mises à jour...",
 		"backend": "Transit TV est hors service. J'essaie encore...",
 		"generic": "Transit TV a rencontré un problème. J'essaie encore..."

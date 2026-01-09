@@ -30,7 +30,8 @@
 			"maxDistance": "Suchradius",
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
-			"showRouteLongName": "Linienfarben und -namen anzeigen"
+			"showRouteLongName": "Linienfarben und -namen anzeigen",
+			"minimalAlerts": "Minimale Benachrichtigungen anzeigen"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -77,6 +78,9 @@
 			"compact": "Kompakt",
 			"list": "Liste",
 			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard), Kompaktmodus (besser für vertikale Anzeigen) oder Listenmodus (besser für viele Routen)."
+		},
+		"alerts": {
+			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
 		"buttons": {
 			"cancel": "Stornieren",
@@ -130,7 +134,7 @@
 	},
 	"errors": {
 		"rateLimit": "Überprüfung auf Updates. Erneuter Versuch in {seconds} Sekunden...",
-		"auth": "Verbindung zum Transit-datendienst nicht möglich. ÖPNV*innen – wenden Sie sich für Unterstützung an Ihre IT-Abteilung.",
+		"auth": "Verbindung zum Transit-API nicht möglich.",
 		"timeout": "Überprüfung auf Updates...",
 		"backend": "Transit-TV ist außer Betrieb. Erneuter Versuch...",
 		"generic": "Transit-TV hatte ein Problem. Erneuter Versuch..."

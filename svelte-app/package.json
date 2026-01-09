@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/overpass": "^5.2.8",
+		"@fontsource-variable/red-hat-display": "^5.2.8",
 		"@fontsource/overpass": "^5.2.8",
 		"svelte-i18n": "^4.0.1"
 	},

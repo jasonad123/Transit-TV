@@ -856,6 +856,15 @@
 								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
 							>
 						</div>
+
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.minimalAlerts}>
+								{#snippet label()}
+									<span>{$_('config.fields.minimalAlerts')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
+						</div>
 					</SolidSection>
 
 					<CollapsibleSection

@@ -30,7 +30,8 @@
 			"maxDistance": "Search radius",
 			"groupItinerariesByStop": "Group destinations with shared stop names",
 			"filterRedundantTerminus": "Hide nearby terminus",
-			"showRouteLongName": "Show line colours and names"
+			"showRouteLongName": "Show line colours and names",
+			"minimalAlerts": "Show minimal alerts"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -77,6 +78,9 @@
 			"compact": "Compact",
 			"list": "List",
 			"viewModeHelpText": "Select between Card mode (default), Compact mode (better for vertical displays), or List mode (better for large numbers of routes)."
+		},
+		"alerts": {
+			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
 		},
 		"buttons": {
 			"cancel": "Cancel",
@@ -137,7 +141,7 @@
 	},
 	"errors": {
 		"rateLimit": "Checking for updates. Retrying in {seconds} seconds...",
-		"auth": "Can't connect to the Transit API. Agency staff should contact the IT department for assistance.",
+		"auth": "Can't connect to the Transit API.",
 		"timeout": "Checking for updates..",
 		"backend": "Transit TV is out of service. Retrying...",
 		"generic": "Transit TV ran into a problem. Retrying..."
