@@ -513,7 +513,8 @@
 				>
 					<div class="card-info">
 						<div class="card-destination">
-							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span
+							{#if itinerary.branch_code}<span class="branch-code-badge"
+									>{itinerary.branch_code}</span
 								>{/if}{itinerary.merged_headsign || 'Unknown destination'}
 						</div>
 						<div class="card-stop-location">
@@ -677,11 +678,24 @@
 		min-width: 0;
 	}
 
-	.card-destination .branch-code {
-		color: var(--route-text-color);
-		font-weight: 900;
+	.card-destination .branch-code-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: color-mix(in srgb, var(--route-color), white 30%);
+		color: inherit;
+		border-radius: 40rem;
+		padding: 5px 0.5em;
+		font-size: 1em;
+		font-weight: 800;
+		line-height: 1;
+		min-width: 1.35em;
+		z-index: 3;
+		flex-shrink: 1;
+		transform: translateY(-0.1em);
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 		margin-right: 0.35em;
-		text-decoration: left;
 	}
 
 	.card-stop-location {

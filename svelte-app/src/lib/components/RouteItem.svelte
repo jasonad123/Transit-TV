@@ -679,8 +679,6 @@
 
 	function checkDestinationOverflow(index: number, element: HTMLElement) {
 		if (!element) return;
-		const parent = element.parentElement;
-		if (!parent) return;
 
 		// Debounce resize checks
 		const existing = destinationCheckTimeouts.get(index);
@@ -688,8 +686,9 @@
 
 		const timeout = setTimeout(() => {
 			requestAnimationFrame(() => {
-				// Add 5px threshold to trigger scrolling slightly before actual overflow
-				const isOverflowing = element.scrollWidth > parent.clientWidth - 5;
+				// Check if content width exceeds element's actual width (not parent)
+				// Using element.offsetWidth gives us the constrained flex width
+				const isOverflowing = element.scrollWidth > element.offsetWidth;
 				const newSet = new Set(overflowingDestinations);
 				if (isOverflowing) {
 					newSet.add(index);
@@ -1002,24 +1001,30 @@
 	</h2>
 
 	{#if itineraryGroups.length > 0}
-		{#each itineraryGroups as group}
+		{#each itineraryGroups as group, groupIndex}
 			<div class="content">
 				<div class="stop_name" style="color: {stopNameColor}">
 					<iconify-icon icon="ix:location-filled"></iconify-icon>
 					{group.stopName}
 				</div>
 				{#each group.itineraries as dir, index}
+					{@const globalIndex =
+						itineraryGroups.slice(0, groupIndex).reduce((sum, g) => sum + g.itineraries.length, 0) +
+						index}
 					<div
 						class="direction"
-						style={cellStyle}
+						style="{cellStyle}; --route-color: #{route.route_color}"
 						class:first-branch={index === 0}
 						class:multi-branch={group.itineraries.length > 1}
 					>
 						<h3>
+							{#if dir.branch_code}
+								<span class="branch-code-badge">{dir.branch_code}</span>
+							{/if}
 							<span
 								class="destination-text"
-								class:scrolling={overflowingDestinations.has(index)}
-								use:bindDestinationElement={index}
+								class:scrolling={overflowingDestinations.has(globalIndex)}
+								use:bindDestinationElement={globalIndex}
 								>{dir.merged_headsign || dir.direction_headsign || 'Unknown destination'}</span
 							>
 						</h3>
@@ -1228,9 +1233,7 @@
 		color: #000000;
 	}
 
-	.route-alert-header.info {
-		/* Inherits from inline style (cellStyle) */
-	}
+	/* .route-alert-header.info inherits from inline style (cellStyle) */
 
 	.route-alert-header .alert-header-text {
 		display: inline-block;
@@ -1362,6 +1365,7 @@
 		line-height: 1.5em;
 		display: flex;
 		align-items: center;
+		gap: 0.3em;
 	}
 
 	.route.white h3 {
@@ -1386,21 +1390,42 @@
 		}
 	}
 
+	.route h3 .branch-code-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: color-mix(in srgb, var(--route-color), white 30%);
+		color: inherit;
+		border-radius: 40rem;
+		padding: 5px 0.5em;
+		font-size: 1em;
+		font-weight: 800;
+		line-height: 1;
+		min-width: 1.35em;
+		z-index: 3;
+		flex-shrink: 0;
+		transform: translateY(-0.1em);
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
 	.route h3 .destination-text {
 		display: inline-block;
 		white-space: nowrap;
+		min-width: 0;
+		flex: 1;
 	}
 
 	.route h3 .destination-text.scrolling {
 		animation: scroll-destination-horizontal 150s linear infinite;
 		will-change: transform;
-		transform: translateZ(0);
-		backface-visibility: hidden;
-		contain: layout paint;
+		overflow: visible;
 	}
 
 	.route h3 .destination-text:not(.scrolling) {
 		will-change: auto;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.route .img28 {
