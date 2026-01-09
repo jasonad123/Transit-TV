@@ -1647,14 +1647,14 @@
 		background: rgba(255, 255, 255, 0.3);
 		color: inherit;
 		border-radius: 0.5em;
-		padding: 0.75em 0.5em 0.5em;
+		padding: 0.25em;
 		font-size: 1.25em;
 		font-weight: bold;
-		line-height: 1.3;
-		transform: translateY(0.05em);
+		line-height: 1;
+		transform: translateY(0.025em);
 		min-width: 2em;
 		z-index: 7;
-		flex-shrink: 0;
+		flex-shrink: 1;
 		margin-left: 0.5em;
 	}
 
