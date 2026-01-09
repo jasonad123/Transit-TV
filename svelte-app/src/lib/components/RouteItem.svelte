@@ -1647,15 +1647,17 @@
 		background: rgba(255, 255, 255, 0.3);
 		color: inherit;
 		border-radius: 0.5em;
-		padding: 0.25em;
+		padding: 0.5em;
 		font-size: 1.25em;
 		font-weight: bold;
 		line-height: 1;
-		transform: translateY(0.025em);
-		min-width: 2em;
-		z-index: 7;
+		min-width: 1.25em;
+		z-index: 3;
 		flex-shrink: 1;
 		margin-left: 0.5em;
+		font-family: monospace;
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
+
 	}
 
 	.route-alert-header.severe .alert-count-badge {
