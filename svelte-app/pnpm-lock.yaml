@@ -12,6 +12,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/ibm-plex-sans':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource-variable/overpass':
         specifier: ^5.2.8
         version: 5.2.8
@@ -366,6 +369,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/ibm-plex-sans@5.2.8':
+    resolution: {integrity: sha512-n5PF2iFa0CZT0QYTPzxvZ39opC9LnU0zdoRccoADbs+Dtsd+lbXOZF7RNuIPHcQX1dKjF63sxnRImQIB5eD0Ag==}
 
   '@fontsource-variable/overpass@5.2.8':
     resolution: {integrity: sha512-7/gP2f9ylVFYEhdyeHl6JSEcmNQ5QBdDs5BuT4V+FqSvkk9XjwdikmtTJuNTRWevMAhBkTUWf/dm68G2SbMdjQ==}
@@ -1221,6 +1227,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.2':
     optional: true
+
+  '@fontsource-variable/ibm-plex-sans@5.2.8': {}
 
   '@fontsource-variable/overpass@5.2.8': {}
 
