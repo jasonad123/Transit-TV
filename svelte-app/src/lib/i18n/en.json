@@ -68,7 +68,7 @@
 			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Hide full alert text and show only an icon with alert count"
+			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
 		},
 		"buttons": {
 			"cancel": "Cancel",

@@ -1059,22 +1059,27 @@
 
 	{#if relevantAlerts.length > 0}
 		{#if $config.minimalAlerts}
-			<div
-				class="route-alert-header minimal"
-				class:severe={mostSevereLevel === 'severe'}
-				class:warning={mostSevereLevel === 'warning'}
-				class:info={mostSevereLevel === 'info'}
-				style={mostSevereLevel === 'info'
-					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
-					: ''}
-			>
-				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span class="alert-header-text-minimal"
+			<div>
+				<div
+					class="route-alert-header minimal"
+					class:severe={mostSevereLevel === 'severe'}
+					class:warning={mostSevereLevel === 'warning'}
+					class:info={mostSevereLevel === 'info'}
+					style={mostSevereLevel === 'info'
+						? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+						: ''}
+				>
+					<iconify-icon icon={mostSevereIcon}></iconify-icon>
+					<span
+						class="alert-header-text-minimal"
 						class:scrolling={isAlertHeaderOverflowing}
 						use:bindAlertHeaderElement
-					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
-				>
-				<span class="alert-count-badge">{relevantAlertCount}</span>
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
+					>
+					<span class="alert-count-badge">{relevantAlertCount}</span>
+				</div>
 			</div>
 		{:else}
 			<div>
@@ -1092,9 +1097,11 @@
 						class="alert-header-text"
 						class:scrolling={isAlertHeaderOverflowing}
 						use:bindAlertHeaderElement
-						>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
-				>
-				<span class="alert-count-badge">{relevantAlertCount}</span>
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
+					>
+					<span class="alert-count-badge">{relevantAlertCount}</span>
 				</div>
 				<div
 					class="route-alert-ticker"
@@ -1142,7 +1149,6 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
-		/* padding: 0 0.25em 0; */
 	}
 
 	.route h2 {
@@ -1618,8 +1624,12 @@
 
 	/* Minimal alert mode styling */
 	.route-alert-header.minimal {
-		justify-content: space-between;
-		padding: 0.75em 0.75em 0.75em 0.5em;
+		justify-content: center;
+		padding: 0.75em 0.5em 0.5em;
+		max-width: 100%;
+		overflow: hidden;
+		border-radius: 0.5em;
+		border-bottom: none !important;
 	}
 
 	.route-alert-header.minimal .alert-header-text-minimal {
@@ -1657,25 +1667,22 @@
 		flex-shrink: 1;
 		transform: translateY(-0.1em);
 		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
-		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
-
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	.route-alert-header.minimal .alert-count-badge {
-		transform: translateY(-0.05em) !important;
+		transform: translateY(-0.15em) !important;
 	}
 
-
 	.route-alert-header.severe .alert-count-badge {
-		background: color-mix(in srgb, #e30613, white 30%) 0%
+		background: color-mix(in srgb, #e30613, white 30%) 0%;
 	}
 
 	.route-alert-header.warning .alert-count-badge {
-		background: color-mix(in srgb, #ffa700, white 30%) 0%
+		background: color-mix(in srgb, #ffa700, white 30%) 0%;
 	}
 
 	.route-alert-header.info .alert-count-badge {
-		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%
+		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%;
 	}
-
 </style>

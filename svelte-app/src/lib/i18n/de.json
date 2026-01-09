@@ -68,7 +68,7 @@
 			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur ein Symbol mit der Anzahl der Warnungen anzeigen"
+			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
 		"buttons": {
 			"cancel": "Stornieren",

@@ -68,7 +68,7 @@
 			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar solo un ícono con el recuento de alertas"
+			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
 		"buttons": {
 			"cancel": "Cancelar",
