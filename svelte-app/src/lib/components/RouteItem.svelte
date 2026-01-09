@@ -1659,30 +1659,15 @@
 	}
 
 	.route-alert-header.severe .alert-count-badge {
-		background: linear-gradient(
-			to left,
-			rgba(255, 255, 255, 0.25) 0%,
-			rgba(255, 255, 255, 0.25) 70%,
-			transparent 50%
-		);
+		background: color-mix(in srgb, #e30613, white 30%) 0%
 	}
 
 	.route-alert-header.warning .alert-count-badge {
-		background: linear-gradient(
-			to left,
-			rgba(0, 0, 0, 0..15) 0%,
-			rgba(0, 0, 0, 0.15) 70%,
-			transparent 50%
-		);
+		background: color-mix(in srgb, #ffa700, white 30%) 0%
 	}
 
 	.route-alert-header.info .alert-count-badge {
-		background: linear-gradient(
-			to left,
-			rgba(0, 0, 0, 0.1) 0%,
-			rgba(0, 0, 0, 0.1) 70%,
-			transparent 50%
-		);
+		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%
 	}
 
 </style>
