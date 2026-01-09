@@ -1093,7 +1093,8 @@
 						class:scrolling={isAlertHeaderOverflowing}
 						use:bindAlertHeaderElement
 						>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
-					>
+				>
+				<span class="alert-count-badge">{relevantAlertCount}</span>
 				</div>
 				<div
 					class="route-alert-ticker"
@@ -1655,7 +1656,7 @@
 		z-index: 3;
 		flex-shrink: 1;
 		margin-left: 0.5em;
-		font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+		font-family: 'IBM Plex Sans Variable', Helvetica, Arial, sans-serif;
 		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
 
 	}
