@@ -1653,6 +1653,7 @@
 		line-height: 1.3;
 		transform: translateY(0.05em);
 		min-width: 2em;
+		z-index: 1;
 		flex-shrink: 0;
 		margin-left: 0.5em;
 	}
