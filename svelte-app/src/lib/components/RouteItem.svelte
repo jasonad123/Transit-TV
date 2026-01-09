@@ -1648,7 +1648,7 @@
 		background: rgba(255, 255, 255, 0.3);
 		color: inherit;
 		border-radius: 0.5em;
-		padding: 0.5em;
+		padding: 0.25em;
 		font-size: 1.25em;
 		font-weight: bold;
 		line-height: 1;
