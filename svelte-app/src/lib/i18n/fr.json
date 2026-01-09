@@ -123,7 +123,7 @@
 	},
 	"errors": {
 		"rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
-		"auth": "Impossible de se connecter au API de Transit. Personnel de l'agence : veuillez contacter votre service informatique pour obtenir de l'aide.",
+		"auth": "Impossible de se connecter au API de Transit.",
 		"timeout": "Vérification des mises à jour...",
 		"backend": "Transit TV est hors service. J'essaie encore...",
 		"generic": "Transit TV a rencontré un problème. J'essaie encore..."
