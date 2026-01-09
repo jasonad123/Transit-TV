@@ -15,6 +15,9 @@ importers:
       '@fontsource-variable/overpass':
         specifier: ^5.2.8
         version: 5.2.8
+      '@fontsource-variable/red-hat-display':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource/overpass':
         specifier: ^5.2.8
         version: 5.2.8
@@ -369,6 +372,9 @@ packages:
 
   '@fontsource-variable/overpass@5.2.8':
     resolution: {integrity: sha512-7/gP2f9ylVFYEhdyeHl6JSEcmNQ5QBdDs5BuT4V+FqSvkk9XjwdikmtTJuNTRWevMAhBkTUWf/dm68G2SbMdjQ==}
+
+  '@fontsource-variable/red-hat-display@5.2.8':
+    resolution: {integrity: sha512-OslUyiQ5y9MqU5G020NbJALqY2obalyCoxy+0f9mU2tXmhw35uFTnNQvncuOooxXApKnGCadKh6sdhpSnOAV8Q==}
 
   '@fontsource/overpass@5.2.8':
     resolution: {integrity: sha512-Svtn/TJCtVZ99JoCi3P+jvHiCo8WoUHZjm5RwHMgSqX2k4qiL4sK1Lh4enotfyDkEIyj/oP99ezOdy5YlEqkDA==}
@@ -1242,6 +1248,8 @@ snapshots:
     optional: true
 
   '@fontsource-variable/overpass@5.2.8': {}
+
+  '@fontsource-variable/red-hat-display@5.2.8': {}
 
   '@fontsource/overpass@5.2.8': {}
 
