@@ -1655,7 +1655,7 @@
 		z-index: 3;
 		flex-shrink: 1;
 		margin-left: 0.5em;
-		font-family: monospace;
+		font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
 		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
 
 	}

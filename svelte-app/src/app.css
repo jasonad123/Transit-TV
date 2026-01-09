@@ -1,5 +1,6 @@
 @import '@fontsource-variable/overpass/wght-italic.css';
 @import '@fontsource-variable/overpass/wght.css';
+@import '@fontsource-variable/ibm-plex-sans';
 
 :root {
 	/* Light theme (default) */
@@ -34,7 +35,7 @@ html,
 body {
 	height: 100%;
 	width: 100%;
-	font-family: 'Overpass Variable', Helvetica, Arial, serif;
+	font-family: 'Overpass Variable', Helvetica, Arial, sans-serif;
 	font-size: 12px;
 	padding: 0;
 	margin: 0;
@@ -47,7 +48,7 @@ h1,
 h2,
 h3,
 h4 {
-	font-family: 'Overpass Variable', Helvetica, Arial, serif;
+	font-family: 'Overpass Variable', Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	margin: 0;
 	display: block;
