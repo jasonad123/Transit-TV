@@ -38,7 +38,7 @@ Railway provides a one-click deployment experience:
 2. You'll configure your API key and settings for Transit TV
 3. Railway creates a new project for Transit TV
 4. Railway automatically deploys the _latest_ Docker image for Transit TV
-5. Your Transit TV instance is live behind a Caddy reverse proxy
+5. Your Transit TV instance is live
 
 **Configuration**:
 
@@ -49,6 +49,26 @@ Railway provides a one-click deployment experience:
 **Costs**: Railway charges based on usage. Check [Railway's pricing](https://railway.com/pricing) for current rates.
 
 **Demo instance**: [see it in action](https://transit-tv-demo.up.railway.app/)
+
+### Option 1B: One-Click Deployment (Render)
+
+**Best for**: Organizations comfortable with cloud PaaS platforms and specifically familiar with Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fjasonad123%2FTransit-TV)
+
+**What happens when you click**:
+
+1. You'll be guided through creating a Render account (if needed)
+2. You'll configure your API key and basic settings for Transit TV
+3. Render creates a new project for Transit TV
+4. Render automatically deploys the _latest_ Docker image for Transit TV as a Web Service
+5. Your Transit TV instance is live
+
+**Configuration**:
+
+- Custom domains can be added through Render's dashboard
+- Environment variables can be updated anytime
+- Multiple instances can be deployed for different displays
 
 ### Option 2: Manual Cloud Platform Deployment
 
@@ -253,7 +273,7 @@ For SSL/TLS and custom domains, use a reverse proxy like Nginx or Caddy:
 
 **Caddy** (easiest, automatic HTTPS):
 
-```
+```caddy
 transit-tv.youragency.com {
     reverse_proxy localhost:8080
 }
@@ -300,7 +320,7 @@ See the documentation for [unattended setup](../docs/config/unattended-setup.md)
 
 ### Caching
 
-Transit TV also has built-in caching. Caching can be adjusted based on your Transit API subscription
+Transit TV also has built-in caching. Caching can be adjusted based on your Transit API subscription.
 
 See the documentation for [caching](../docs/config/caching.md)] for more information on the caching setup.
 

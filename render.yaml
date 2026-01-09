@@ -2,8 +2,9 @@
 services:
   - type: web
     name: Transit-TV
-    runtime: docker
-    repo: https://github.com/jasonad123/Transit-TV
+    runtime: image
+    image:
+      url: ghcr.io/jasonad123/transit-tv:latest
     envVars:
       - key: TRANSIT_API_KEY
         sync: false
@@ -15,16 +16,10 @@ services:
         value: 8080
       - key: NODE_ENV
         value: production
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+      - key: UNATTENDED_SETUP
+        sync: false
+      - key: UNATTENDED_TITLE
+        sync: false
+      - key: UNATTENDED_LOCATION
+        sync: false
     healthCheckPath: /health
-    autoDeployTrigger: commit
-    buildFilter:
-      paths:
-        - server/**
-        - svelte-app/**
-        - package.json
-        - svelte-app/package.json
-      ignoredPaths:
-        - docs/**
-        - README.md
