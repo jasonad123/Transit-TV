@@ -1647,19 +1647,24 @@
 		justify-content: center;
 		background: rgba(255, 255, 255, 0.3);
 		color: inherit;
-		border-radius: 0.5em;
-		padding: 1em 0em;
-		font-size: 1.25em;
-		font-weight: 600;
+		border-radius: 40rem;
+		padding: 5px 0.5em;
+		font-size: 1em;
+		font-weight: 800;
 		line-height: 1;
 		min-width: 1.35em;
 		z-index: 3;
 		flex-shrink: 1;
-		margin-left: 0.5em;
-		margin-top: 0.2em;
+		transform: translateY(-0.1em);
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
 		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
 
 	}
+
+	.route-alert-header.minimal .alert-count-badge {
+		transform: translateY(-0.05em) !important;
+	}
+
 
 	.route-alert-header.severe .alert-count-badge {
 		background: color-mix(in srgb, #e30613, white 30%) 0%
