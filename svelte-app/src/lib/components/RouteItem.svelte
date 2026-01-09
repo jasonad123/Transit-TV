@@ -1070,10 +1070,13 @@
 						: ''}
 				>
 					<iconify-icon icon={mostSevereIcon}></iconify-icon>
-					<span class="alert-header-text-minimal"
-							class:scrolling={isAlertHeaderOverflowing}
-							use:bindAlertHeaderElement
-						>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
+					<span
+						class="alert-header-text-minimal"
+						class:scrolling={isAlertHeaderOverflowing}
+						use:bindAlertHeaderElement
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
 					>
 					<span class="alert-count-badge">{relevantAlertCount}</span>
 				</div>
@@ -1094,9 +1097,11 @@
 						class="alert-header-text"
 						class:scrolling={isAlertHeaderOverflowing}
 						use:bindAlertHeaderElement
-						>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
-				>
-				<span class="alert-count-badge">{relevantAlertCount}</span>
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
+					>
+					<span class="alert-count-badge">{relevantAlertCount}</span>
 				</div>
 				<div
 					class="route-alert-ticker"
@@ -1627,7 +1632,6 @@
 		border-bottom: none !important;
 	}
 
-
 	.route-alert-header.minimal .alert-header-text-minimal {
 		display: inline-block;
 		white-space: nowrap;
@@ -1663,25 +1667,22 @@
 		flex-shrink: 1;
 		transform: translateY(-0.1em);
 		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
-		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1)
-
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	.route-alert-header.minimal .alert-count-badge {
 		transform: translateY(-0.15em) !important;
 	}
 
-
 	.route-alert-header.severe .alert-count-badge {
-		background: color-mix(in srgb, #e30613, white 30%) 0%
+		background: color-mix(in srgb, #e30613, white 30%) 0%;
 	}
 
 	.route-alert-header.warning .alert-count-badge {
-		background: color-mix(in srgb, #ffa700, white 30%) 0%
+		background: color-mix(in srgb, #ffa700, white 30%) 0%;
 	}
 
 	.route-alert-header.info .alert-count-badge {
-		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%
+		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%;
 	}
-
 </style>

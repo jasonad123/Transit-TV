@@ -810,9 +810,7 @@
 									<span>{$_('config.fields.minimalAlerts')}</span>
 								{/snippet}
 							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.alerts.minimalAlertsHelpText')}</small
-							>
+							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
 						</div>
 					</SolidSection>
 
