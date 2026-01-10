@@ -41,7 +41,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.4'); // Fallback version
+	let appVersion = $state<string>('1.3.5'); // Fallback version
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
@@ -356,7 +356,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.4';
+				appVersion = healthData.version || '1.3.5';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
