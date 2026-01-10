@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
-			"minimalAlerts": "Minimale Benachrichtigungen anzeigen"
+			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
+			"autoScaleContent": "Routen automatisch an Bildschirm anpassen"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -69,6 +70,9 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
+		},
+		"autoScale": {
+			"helpText": "Routen automatisch skalieren, um alle Karten ohne Scrollen anzuzeigen (Mindestskala 65%)"
 		},
 		"buttons": {
 			"cancel": "Stornieren",

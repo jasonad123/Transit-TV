@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs",
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
 			"showRouteLongName": "Afficher les noms et couleurs de ligne",
-			"minimalAlerts": "Afficher les alertes minimales"
+			"minimalAlerts": "Afficher les alertes minimales",
+			"autoScaleContent": "Ajuster automatiquement les itinéraires à l'écran"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -69,6 +70,9 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
+		},
+		"autoScale": {
+			"helpText": "Ajuster automatiquement les itinéraires pour afficher toutes les cartes sans défilement (échelle minimale 65%)"
 		},
 		"buttons": {
 			"cancel": "Annuler",

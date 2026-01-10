@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas"
+			"minimalAlerts": "Mostrar alertas mínimas",
+			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -69,6 +70,9 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
+		},
+		"autoScale": {
+			"helpText": "Ajustar automáticamente las rutas para mostrar todas las tarjetas sin desplazamiento (escala mínima 65%)"
 		},
 		"buttons": {
 			"cancel": "Cancelar",

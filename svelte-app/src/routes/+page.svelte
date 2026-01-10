@@ -43,6 +43,16 @@
 	// App version state
 	let appVersion = $state<string>('1.3.4'); // Fallback version
 
+	// Auto-scale state
+	let contentScale = $state(1.0);
+	let routesElement: HTMLElement | null = null;
+	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	const MIN_CONTENT_SCALE = 0.65;
+
+	let shouldApplyAutoScale = $derived(
+		$config.autoScaleContent && !$config.isEditing && routes.length > 0 && !loading
+	);
+
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
 	// Default 10s for free tier (5 calls/min), paid tier can use 5-7s via env var
@@ -279,6 +289,41 @@
 		}
 	}
 
+	function calculateContentScale() {
+		if (!routesElement || !shouldApplyAutoScale) {
+			contentScale = 1.0;
+			return;
+		}
+
+		if (scaleCheckTimeout) clearTimeout(scaleCheckTimeout);
+
+		scaleCheckTimeout = setTimeout(() => {
+			requestAnimationFrame(() => {
+				if (!routesElement) return;
+
+				// Temporarily reset scale to measure natural height
+				const previousScale = contentScale;
+				contentScale = 1.0;
+
+				requestAnimationFrame(() => {
+					if (!routesElement) return;
+
+					const contentHeight = routesElement.scrollHeight;
+					const headerHeight =
+						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+					const availableHeight = window.innerHeight - headerHeight - 40; // 40px buffer for safety
+
+					const calculatedScale = availableHeight / contentHeight;
+					contentScale = Math.min(1.0, Math.max(MIN_CONTENT_SCALE, calculatedScale));
+
+					console.log(
+						`Auto-scale: ${routes.length} routes, height=${contentHeight.toFixed(0)}px, available=${availableHeight.toFixed(0)}px, scale=${contentScale.toFixed(3)}`
+					);
+				});
+			});
+		}, 150);
+	}
+
 	onMount(async () => {
 		await config.load();
 
@@ -288,6 +333,9 @@
 
 			const handleResize = () => {
 				windowWidth = window.innerWidth;
+				if (shouldApplyAutoScale) {
+					calculateContentScale();
+				}
 			};
 
 			window.addEventListener('resize', handleResize);
@@ -349,12 +397,25 @@
 		}
 	});
 
+	// Recalculate scale when relevant dependencies change
+	$effect(() => {
+		if (shouldApplyAutoScale) {
+			// Dependencies: routes, $config.columns, windowWidth
+			calculateContentScale();
+		} else {
+			contentScale = 1.0;
+		}
+	});
+
 	onDestroy(() => {
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
 		if (clockIntervalId) {
 			clearInterval(clockIntervalId);
+		}
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
 		}
 		if (countdownIntervalId) {
 			clearInterval(countdownIntervalId);
@@ -685,6 +746,15 @@
 							</Toggle>
 							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
 						</div>
+
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.autoScaleContent}>
+								{#snippet label()}
+									<span>{$_('config.fields.autoScaleContent')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text">{$_('config.autoScale.helpText')}</small>
+						</div>
 					</SolidSection>
 
 					<SolidSection title={$_('config.sections.style')}>
@@ -905,6 +975,10 @@
 		{:else}
 			<section
 				id="routes"
+				bind:this={routesElement}
+				style:font-size={shouldApplyAutoScale && contentScale < 1
+					? `${contentScale * 100}%`
+					: null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
@@ -999,6 +1073,13 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: 0;
+	}
+
+	#routes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 0;
+		transition: font-size 0.3s ease-out;
 	}
 
 	header {
@@ -1271,46 +1352,30 @@
 	}
 
 	.route-wrapper {
-		display: inline-block;
-		width: 25%;
-		vertical-align: top;
 		box-sizing: border-box;
 		position: relative;
-		padding: 0.5em 0.5em;
+		padding: 0.3em 0.4em;
 	}
 
-	/* Responsive auto-layout defaults */
-	@media (min-width: 2560px) {
-		.route-wrapper {
-			width: 20%; /* 5 columns at 2.5K+ */
-		}
+	/* Manual column overrides */
+	#routes.cols-1 {
+		grid-template-columns: repeat(1, 1fr);
 	}
 
-	@media (min-width: 3200px) {
-		.route-wrapper {
-			width: 16.666%; /* 6 columns at 3.2K+ */
-		}
+	#routes.cols-2 {
+		grid-template-columns: repeat(2, 1fr);
 	}
 
-	/* Column overrides (take precedence over auto-layout) */
-	#routes.cols-1 .route-wrapper {
-		width: 100%;
+	#routes.cols-3 {
+		grid-template-columns: repeat(3, 1fr);
 	}
 
-	#routes.cols-2 .route-wrapper {
-		width: 50%;
+	#routes.cols-4 {
+		grid-template-columns: repeat(4, 1fr);
 	}
 
-	#routes.cols-3 .route-wrapper {
-		width: 33.333%;
-	}
-
-	#routes.cols-4 .route-wrapper {
-		width: 25%;
-	}
-
-	#routes.cols-5 .route-wrapper {
-		width: 20%;
+	#routes.cols-5 {
+		grid-template-columns: repeat(5, 1fr);
 	}
 
 	.route-controls {

@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Group destinations with shared stop names",
 			"filterRedundantTerminus": "Hide nearby terminus",
 			"showRouteLongName": "Show line colours and names",
-			"minimalAlerts": "Show minimal alerts"
+			"minimalAlerts": "Show minimal alerts",
+			"autoScaleContent": "Auto-scale routes to fit screen"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -69,6 +70,9 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
+		},
+		"autoScale": {
+			"helpText": "Automatically scale routes to fit all cards on screen without scrolling (minimum 65% scale)"
 		},
 		"buttons": {
 			"cancel": "Cancel",
