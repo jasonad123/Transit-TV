@@ -48,7 +48,7 @@
 	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 	let isCalculatingScale = false;
-	const MIN_CONTENT_SCALE = 0.68; // Accessibility: allow more aggressive scaling to fit content
+	const MIN_CONTENT_SCALE = 0.66; // Accessibility: allow more aggressive scaling to fit content
 
 	let shouldApplyAutoScale = $derived(
 		$config.autoScaleContent &&
