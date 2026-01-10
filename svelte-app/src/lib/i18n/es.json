@@ -40,8 +40,8 @@
 		},
 		"columns": {
 			"auto": "Auto",
-			"manualColumnControl":"Control manual de columna",
-			"automaticColumnControl":"Usando diseño de columna automático",
+			"manualColumnControl": "Control manual de columna",
+			"automaticColumnControl": "Usando diseño de columna automático",
 			"word": "{count, plural, one {1 columna} other {{count} columnas}}"
 		},
 		"theme": {
@@ -76,7 +76,7 @@
 		},
 		"autoScale": {
 			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
-			"autoColumnsHelpText":"Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
+			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
 		},
 		"buttons": {
 			"cancel": "Cancelar",

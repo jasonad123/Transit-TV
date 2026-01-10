@@ -40,8 +40,8 @@
 		},
 		"columns": {
 			"auto": "Auto",
-			"manualColumnControl":"Commande manuelle de la colonne",
-			"automaticColumnControl":"Utilisation de la disposition automatique des colonnes",
+			"manualColumnControl": "Commande manuelle de la colonne",
+			"automaticColumnControl": "Utilisation de la disposition automatique des colonnes",
 			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}"
 		},
 		"theme": {
@@ -76,7 +76,7 @@
 		},
 		"autoScale": {
 			"helpText": "Adaptation automatique des itinéraires pour afficher plus de cartes à l'écran sans défilement",
-			"autoColumnsHelpText":"Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)"
+			"autoColumnsHelpText": "Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)"
 		},
 		"buttons": {
 			"cancel": "Annuler",

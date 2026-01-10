@@ -40,8 +40,8 @@
 		},
 		"columns": {
 			"auto": "Auto",
-			"manualColumnControl":"Manual column control",
-			"automaticColumnControl":"Using automatic column layout",
+			"manualColumnControl": "Manual column control",
+			"automaticColumnControl": "Using automatic column layout",
 			"word": "{count, plural, one {1 column} other {{count} columns}}"
 		},
 		"theme": {
@@ -76,7 +76,7 @@
 		},
 		"autoScale": {
 			"helpText": "Automatically scale routes to fit more cards on screen without scrolling",
-			"autoColumnsHelpText":"Disabled when auto-scale is enabled (requires auto columns)"
+			"autoColumnsHelpText": "Disabled when auto-scale is enabled (requires auto columns)"
 		},
 		"buttons": {
 			"cancel": "Cancel",

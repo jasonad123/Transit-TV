@@ -40,8 +40,8 @@
 		},
 		"columns": {
 			"auto": "Auto",
-			"manualColumnControl":"Manuelle Spaltensteuerung",
-			"automaticColumnControl":"Verwendung automatische Spaltensteuerung",
+			"manualColumnControl": "Manuelle Spaltensteuerung",
+			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
 			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}"
 		},
 		"theme": {
@@ -76,7 +76,7 @@
 		},
 		"autoScale": {
 			"helpText": "Routen automatisch skalieren, um mehr Karten ohne Scrollen anzuzeigen",
-			"autoColumnsHelpText":"Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
+			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
 		},
 		"buttons": {
 			"cancel": "Stornieren",

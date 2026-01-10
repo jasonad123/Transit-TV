@@ -89,7 +89,7 @@
 				}
 
 				// Split into chunks, trying to keep direction groups intact
-				const chunks: typeof itineraries[] = [];
+				const chunks: (typeof itineraries)[] = [];
 				let currentChunk: typeof itineraries = [];
 
 				for (const [_, dirItineraries] of directionGroups) {
@@ -521,7 +521,11 @@
 		if ($config.manualColumnsMode && $config.columns === 'auto') {
 			// Switching to manual mode: set a default numeric value
 			config.update((c) => ({ ...c, columns: 3 }));
-		} else if (!$config.manualColumnsMode && !$config.autoScaleContent && $config.columns !== 'auto') {
+		} else if (
+			!$config.manualColumnsMode &&
+			!$config.autoScaleContent &&
+			$config.columns !== 'auto'
+		) {
 			// Switching from manual to auto mode
 			config.update((c) => ({ ...c, columns: 'auto' }));
 		}
@@ -530,7 +534,13 @@
 	// Recalculate scale when relevant dependencies change
 	$effect(() => {
 		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
-		void [shouldApplyAutoScale, displayRoutes.length, $config.columns, $config.isEditing, windowWidth];
+		void [
+			shouldApplyAutoScale,
+			displayRoutes.length,
+			$config.columns,
+			$config.isEditing,
+			windowWidth
+		];
 
 		untrack(() => {
 			if (shouldApplyAutoScale) {
@@ -839,7 +849,10 @@
 									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
 									oninput={(e) => {
 										const value = parseInt(e.currentTarget.value);
-										config.update((c) => ({ ...c, columns: value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 }));
+										config.update((c) => ({
+											...c,
+											columns: value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+										}));
 									}}
 								/>
 								<div class="slider-value">
@@ -1088,9 +1101,7 @@
 			<section
 				id="routes"
 				bind:this={routesElement}
-				style:font-size={shouldApplyAutoScale && contentScale < 1
-					? `${contentScale * 100}%`
-					: null}
+				style:font-size={shouldApplyAutoScale && contentScale < 1 ? `${contentScale * 100}%` : null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
