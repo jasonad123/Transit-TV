@@ -79,6 +79,10 @@ function createConfigStore() {
 				if (savedConfig) {
 					try {
 						const parsed = JSON.parse(savedConfig);
+						// Ensure maxDistance is always a number, not a string
+						if (parsed.maxDistance) {
+							parsed.maxDistance = parseInt(parsed.maxDistance);
+						}
 						set({
 							...defaultConfig,
 							...parsed,
@@ -102,6 +106,10 @@ function createConfigStore() {
 					const response = await fetch('/api/config/unattended');
 					if (response.ok) {
 						const unattendedConfig = await response.json();
+						// Ensure maxDistance is always a number, not a string
+						if (unattendedConfig.maxDistance) {
+							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
+						}
 						set({
 							...defaultConfig,
 							...unattendedConfig,

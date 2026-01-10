@@ -48,7 +48,7 @@
 	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 	let isCalculatingScale = false;
-	const MIN_CONTENT_SCALE = 0.69; // Accessibility: allow more aggressive scaling to fit content
+	const MIN_CONTENT_SCALE = 0.72; // Accessibility: allow more aggressive scaling to fit content
 
 	let shouldApplyAutoScale = $derived(
 		$config.autoScaleContent &&
@@ -816,9 +816,16 @@
 							min="250"
 							max="1500"
 							step="250"
-							bind:value={$config.maxDistance}
+							value={$config.maxDistance}
 							class="styled-slider"
 							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+							oninput={(e) => {
+								const value = parseInt(e.currentTarget.value);
+								config.update((c) => ({
+									...c,
+									maxDistance: value
+								}));
+							}}
 						/>
 						<div class="slider-value">
 							{$config.maxDistance}m
