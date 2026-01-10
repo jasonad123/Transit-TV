@@ -72,7 +72,7 @@
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
 		"autoScale": {
-			"helpText": "Ajustar automáticamente las rutas para mostrar todas las tarjetas sin desplazamiento (escala mínima 65%)"
+			"helpText": "Ajustar automáticamente las rutas para mostrar todas las tarjetas sin desplazamiento (escala mínima 75%)"
 		},
 		"buttons": {
 			"cancel": "Cancelar",

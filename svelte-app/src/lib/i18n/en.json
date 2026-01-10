@@ -72,7 +72,7 @@
 			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
 		},
 		"autoScale": {
-			"helpText": "Automatically scale routes to fit all cards on screen without scrolling (minimum 65% scale)"
+			"helpText": "Automatically scale routes to fit all cards on screen without scrolling (minimum 70% scale)"
 		},
 		"buttons": {
 			"cancel": "Cancel",

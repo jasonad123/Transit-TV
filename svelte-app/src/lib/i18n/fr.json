@@ -72,7 +72,7 @@
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
 		},
 		"autoScale": {
-			"helpText": "Ajuster automatiquement les itinéraires pour afficher toutes les cartes sans défilement (échelle minimale 65%)"
+			"helpText": "Ajuster automatiquement les itinéraires pour afficher toutes les cartes sans défilement (échelle minimale 75%)"
 		},
 		"buttons": {
 			"cancel": "Annuler",

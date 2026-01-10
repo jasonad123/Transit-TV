@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -45,13 +45,88 @@
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
-	let routesElement: HTMLElement | null = null;
+	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
-	const MIN_CONTENT_SCALE = 0.65;
+	let isCalculatingScale = false;
+	const MIN_CONTENT_SCALE = 0.70; // Accessibility: allow more aggressive scaling to fit content
 
 	let shouldApplyAutoScale = $derived(
 		$config.autoScaleContent && !$config.isEditing && routes.length > 0 && !loading
 	);
+
+	// Split routes with too many cards into multiple display items
+	const MAX_CARDS_PER_ROUTE = 3;
+
+	let displayRoutes = $derived.by(() => {
+		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
+
+		for (const route of routes) {
+			const itineraries = route.itineraries || [];
+
+			// Skip routes with no departures
+			if (itineraries.length === 0) {
+				continue;
+			}
+
+			const maxItineraries = MAX_CARDS_PER_ROUTE;
+
+			if (itineraries.length <= maxItineraries) {
+				// Fits in one card
+				result.push(route);
+			} else {
+				// Group by direction_id to keep directions together
+				const directionGroups = new Map<number | undefined, typeof itineraries>();
+				for (const itinerary of itineraries) {
+					const dirId = itinerary.direction_id;
+					if (!directionGroups.has(dirId)) {
+						directionGroups.set(dirId, []);
+					}
+					directionGroups.get(dirId)!.push(itinerary);
+				}
+
+				// Split into chunks, trying to keep direction groups intact
+				const chunks: typeof itineraries[] = [];
+				let currentChunk: typeof itineraries = [];
+
+				for (const [_, dirItineraries] of directionGroups) {
+					if (currentChunk.length + dirItineraries.length <= maxItineraries) {
+						// Fits in current chunk
+						currentChunk.push(...dirItineraries);
+					} else {
+						// Start new chunk
+						if (currentChunk.length > 0) {
+							chunks.push(currentChunk);
+							currentChunk = [];
+						}
+						// If single direction is too large, split it
+						if (dirItineraries.length > maxItineraries) {
+							for (let i = 0; i < dirItineraries.length; i += maxItineraries) {
+								chunks.push(dirItineraries.slice(i, i + maxItineraries));
+							}
+						} else {
+							currentChunk.push(...dirItineraries);
+						}
+					}
+				}
+				if (currentChunk.length > 0) {
+					chunks.push(currentChunk);
+				}
+
+				// Create split route items
+				chunks.forEach((chunk, index) => {
+					result.push({
+						...route,
+						itineraries: chunk,
+						alerts: index === 0 ? route.alerts : [], // Alert only on first chunk
+						_splitIndex: index,
+						_totalSplits: chunks.length
+					});
+				});
+			}
+		}
+
+		return result;
+	});
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -291,37 +366,66 @@
 
 	function calculateContentScale() {
 		if (!routesElement || !shouldApplyAutoScale) {
-			contentScale = 1.0;
+			if (!shouldApplyAutoScale) {
+				contentScale = 1.0;
+			}
 			return;
 		}
 
-		if (scaleCheckTimeout) clearTimeout(scaleCheckTimeout);
+		// Cancel any pending calculation
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
+		}
 
 		scaleCheckTimeout = setTimeout(() => {
+			// Prevent concurrent calculations
+			if (isCalculatingScale) {
+				return;
+			}
+			isCalculatingScale = true;
+
 			requestAnimationFrame(() => {
-				if (!routesElement) return;
+				try {
+					// Verify element is still in DOM
+					if (!routesElement || !routesElement.isConnected) {
+						return;
+					}
 
-				// Temporarily reset scale to measure natural height
-				const previousScale = contentScale;
-				contentScale = 1.0;
+					// Use untrack to prevent contentScale from being a dependency
+					const previousScale = untrack(() => contentScale);
 
-				requestAnimationFrame(() => {
-					if (!routesElement) return;
+					// Temporarily reset to 100% to measure natural height
+					const prevFontSize = routesElement.style.fontSize;
+					routesElement.style.fontSize = '100%';
 
-					const contentHeight = routesElement.scrollHeight;
+					// Force layout recalculation
+					routesElement.offsetHeight;
+
+					// Measure natural height at 100% scale
+					const naturalHeight = routesElement.scrollHeight;
+
+					// Restore previous font-size (to avoid visual flash)
+					routesElement.style.fontSize = prevFontSize;
+
 					const headerHeight =
 						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
-					const availableHeight = window.innerHeight - headerHeight - 40; // 40px buffer for safety
+					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
-					const calculatedScale = availableHeight / contentHeight;
-					contentScale = Math.min(1.0, Math.max(MIN_CONTENT_SCALE, calculatedScale));
+					const calculatedScale = availableHeight / naturalHeight;
+					const newScale = Math.min(1.0, Math.max(MIN_CONTENT_SCALE, calculatedScale));
 
-					console.log(
-						`Auto-scale: ${routes.length} routes, height=${contentHeight.toFixed(0)}px, available=${availableHeight.toFixed(0)}px, scale=${contentScale.toFixed(3)}`
-					);
-				});
+					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
+					if (Math.abs(newScale - previousScale) > 0.02) {
+						contentScale = newScale;
+						console.log(
+							`Auto-scale: ${routes.length} routes (${displayRoutes.length} cards), natural=${naturalHeight.toFixed(0)}px, available=${availableHeight.toFixed(0)}px, scale=${contentScale.toFixed(3)}`
+						);
+					}
+				} finally {
+					isCalculatingScale = false;
+				}
 			});
-		}, 150);
+		}, 300); // Increased debounce to reduce sensitivity to animations
 	}
 
 	onMount(async () => {
@@ -399,12 +503,16 @@
 
 	// Recalculate scale when relevant dependencies change
 	$effect(() => {
-		if (shouldApplyAutoScale) {
-			// Dependencies: routes, $config.columns, windowWidth
-			calculateContentScale();
-		} else {
-			contentScale = 1.0;
-		}
+		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
+		void [shouldApplyAutoScale, displayRoutes.length, $config.columns, $config.isEditing, windowWidth];
+
+		untrack(() => {
+			if (shouldApplyAutoScale) {
+				calculateContentScale();
+			} else {
+				contentScale = 1.0;
+			}
+		});
 	});
 
 	onDestroy(() => {
@@ -985,9 +1093,14 @@
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
 			>
-				{#each routes as route, index (route.global_route_id)}
+				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
+							<div class="route-split-badge">
+								{route._splitIndex + 1}/{route._totalSplits}
+							</div>
+						{/if}
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -1079,7 +1192,6 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 		gap: 0;
-		transition: font-size 0.3s ease-out;
 	}
 
 	header {
@@ -1355,6 +1467,24 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.3em 0.4em;
+	}
+
+	.route-split-badge {
+		position: absolute;
+		top: 0.8em;
+		right: 0.8em;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.75);
+		color: white;
+		font-size: 0.85em;
+		font-weight: 600;
+		padding: 0.3em 0.5em;
+		border-radius: 0.3em;
+		z-index: 5;
+		backdrop-filter: blur(4px);
+		box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	/* Manual column overrides */

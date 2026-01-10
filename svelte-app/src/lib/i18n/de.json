@@ -72,7 +72,7 @@
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
 		"autoScale": {
-			"helpText": "Routen automatisch skalieren, um alle Karten ohne Scrollen anzuzeigen (Mindestskala 65%)"
+			"helpText": "Routen automatisch skalieren, um alle Karten ohne Scrollen anzuzeigen (Mindestskala 75%)"
 		},
 		"buttons": {
 			"cancel": "Stornieren",

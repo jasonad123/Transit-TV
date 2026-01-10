@@ -356,6 +356,13 @@
 		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
 		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
 		headerCheckTimeouts = [];
+
+		// Clear all element references to prevent memory leaks
+		destinationElements.clear();
+		overflowingDestinations = new Set();
+		routeHeaderElement = null;
+		alertElement = null;
+		alertHeaderElement = null;
 	});
 
 	// Calculate relative luminance (0-1) from hex color
@@ -1462,6 +1469,8 @@
 
 	.route .direction.multi-branch:not(:last-child) {
 		margin-bottom: 0;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
 	}
 
 	.route .direction.multi-branch:last-child {
