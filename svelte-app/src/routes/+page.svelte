@@ -48,10 +48,14 @@
 	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 	let isCalculatingScale = false;
-	const MIN_CONTENT_SCALE = 0.70; // Accessibility: allow more aggressive scaling to fit content
+	const MIN_CONTENT_SCALE = 0.68; // Accessibility: allow more aggressive scaling to fit content
 
 	let shouldApplyAutoScale = $derived(
-		$config.autoScaleContent && !$config.isEditing && routes.length > 0 && !loading
+		$config.autoScaleContent &&
+			!$config.isEditing &&
+			routes.length > 0 &&
+			!loading &&
+			$config.columns === 'auto' // Only auto-scale when using auto columns
 	);
 
 	// Split routes with too many cards into multiple display items
@@ -501,6 +505,28 @@
 		}
 	});
 
+	// Enforce auto columns when auto-scale is enabled
+	$effect(() => {
+		if ($config.autoScaleContent && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+			config.update((c) => ({
+				...c,
+				columns: 'auto',
+				manualColumnsMode: false
+			}));
+		}
+	});
+
+	// When manual mode is toggled, handle column value transitions
+	$effect(() => {
+		if ($config.manualColumnsMode && $config.columns === 'auto') {
+			// Switching to manual mode: set a default numeric value
+			config.update((c) => ({ ...c, columns: 3 }));
+		} else if (!$config.manualColumnsMode && !$config.autoScaleContent && $config.columns !== 'auto') {
+			// Switching from manual to auto mode
+			config.update((c) => ({ ...c, columns: 'auto' }));
+		}
+	});
+
 	// Recalculate scale when relevant dependencies change
 	$effect(() => {
 		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
@@ -775,76 +801,54 @@
 					</label>
 					<label>
 						{$_('config.fields.maxDistance')}
-						<div class="slider-container">
-							<input
-								type="range"
-								min="250"
-								max="1500"
-								step="250"
-								bind:value={$config.maxDistance}
-								class="distance-slider"
-								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-							/>
-							<div class="slider-labels">
-								<span>{$config.maxDistance}m</span>
-							</div>
+						<input
+							type="range"
+							min="250"
+							max="1500"
+							step="250"
+							bind:value={$config.maxDistance}
+							class="styled-slider"
+							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+						/>
+						<div class="slider-value">
+							{$config.maxDistance}m
 						</div>
 					</label>
 
 					<SolidSection title={$_('config.sections.display')}>
-						<label>
-							{$_('config.fields.columns')}
-							<div class="button-group">
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 'auto'}
-									onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-								>
-									{$_('config.columns.auto')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 1}
-									onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-								>
-									1
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 2}
-									onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-								>
-									2
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 3}
-									onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-								>
-									3
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 4}
-									onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-								>
-									4
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 5}
-									onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-								>
-									5
-								</button>
-							</div>
-						</label>
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.autoScaleContent}>
+								{#snippet label()}
+									<span>{$_('config.columns.manualColumnControl')}</span>
+								{/snippet}
+							</Toggle>
+							{#if $config.autoScaleContent}
+								<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
+							{/if}
+						</div>
+
+						{#if $config.manualColumnsMode && typeof $config.columns === 'number'}
+							<label>
+								{$_('config.fields.columns')}
+								<input
+									type="range"
+									min="1"
+									max="8"
+									value={$config.columns}
+									class="styled-slider"
+									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
+									oninput={(e) => {
+										const value = parseInt(e.currentTarget.value);
+										config.update((c) => ({ ...c, columns: value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 }));
+									}}
+								/>
+								<div class="slider-value">
+									{$_('config.columns.word', { values: { count: $config.columns } })}
+								</div>
+							</label>
+						{:else if !$config.autoScaleContent}
+							<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
+						{/if}
 
 						<div class="toggle-container">
 							<Toggle bind:checked={$config.showQRCode}>
@@ -1092,6 +1096,9 @@
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:cols-6={$config.columns === 6}
+				class:cols-7={$config.columns === 7}
+				class:cols-8={$config.columns === 8}
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
@@ -1463,10 +1470,19 @@
 		max-width: 85%;
 	}
 
+	.slider-value {
+		text-align: center;
+		font-size: 0.9em;
+		font-weight: 500;
+		margin-top: 0.5em;
+		color: var(--text-primary);
+	}
+
 	.route-wrapper {
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.3em 0.4em;
+		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
 	.route-split-badge {
@@ -1489,23 +1505,35 @@
 
 	/* Manual column overrides */
 	#routes.cols-1 {
-		grid-template-columns: repeat(1, 1fr);
+		grid-template-columns: repeat(1, minmax(0, 1fr));
 	}
 
 	#routes.cols-2 {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	#routes.cols-3 {
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
 	#routes.cols-4 {
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
 	#routes.cols-5 {
-		grid-template-columns: repeat(5, 1fr);
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+
+	#routes.cols-6 {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+
+	#routes.cols-7 {
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+	}
+
+	#routes.cols-8 {
+		grid-template-columns: repeat(8, minmax(0, 1fr));
 	}
 
 	.route-controls {
@@ -1815,26 +1843,20 @@
 		color: #f59e0b;
 	}
 
-	.slider-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-		padding: 0.3em 9px;
-	}
-
-	.distance-slider {
+	.styled-slider {
 		width: 100%;
 		height: 4px;
 		border-radius: 10px;
-		background: var(--border-color);
+		background: transparent;
 		outline: none;
 		-webkit-appearance: none;
 		appearance: none;
 		cursor: pointer;
 		box-sizing: border-box;
+		margin: 0.5em 0;
 	}
 
-	.distance-slider::-webkit-slider-thumb {
+	.styled-slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
 		width: 18px;
@@ -1847,7 +1869,7 @@
 		margin-top: -7px;
 	}
 
-	.distance-slider::-moz-range-thumb {
+	.styled-slider::-moz-range-thumb {
 		width: 18px;
 		height: 18px;
 		border-radius: 50%;
@@ -1857,38 +1879,30 @@
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 	}
 
-	.distance-slider::-webkit-slider-runnable-track {
+	.styled-slider::-webkit-slider-runnable-track {
 		width: 100%;
 		height: 4px;
 		background: linear-gradient(
 			to right,
 			var(--bg-header) 0%,
 			var(--bg-header) var(--slider-progress, 0%),
-			var(--border-color) var(--slider-progress, 0%),
-			var(--border-color) 100%
+			rgba(0, 0, 0, 0.1) var(--slider-progress, 0%),
+			rgba(0, 0, 0, 0.1) 100%
 		);
 		border-radius: 10px;
 	}
 
-	.distance-slider::-moz-range-track {
+	.styled-slider::-moz-range-track {
 		width: 100%;
 		height: 4px;
-		background: var(--border-color);
+		background: rgba(0, 0, 0, 0.1);
 		border-radius: 10px;
 	}
 
-	.distance-slider::-moz-range-progress {
+	.styled-slider::-moz-range-progress {
 		background: var(--bg-header);
 		height: 4px;
 		border-radius: 10px;
-	}
-
-	.slider-labels {
-		display: flex;
-		justify-content: center;
-		font-size: 0.9em;
-		font-weight: 500;
-		color: var(--text-primary);
 	}
 
 	/* Credits Styles */

@@ -39,7 +39,10 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl":"Control manual de columna",
+			"automaticColumnControl":"Usando diseño de columna automático",
+			"word": "{count, plural, one {1 columna} other {{count} columnas}}"
 		},
 		"theme": {
 			"light": "Claro",
@@ -72,7 +75,8 @@
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
 		"autoScale": {
-			"helpText": "Ajustar automáticamente las rutas para mostrar todas las tarjetas sin desplazamiento (escala mínima 75%)"
+			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
+			"autoColumnsHelpText":"Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
 		},
 		"buttons": {
 			"cancel": "Cancelar",

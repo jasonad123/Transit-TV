@@ -39,7 +39,10 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl":"Manuelle Spaltensteuerung",
+			"automaticColumnControl":"Verwendung automatische Spaltensteuerung",
+			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}"
 		},
 		"theme": {
 			"light": "Hell",
@@ -72,7 +75,8 @@
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
 		"autoScale": {
-			"helpText": "Routen automatisch skalieren, um alle Karten ohne Scrollen anzuzeigen (Mindestskala 75%)"
+			"helpText": "Routen automatisch skalieren, um mehr Karten ohne Scrollen anzuzeigen",
+			"autoColumnsHelpText":"Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
 		},
 		"buttons": {
 			"cancel": "Stornieren",
@@ -112,7 +116,7 @@
 	},
 	"alerts": {
 		"default": "Störungsinformation",
-		"title": "Meldungen"
+		"title": "Störungen"
 	},
 	"time": {
 		"min": "min",

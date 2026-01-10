@@ -39,7 +39,10 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl":"Manual column control",
+			"automaticColumnControl":"Using automatic column layout",
+			"word": "{count, plural, one {1 column} other {{count} columns}}"
 		},
 		"theme": {
 			"light": "Light",
@@ -72,7 +75,8 @@
 			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
 		},
 		"autoScale": {
-			"helpText": "Automatically scale routes to fit all cards on screen without scrolling (minimum 70% scale)"
+			"helpText": "Automatically scale routes to fit more cards on screen without scrolling",
+			"autoColumnsHelpText":"Disabled when auto-scale is enabled (requires auto columns)"
 		},
 		"buttons": {
 			"cancel": "Cancel",

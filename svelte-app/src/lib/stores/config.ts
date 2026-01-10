@@ -16,7 +16,7 @@ export interface Config {
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
-	columns: 'auto' | 1 | 2 | 3 | 4 | 5;
+	columns: 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 	theme: 'light' | 'dark' | 'auto';
 	headerColor: string;
 	showQRCode: boolean;
@@ -27,6 +27,7 @@ export interface Config {
 	showRouteLongName: boolean;
 	minimalAlerts: boolean;
 	autoScaleContent: boolean;
+	manualColumnsMode: boolean;
 }
 
 const defaultConfig: Config = {
@@ -51,7 +52,8 @@ const defaultConfig: Config = {
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
 	minimalAlerts: false,
-	autoScaleContent: false
+	autoScaleContent: false,
+	manualColumnsMode: false
 };
 
 function createConfigStore() {
