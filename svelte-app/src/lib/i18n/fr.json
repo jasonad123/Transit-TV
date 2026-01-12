@@ -42,7 +42,8 @@
 			"auto": "Auto",
 			"manualColumnControl": "Commande manuelle de la colonne",
 			"automaticColumnControl": "Utilisation de la disposition automatique des colonnes",
-			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}"
+			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}",
+			"columnWarning": "Les colonnes peuvent paraître trop étroites à cette largeur d'écran. ({nomColWidth}px par colonne)"
 		},
 		"theme": {
 			"light": "Clair",

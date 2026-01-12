@@ -42,7 +42,8 @@
 			"auto": "Auto",
 			"manualColumnControl": "Manual column control",
 			"automaticColumnControl": "Using automatic column layout",
-			"word": "{count, plural, one {1 column} other {{count} columns}}"
+			"word": "{count, plural, one {1 column} other {{count} columns}}",
+			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)"
 		},
 		"theme": {
 			"light": "Light",

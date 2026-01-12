@@ -67,7 +67,8 @@
 		const minColumnWidth = 280; // Minimum comfortable width per column
 		const estimatedWidth = windowWidth / $config.columns;
 		if (estimatedWidth < minColumnWidth) {
-			return `Columns may be too narrow at this screen width (${Math.round(estimatedWidth)}px per column)`;
+			const nomColWidth = Math.round(estimatedWidth);
+			return $_('config.columns.columnWarning', { values: { nomColWidth } });
 		}
 		return null;
 	});

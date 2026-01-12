@@ -42,7 +42,8 @@
 			"auto": "Auto",
 			"manualColumnControl": "Manuelle Spaltensteuerung",
 			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
-			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}"
+			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}",
+			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)"
 		},
 		"theme": {
 			"light": "Hell",
