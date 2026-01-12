@@ -1242,9 +1242,7 @@
 		color: #000000;
 	}
 
-	.route-alert-header.info {
-		/* Inherits from inline style (cellStyle) */
-	}
+	/* .route-alert-header.info inherits from inline style (cellStyle) */
 
 	.route-alert-header .alert-header-text {
 		display: inline-block;

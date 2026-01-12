@@ -48,7 +48,10 @@
 	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
 	let isCalculatingScale = false;
+	let isTransitioning = false;
+	let lastScaledRouteCount = $state(0);
 	const MIN_CONTENT_SCALE = 0.72; // Accessibility: allow more aggressive scaling to fit content
+	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
 
 	let shouldApplyAutoScale = $derived(
 		$config.autoScaleContent &&
@@ -57,6 +60,17 @@
 			!loading &&
 			$config.columns === 'auto' // Only auto-scale when using auto columns
 	);
+
+	// Check if manual columns might be too narrow for viewport
+	let columnsWarning = $derived.by(() => {
+		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
+		const minColumnWidth = 280; // Minimum comfortable width per column
+		const estimatedWidth = windowWidth / $config.columns;
+		if (estimatedWidth < minColumnWidth) {
+			return `Columns may be too narrow at this screen width (${Math.round(estimatedWidth)}px per column)`;
+		}
+		return null;
+	});
 
 	// Split routes with too many cards into multiple display items
 	const MAX_CARDS_PER_ROUTE = 3;
@@ -372,7 +386,18 @@
 		if (!routesElement || !shouldApplyAutoScale) {
 			if (!shouldApplyAutoScale) {
 				contentScale = 1.0;
+				lastScaledRouteCount = 0;
 			}
+			return;
+		}
+
+		const currentRouteCount = displayRoutes.length;
+		const routeCountDelta = Math.abs(currentRouteCount - lastScaledRouteCount);
+
+		// Don't recalculate if user has scrolled away AND route count hasn't changed significantly
+		// Only recalculate if: at top of page OR route count changed by 2+ routes
+		if (window.scrollY > 10 && routeCountDelta < 2) {
+			// User has scrolled and routes haven't changed significantly - don't interfere
 			return;
 		}
 
@@ -382,8 +407,8 @@
 		}
 
 		scaleCheckTimeout = setTimeout(() => {
-			// Prevent concurrent calculations
-			if (isCalculatingScale) {
+			// Prevent concurrent calculations or calculations during transitions
+			if (isCalculatingScale || isTransitioning) {
 				return;
 			}
 			isCalculatingScale = true;
@@ -421,10 +446,15 @@
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
 						contentScale = newScale;
-						console.log(
-							`Auto-scale: ${routes.length} routes (${displayRoutes.length} cards), natural=${naturalHeight.toFixed(0)}px, available=${availableHeight.toFixed(0)}px, scale=${contentScale.toFixed(3)}`
-						);
+						// Set transition flag to prevent recalculation during animation
+						isTransitioning = true;
+						setTimeout(() => {
+							isTransitioning = false;
+						}, TRANSITION_DURATION);
 					}
+
+					// Track that we've scaled for this route count
+					lastScaledRouteCount = displayRoutes.length;
 				} finally {
 					isCalculatingScale = false;
 				}
@@ -520,7 +550,7 @@
 	$effect(() => {
 		if ($config.manualColumnsMode && $config.columns === 'auto') {
 			// Switching to manual mode: set a default numeric value
-			config.update((c) => ({ ...c, columns: 3 }));
+			config.update((c) => ({ ...c, columns: 4 }));
 		} else if (
 			!$config.manualColumnsMode &&
 			!$config.autoScaleContent &&
@@ -856,15 +886,21 @@
 									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
 									oninput={(e) => {
 										const value = parseInt(e.currentTarget.value);
+										const clampedValue = Math.max(1, Math.min(8, value));
 										config.update((c) => ({
 											...c,
-											columns: value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+											columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 										}));
 									}}
 								/>
 								<div class="slider-value">
 									{$_('config.columns.word', { values: { count: $config.columns } })}
 								</div>
+								{#if columnsWarning}
+									<span class="column-warning">
+										{columnsWarning}
+									</span>
+								{/if}
 							</label>
 						{:else if !$config.autoScaleContent}
 							<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
@@ -1215,8 +1251,9 @@
 
 	#routes {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 		gap: 0;
+		transition: font-size 0.4s ease-in;
 	}
 
 	header {
@@ -1858,6 +1895,14 @@
 	}
 
 	.location-validation.error {
+		color: #f59e0b;
+	}
+
+	.column-warning {
+		display: block;
+		font-size: 0.9em;
+		margin-top: 0.3em;
+		font-weight: 500;
 		color: #f59e0b;
 	}
 
