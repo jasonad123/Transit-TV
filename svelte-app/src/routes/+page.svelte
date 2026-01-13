@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -44,6 +44,110 @@
 
 	// App version state
 	let appVersion = $state<string>('1.5.0'); // Fallback version
+
+	// Auto-scale state
+	let contentScale = $state(1.0);
+	let routesElement = $state<HTMLElement | null>(null);
+	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	let isCalculatingScale = false;
+	let isTransitioning = false;
+	let lastScaledRouteCount = $state(0);
+	const MIN_CONTENT_SCALE = 0.72; // Accessibility: allow more aggressive scaling to fit content
+	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
+
+	let shouldApplyAutoScale = $derived(
+		$config.autoScaleContent &&
+			!$config.isEditing &&
+			routes.length > 0 &&
+			!loading &&
+			$config.columns === 'auto' // Only auto-scale when using auto columns
+	);
+
+	// Check if manual columns might be too narrow for viewport
+	let columnsWarning = $derived.by(() => {
+		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
+		const minColumnWidth = 280; // Minimum comfortable width per column
+		const estimatedWidth = windowWidth / $config.columns;
+		if (estimatedWidth < minColumnWidth) {
+			const nomColWidth = Math.round(estimatedWidth);
+			return $_('config.columns.columnWarning', { values: { nomColWidth } });
+		}
+		return null;
+	});
+
+	// Split routes with too many cards into multiple display items
+	const MAX_CARDS_PER_ROUTE = 3;
+
+	let displayRoutes = $derived.by(() => {
+		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
+
+		for (const route of routes) {
+			const itineraries = route.itineraries || [];
+
+			// Skip routes with no departures
+			if (itineraries.length === 0) {
+				continue;
+			}
+
+			const maxItineraries = MAX_CARDS_PER_ROUTE;
+
+			if (itineraries.length <= maxItineraries) {
+				// Fits in one card
+				result.push(route);
+			} else {
+				// Group by direction_id to keep directions together
+				const directionGroups = new Map<number | undefined, typeof itineraries>();
+				for (const itinerary of itineraries) {
+					const dirId = itinerary.direction_id;
+					if (!directionGroups.has(dirId)) {
+						directionGroups.set(dirId, []);
+					}
+					directionGroups.get(dirId)!.push(itinerary);
+				}
+
+				// Split into chunks, trying to keep direction groups intact
+				const chunks: (typeof itineraries)[] = [];
+				let currentChunk: typeof itineraries = [];
+
+				for (const [_, dirItineraries] of directionGroups) {
+					if (currentChunk.length + dirItineraries.length <= maxItineraries) {
+						// Fits in current chunk
+						currentChunk.push(...dirItineraries);
+					} else {
+						// Start new chunk
+						if (currentChunk.length > 0) {
+							chunks.push(currentChunk);
+							currentChunk = [];
+						}
+						// If single direction is too large, split it
+						if (dirItineraries.length > maxItineraries) {
+							for (let i = 0; i < dirItineraries.length; i += maxItineraries) {
+								chunks.push(dirItineraries.slice(i, i + maxItineraries));
+							}
+						} else {
+							currentChunk.push(...dirItineraries);
+						}
+					}
+				}
+				if (currentChunk.length > 0) {
+					chunks.push(currentChunk);
+				}
+
+				// Create split route items
+				chunks.forEach((chunk, index) => {
+					result.push({
+						...route,
+						itineraries: chunk,
+						alerts: index === 0 ? route.alerts : [], // Alert only on first chunk
+						_splitIndex: index,
+						_totalSplits: chunks.length
+					});
+				});
+			}
+		}
+
+		return result;
+	});
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -281,6 +385,86 @@
 		}
 	}
 
+	function calculateContentScale() {
+		if (!routesElement || !shouldApplyAutoScale) {
+			if (!shouldApplyAutoScale) {
+				contentScale = 1.0;
+				lastScaledRouteCount = 0;
+			}
+			return;
+		}
+
+		const currentRouteCount = displayRoutes.length;
+		const routeCountDelta = Math.abs(currentRouteCount - lastScaledRouteCount);
+
+		// Don't recalculate if user has scrolled away AND route count hasn't changed significantly
+		// Only recalculate if: at top of page OR route count changed by 2+ routes
+		if (window.scrollY > 10 && routeCountDelta < 2) {
+			// User has scrolled and routes haven't changed significantly - don't interfere
+			return;
+		}
+
+		// Cancel any pending calculation
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
+		}
+
+		scaleCheckTimeout = setTimeout(() => {
+			// Prevent concurrent calculations or calculations during transitions
+			if (isCalculatingScale || isTransitioning) {
+				return;
+			}
+			isCalculatingScale = true;
+
+			requestAnimationFrame(() => {
+				try {
+					// Verify element is still in DOM
+					if (!routesElement || !routesElement.isConnected) {
+						return;
+					}
+
+					// Use untrack to prevent contentScale from being a dependency
+					const previousScale = untrack(() => contentScale);
+
+					// Temporarily reset to 100% to measure natural height
+					const prevFontSize = routesElement.style.fontSize;
+					routesElement.style.fontSize = '100%';
+
+					// Force layout recalculation
+					routesElement.offsetHeight;
+
+					// Measure natural height at 100% scale
+					const naturalHeight = routesElement.scrollHeight;
+
+					// Restore previous font-size (to avoid visual flash)
+					routesElement.style.fontSize = prevFontSize;
+
+					const headerHeight =
+						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
+
+					const calculatedScale = availableHeight / naturalHeight;
+					const newScale = Math.min(1.0, Math.max(MIN_CONTENT_SCALE, calculatedScale));
+
+					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
+					if (Math.abs(newScale - previousScale) > 0.02) {
+						contentScale = newScale;
+						// Set transition flag to prevent recalculation during animation
+						isTransitioning = true;
+						setTimeout(() => {
+							isTransitioning = false;
+						}, TRANSITION_DURATION);
+					}
+
+					// Track that we've scaled for this route count
+					lastScaledRouteCount = displayRoutes.length;
+				} finally {
+					isCalculatingScale = false;
+				}
+			});
+		}, 300); // Increased debounce to reduce sensitivity to animations
+	}
+
 	onMount(async () => {
 		await config.load();
 
@@ -290,6 +474,9 @@
 
 			const handleResize = () => {
 				windowWidth = window.innerWidth;
+				if (shouldApplyAutoScale) {
+					calculateContentScale();
+				}
 			};
 
 			window.addEventListener('resize', handleResize);
@@ -351,12 +538,61 @@
 		}
 	});
 
+	// Enforce auto columns when auto-scale is enabled
+	$effect(() => {
+		if ($config.autoScaleContent && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+			config.update((c) => ({
+				...c,
+				columns: 'auto',
+				manualColumnsMode: false
+			}));
+		}
+	});
+
+	// When manual mode is toggled, handle column value transitions
+	$effect(() => {
+		if ($config.manualColumnsMode && $config.columns === 'auto') {
+			// Switching to manual mode: set a default numeric value
+			config.update((c) => ({ ...c, columns: 4 }));
+		} else if (
+			!$config.manualColumnsMode &&
+			!$config.autoScaleContent &&
+			$config.columns !== 'auto'
+		) {
+			// Switching from manual to auto mode
+			config.update((c) => ({ ...c, columns: 'auto' }));
+		}
+	});
+
+	// Recalculate scale when relevant dependencies change
+	$effect(() => {
+		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
+		void [
+			shouldApplyAutoScale,
+			displayRoutes.length,
+			$config.columns,
+			$config.isEditing,
+			windowWidth
+		];
+
+		untrack(() => {
+			if (shouldApplyAutoScale) {
+				calculateContentScale();
+			} else {
+				contentScale = 1.0;
+			}
+		});
+	});
+
 	onDestroy(() => {
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
 		if (clockIntervalId) {
 			clearInterval(clockIntervalId);
+		}
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
 		}
 		if (countdownIntervalId) {
 			clearInterval(countdownIntervalId);
@@ -608,76 +844,70 @@
 					</label>
 					<label>
 						{$_('config.fields.maxDistance')}
-						<div class="slider-container">
-							<input
-								type="range"
-								min="250"
-								max="1500"
-								step="250"
-								bind:value={$config.maxDistance}
-								class="distance-slider"
-								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-							/>
-							<div class="slider-labels">
-								<span>{$config.maxDistance}m</span>
-							</div>
+						<input
+							type="range"
+							min="250"
+							max="1500"
+							step="250"
+							value={$config.maxDistance}
+							class="styled-slider"
+							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
+							oninput={(e) => {
+								const value = parseInt(e.currentTarget.value);
+								config.update((c) => ({
+									...c,
+									maxDistance: value
+								}));
+							}}
+						/>
+						<div class="slider-value">
+							{$config.maxDistance}m
 						</div>
 					</label>
 
 					<SolidSection title={$_('config.sections.display')}>
-						<label>
-							{$_('config.fields.columns')}
-							<div class="button-group">
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 'auto'}
-									onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-								>
-									{$_('config.columns.auto')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 1}
-									onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-								>
-									1
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 2}
-									onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-								>
-									2
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 3}
-									onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-								>
-									3
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 4}
-									onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-								>
-									4
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 5}
-									onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-								>
-									5
-								</button>
-							</div>
-						</label>
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.autoScaleContent}>
+								{#snippet label()}
+									<span>{$_('config.columns.manualColumnControl')}</span>
+								{/snippet}
+							</Toggle>
+							{#if $config.autoScaleContent}
+								<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
+							{/if}
+						</div>
+
+						{#if $config.manualColumnsMode && typeof $config.columns === 'number'}
+							<label>
+								{$_('config.fields.columns')}
+								<input
+									type="range"
+									min="1"
+									max="8"
+									value={$config.columns}
+									class="styled-slider"
+									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
+									oninput={(e) => {
+										const value = parseInt(e.currentTarget.value);
+										const clampedValue = Math.max(1, Math.min(8, value));
+										config.update((c) => ({
+											...c,
+											columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+										}));
+									}}
+								/>
+								<div class="slider-value">
+									{$_('config.columns.word', { values: { count: $config.columns } })}
+								</div>
+								{#if columnsWarning}
+									<span class="column-warning">
+										{columnsWarning}
+									</span>
+								{/if}
+							</label>
+						{:else if !$config.autoScaleContent}
+							<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
+						{/if}
 
 						<div class="option-container">
 							<label class="option-label">
@@ -737,6 +967,15 @@
 								{/snippet}
 							</Toggle>
 							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
+						</div>
+
+						<div class="toggle-container">
+							<Toggle bind:checked={$config.autoScaleContent}>
+								{#snippet label()}
+									<span>{$_('config.fields.autoScaleContent')}</span>
+								{/snippet}
+							</Toggle>
+							<small class="toggle-help-text">{$_('config.autoScale.helpText')}</small>
 						</div>
 					</SolidSection>
 
@@ -958,14 +1197,19 @@
 		{:else}
 			<section
 				id="routes"
+				bind:this={routesElement}
+				style:font-size={shouldApplyAutoScale && contentScale < 1 ? `${contentScale * 100}%` : null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:cols-6={$config.columns === 6}
+				class:cols-7={$config.columns === 7}
+				class:cols-8={$config.columns === 8}
 				class:compact-view={$config.viewMode === 'compact'}
 			>
-				{#each routes as route, index (route.global_route_id)}
+				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						{#if $config.viewMode === 'card'}
 							<RouteItem {route} showLongName={$config.showRouteLongName} />
@@ -973,6 +1217,11 @@
 							<CompactView {route} showLongName={$config.showRouteLongName} />
 						{:else if $config.viewMode === 'list'}
 							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
+						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
+							<div class="route-split-badge">
+								{route._splitIndex + 1}/{route._totalSplits}
+							</div>
 						{/if}
 						<div class="route-controls">
 							{#if index > 0}
@@ -1059,6 +1308,13 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: 0;
+	}
+
+	#routes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 0;
+		transition: font-size 0.4s ease-in;
 	}
 
 	header {
@@ -1330,47 +1586,70 @@
 		max-width: 85%;
 	}
 
+	.slider-value {
+		text-align: center;
+		font-size: 0.9em;
+		font-weight: 500;
+		margin-top: 0.5em;
+		color: var(--text-primary);
+	}
+
 	.route-wrapper {
-		display: inline-block;
-		width: 25%;
-		vertical-align: top;
 		box-sizing: border-box;
 		position: relative;
-		padding: 0.5em 0.5em;
+		padding: 0.3em 0.4em;
+		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
-	/* Responsive auto-layout defaults */
-	@media (min-width: 2560px) {
-		.route-wrapper {
-			width: 20%; /* 5 columns at 2.5K+ */
-		}
+	.route-split-badge {
+		position: absolute;
+		top: 0.8em;
+		right: 0.8em;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.75);
+		color: white;
+		font-size: 0.85em;
+		font-weight: 600;
+		padding: 0.3em 0.5em;
+		border-radius: 0.3em;
+		z-index: 5;
+		backdrop-filter: blur(4px);
+		box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	@media (min-width: 3200px) {
-		.route-wrapper {
-			width: 16.666%; /* 6 columns at 3.2K+ */
-		}
+	/* Manual column overrides */
+	#routes.cols-1 {
+		grid-template-columns: repeat(1, minmax(0, 1fr));
 	}
 
-	/* Column overrides (take precedence over auto-layout) */
-	#routes.cols-1 .route-wrapper {
-		width: 100%;
+	#routes.cols-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	#routes.cols-2 .route-wrapper {
-		width: 50%;
+	#routes.cols-3 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
-	#routes.cols-3 .route-wrapper {
-		width: 33.333%;
+	#routes.cols-4 {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
-	#routes.cols-4 .route-wrapper {
-		width: 25%;
+	#routes.cols-5 {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 	}
 
-	#routes.cols-5 .route-wrapper {
-		width: 20%;
+	#routes.cols-6 {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+
+	#routes.cols-7 {
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+	}
+
+	#routes.cols-8 {
+		grid-template-columns: repeat(8, minmax(0, 1fr));
 	}
 
 	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
@@ -1716,26 +1995,28 @@
 		color: #f59e0b;
 	}
 
-	.slider-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-		padding: 0.3em 9px;
+	.column-warning {
+		display: block;
+		font-size: 0.9em;
+		margin-top: 0.3em;
+		font-weight: 500;
+		color: #f59e0b;
 	}
 
-	.distance-slider {
+	.styled-slider {
 		width: 100%;
 		height: 4px;
 		border-radius: 10px;
-		background: var(--border-color);
+		background: transparent;
 		outline: none;
 		-webkit-appearance: none;
 		appearance: none;
 		cursor: pointer;
 		box-sizing: border-box;
+		margin: 0.5em 0;
 	}
 
-	.distance-slider::-webkit-slider-thumb {
+	.styled-slider::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
 		width: 18px;
@@ -1748,7 +2029,7 @@
 		margin-top: -7px;
 	}
 
-	.distance-slider::-moz-range-thumb {
+	.styled-slider::-moz-range-thumb {
 		width: 18px;
 		height: 18px;
 		border-radius: 50%;
@@ -1758,38 +2039,30 @@
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 	}
 
-	.distance-slider::-webkit-slider-runnable-track {
+	.styled-slider::-webkit-slider-runnable-track {
 		width: 100%;
 		height: 4px;
 		background: linear-gradient(
 			to right,
 			var(--bg-header) 0%,
 			var(--bg-header) var(--slider-progress, 0%),
-			var(--border-color) var(--slider-progress, 0%),
-			var(--border-color) 100%
+			rgba(0, 0, 0, 0.1) var(--slider-progress, 0%),
+			rgba(0, 0, 0, 0.1) 100%
 		);
 		border-radius: 10px;
 	}
 
-	.distance-slider::-moz-range-track {
+	.styled-slider::-moz-range-track {
 		width: 100%;
 		height: 4px;
-		background: var(--border-color);
+		background: rgba(0, 0, 0, 0.1);
 		border-radius: 10px;
 	}
 
-	.distance-slider::-moz-range-progress {
+	.styled-slider::-moz-range-progress {
 		background: var(--bg-header);
 		height: 4px;
 		border-radius: 10px;
-	}
-
-	.slider-labels {
-		display: flex;
-		justify-content: center;
-		font-size: 0.9em;
-		font-weight: 500;
-		color: var(--text-primary);
 	}
 
 	/* Credits Styles */
