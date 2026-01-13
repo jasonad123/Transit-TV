@@ -162,14 +162,5 @@ export function formatAlertText(alertData: AlertData): string {
 		result = `${routeName}: Service alert`;
 	}
 
-	console.log('[formatAlertText]', {
-		routeName,
-		hasTitle,
-		hasDescription,
-		titleLen: alert.title?.length || 0,
-		descLen: alert.description?.length || 0,
-		resultPreview: result.substring(0, 100)
-	});
-
 	return result;
 }

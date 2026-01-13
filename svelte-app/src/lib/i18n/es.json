@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas"
+			"minimalAlerts": "Mostrar alertas mínimas",
+			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -38,7 +39,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Control manual de columna",
+			"automaticColumnControl": "Usando diseño de columna automático",
+			"word": "{count, plural, one {1 columna} other {{count} columnas}}",
+			"columnWarning": "Es posible que las columnas sean demasiado estrechas con este ancho de pantalla. ({nomColWidth}px por columna)"
 		},
 		"theme": {
 			"light": "Claro",
@@ -69,6 +74,10 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
+		},
+		"autoScale": {
+			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
+			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
 		},
 		"buttons": {
 			"cancel": "Cancelar",

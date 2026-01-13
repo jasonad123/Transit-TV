@@ -356,6 +356,13 @@
 		if (headerCheckTimeout) clearTimeout(headerCheckTimeout);
 		headerCheckTimeouts.forEach((timeout) => clearTimeout(timeout));
 		headerCheckTimeouts = [];
+
+		// Clear all element references to prevent memory leaks
+		destinationElements.clear();
+		overflowingDestinations = new Set();
+		routeHeaderElement = null;
+		alertElement = null;
+		alertHeaderElement = null;
 	});
 
 	// Calculate relative luminance (0-1) from hex color
@@ -1304,26 +1311,26 @@
 		border-radius: 0 0 0.5em 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5em, 15vh, 18em);
+		height: clamp(5em, 9vh, 10em);
 		flex-shrink: 0;
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-			height: clamp(5em, 8vh, 12em);
+			height: clamp(5em, 8vh, 8em);
 		}
 	}
 
 	/* Increase alert ticker height when stop grouping is enabled */
 	/* Grouping saves space by consolidating cards, so give that space to alerts */
 	.route-alert-ticker.grouped-alerts {
-		height: clamp(5em, 19.5vh, 22em);
+		height: clamp(5em, 10vh, 15em);
 	}
 
 	@media (orientation: portrait) {
 		.route-alert-ticker.grouped-alerts {
-			height: clamp(5em, 10vh, 15em);
+			height: clamp(5em, 10vh, 12em);
 		}
 	}
 
@@ -1487,6 +1494,8 @@
 
 	.route .direction.multi-branch:not(:last-child) {
 		margin-bottom: 0;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
 	}
 
 	.route .direction.multi-branch:last-child {

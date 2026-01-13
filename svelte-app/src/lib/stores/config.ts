@@ -16,7 +16,7 @@ export interface Config {
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
-	columns: 'auto' | 1 | 2 | 3 | 4 | 5;
+	columns: 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 	theme: 'light' | 'dark' | 'auto';
 	headerColor: string;
 	showQRCode: boolean;
@@ -26,6 +26,8 @@ export interface Config {
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
 	minimalAlerts: boolean;
+	autoScaleContent: boolean;
+	manualColumnsMode: boolean;
 }
 
 const defaultConfig: Config = {
@@ -49,7 +51,9 @@ const defaultConfig: Config = {
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
-	minimalAlerts: false
+	minimalAlerts: false,
+	autoScaleContent: false,
+	manualColumnsMode: false
 };
 
 function createConfigStore() {
@@ -75,6 +79,10 @@ function createConfigStore() {
 				if (savedConfig) {
 					try {
 						const parsed = JSON.parse(savedConfig);
+						// Ensure maxDistance is always a number, not a string
+						if (parsed.maxDistance) {
+							parsed.maxDistance = parseInt(parsed.maxDistance);
+						}
 						set({
 							...defaultConfig,
 							...parsed,
@@ -98,6 +106,10 @@ function createConfigStore() {
 					const response = await fetch('/api/config/unattended');
 					if (response.ok) {
 						const unattendedConfig = await response.json();
+						// Ensure maxDistance is always a number, not a string
+						if (unattendedConfig.maxDistance) {
+							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
+						}
 						set({
 							...defaultConfig,
 							...unattendedConfig,

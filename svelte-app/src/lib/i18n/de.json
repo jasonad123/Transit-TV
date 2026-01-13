@@ -24,7 +24,8 @@
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
-			"minimalAlerts": "Minimale Benachrichtigungen anzeigen"
+			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
+			"autoScaleContent": "Routen automatisch an Bildschirm anpassen"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -38,7 +39,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Manuelle Spaltensteuerung",
+			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
+			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}",
+			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)"
 		},
 		"theme": {
 			"light": "Hell",
@@ -69,6 +74,10 @@
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
+		},
+		"autoScale": {
+			"helpText": "Routen automatisch skalieren, um mehr Karten ohne Scrollen anzuzeigen",
+			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
 		},
 		"buttons": {
 			"cancel": "Stornieren",
@@ -108,7 +117,7 @@
 	},
 	"alerts": {
 		"default": "Störungsinformation",
-		"title": "Meldungen"
+		"title": "Störungen"
 	},
 	"time": {
 		"min": "min",
