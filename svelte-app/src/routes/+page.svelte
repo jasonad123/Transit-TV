@@ -47,6 +47,7 @@
 	let contentScale = $state(1.0);
 	let routesElement = $state<HTMLElement | null>(null);
 	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
 	let isCalculatingScale = false;
 	let isTransitioning = false;
 	let lastScaledRouteCount = $state(0);
@@ -383,7 +384,7 @@
 		}
 	}
 
-	function calculateContentScale() {
+	function calculateContentScale(forceRecalc = false) {
 		if (!routesElement || !shouldApplyAutoScale) {
 			if (!shouldApplyAutoScale) {
 				contentScale = 1.0;
@@ -396,8 +397,8 @@
 		const routeCountDelta = Math.abs(currentRouteCount - lastScaledRouteCount);
 
 		// Don't recalculate if user has scrolled away AND route count hasn't changed significantly
-		// Only recalculate if: at top of page OR route count changed by 2+ routes
-		if (window.scrollY > 10 && routeCountDelta < 2) {
+		// Only recalculate if: at top of page OR route count changed by 2+ routes OR forced
+		if (!forceRecalc && window.scrollY > 10 && routeCountDelta < 2) {
 			// User has scrolled and routes haven't changed significantly - don't interfere
 			return;
 		}
@@ -409,7 +410,8 @@
 
 		scaleCheckTimeout = setTimeout(() => {
 			// Prevent concurrent calculations or calculations during transitions
-			if (isCalculatingScale || isTransitioning) {
+			// Exception: forced recalculations (like resize) can interrupt transitions
+			if (isCalculatingScale || (!forceRecalc && isTransitioning)) {
 				return;
 			}
 			isCalculatingScale = true;
@@ -449,8 +451,15 @@
 						contentScale = newScale;
 						// Set transition flag to prevent recalculation during animation
 						isTransitioning = true;
-						setTimeout(() => {
+
+						// Clear any existing transition timeout
+						if (transitionTimeout) {
+							clearTimeout(transitionTimeout);
+						}
+
+						transitionTimeout = setTimeout(() => {
 							isTransitioning = false;
+							transitionTimeout = null;
 						}, TRANSITION_DURATION);
 					}
 
@@ -473,7 +482,7 @@
 			const handleResize = () => {
 				windowWidth = window.innerWidth;
 				if (shouldApplyAutoScale) {
-					calculateContentScale();
+					calculateContentScale(true); // Force recalc on resize
 				}
 			};
 
@@ -562,22 +571,33 @@
 		}
 	});
 
+	// Track display route count separately to avoid triggering on array reference changes
+	let displayRouteCount = $derived(displayRoutes.length);
+
+	// Track previous state to detect when autoscale is re-enabled
+	let wasAutoScaleEnabled = false;
+
 	// Recalculate scale when relevant dependencies change
 	$effect(() => {
 		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
+		const currentAutoScale = shouldApplyAutoScale;
 		void [
-			shouldApplyAutoScale,
-			displayRoutes.length,
+			currentAutoScale,
+			displayRouteCount,  // Use the separate derived count instead of displayRoutes.length
 			$config.columns,
-			$config.isEditing,
-			windowWidth
+			$config.isEditing
+			// Note: windowWidth is NOT included here because resize handler calls calculateContentScale directly
 		];
 
 		untrack(() => {
-			if (shouldApplyAutoScale) {
-				calculateContentScale();
+			if (currentAutoScale) {
+				// If autoscale was just re-enabled, force recalculation
+				const justEnabled = !wasAutoScaleEnabled && currentAutoScale;
+				calculateContentScale(justEnabled);
+				wasAutoScaleEnabled = true;
 			} else {
 				contentScale = 1.0;
+				wasAutoScaleEnabled = false;
 			}
 		});
 	});
@@ -591,6 +611,9 @@
 		}
 		if (scaleCheckTimeout) {
 			clearTimeout(scaleCheckTimeout);
+		}
+		if (transitionTimeout) {
+			clearTimeout(transitionTimeout);
 		}
 		if (countdownIntervalId) {
 			clearInterval(countdownIntervalId);
