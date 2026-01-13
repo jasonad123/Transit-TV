@@ -33,6 +33,9 @@
 	let resizeCleanup: (() => void) | null = null;
 	let isMounted = $state(false);
 
+	// Tab visibility tracking (for battery savings on 24/7 displays)
+	let tabVisible = $state(true);
+
 	// Geolocation state
 	let gettingLocation = $state(false);
 	let locationError = $state<string | null>(null);
@@ -53,6 +56,7 @@
 	let isCalculatingScale = false;
 	let isTransitioning = false;
 	let lastScaledRouteCount = $state(0);
+	let lastContentSignature = ''; // Track content changes beyond just route count
 	const MIN_CONTENT_SCALE = 0.72; // Accessibility: allow more aggressive scaling to fit content
 	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
 
@@ -149,6 +153,16 @@
 
 		return result;
 	});
+
+	// Helper to create content signature for detecting meaningful changes
+	function getContentSignature(routes: Route[]): string {
+		return routes
+			.map(
+				(r) =>
+					`${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}`
+			)
+			.join('|');
+	}
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -387,21 +401,11 @@
 	}
 
 	function calculateContentScale(forceRecalc = false) {
-		if (!routesElement || !shouldApplyAutoScale) {
+		if (!routesElement || !shouldApplyAutoScale || !tabVisible) {
 			if (!shouldApplyAutoScale) {
 				contentScale = 1.0;
 				lastScaledRouteCount = 0;
 			}
-			return;
-		}
-
-		const currentRouteCount = displayRoutes.length;
-		const routeCountDelta = Math.abs(currentRouteCount - lastScaledRouteCount);
-
-		// Don't recalculate if user has scrolled away AND route count hasn't changed significantly
-		// Only recalculate if: at top of page OR route count changed by 2+ routes OR forced
-		if (!forceRecalc && window.scrollY > 10 && routeCountDelta < 2) {
-			// User has scrolled and routes haven't changed significantly - don't interfere
 			return;
 		}
 
@@ -490,9 +494,17 @@
 
 			window.addEventListener('resize', handleResize);
 
+			// Track tab visibility for battery savings
+			const handleVisibilityChange = () => {
+				tabVisible = !document.hidden;
+			};
+
+			document.addEventListener('visibilitychange', handleVisibilityChange);
+
 			// Store cleanup function
 			resizeCleanup = () => {
 				window.removeEventListener('resize', handleResize);
+				document.removeEventListener('visibilitychange', handleVisibilityChange);
 			};
 		}
 
@@ -573,8 +585,8 @@
 		}
 	});
 
-	// Track display route count separately to avoid triggering on array reference changes
-	let displayRouteCount = $derived(displayRoutes.length);
+	// Track content signature to detect meaningful changes beyond just route count
+	let contentSignature = $derived(getContentSignature(displayRoutes));
 
 	// Track previous state to detect when autoscale is re-enabled
 	let wasAutoScaleEnabled = false;
@@ -583,19 +595,29 @@
 	$effect(() => {
 		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
 		const currentAutoScale = shouldApplyAutoScale;
+		const currentSignature = contentSignature;
 		void [
 			currentAutoScale,
-			displayRouteCount,  // Use the separate derived count instead of displayRoutes.length
+			currentSignature, // Detects route additions/removals, itinerary changes, alert changes
 			$config.columns,
-			$config.isEditing
+			$config.isEditing,
+			tabVisible // Recalculate when tab becomes visible again
 			// Note: windowWidth is NOT included here because resize handler calls calculateContentScale directly
 		];
 
 		untrack(() => {
-			if (currentAutoScale) {
-				// If autoscale was just re-enabled, force recalculation
+			if (currentAutoScale && tabVisible) {
+				// Track if content signature actually changed
+				const signatureChanged = currentSignature !== lastContentSignature;
+				lastContentSignature = currentSignature;
+
+				// If autoscale was just re-enabled or content changed, recalculate
 				const justEnabled = !wasAutoScaleEnabled && currentAutoScale;
-				calculateContentScale(justEnabled);
+
+				if (justEnabled || signatureChanged) {
+					calculateContentScale(justEnabled);
+				}
+
 				wasAutoScaleEnabled = true;
 			} else {
 				contentScale = 1.0;
