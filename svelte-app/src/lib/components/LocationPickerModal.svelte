@@ -44,74 +44,84 @@
 	$effect(() => {
 		if (!browser || !mapContainer) return;
 
+		let mounted = true;
+
 		// Dynamic import of Leaflet to avoid SSR issues
-		import('leaflet').then((leaflet) => {
-			L = leaflet;
+		import('leaflet')
+			.then((leaflet) => {
+				// Guard against component unmounting during import
+				if (!mounted || !mapContainer) return;
 
-			// Get initial location (untrack to prevent reactivity loops)
-			const initialLat = untrack(() => location.latitude);
-			const initialLng = untrack(() => location.longitude);
+				L = leaflet;
 
-			// Initialize map
-			map = L!.map(mapContainer!).setView([initialLat, initialLng], 13);
+				// Get initial location (untrack to prevent reactivity loops)
+				const initialLat = untrack(() => location.latitude);
+				const initialLng = untrack(() => location.longitude);
 
-			// Add CartoDB Positron tileset (no API key required)
-			L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-				maxZoom: 19,
-				subdomains: 'abcd'
-			}).addTo(map);
+				// Initialize map
+				map = L!.map(mapContainer!).setView([initialLat, initialLng], 13);
 
-			// Create custom icon using the ix location pin
-			const customIcon = L!.icon({
-				iconUrl: '/assets/images/ix--location-filled.svg',
-				iconSize: [32, 32],
-				iconAnchor: [16, 32],
-				popupAnchor: [0, -32]
+				// Add CartoDB Positron tileset (no API key required)
+				L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+					attribution:
+						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+					maxZoom: 19,
+					subdomains: 'abcd'
+				}).addTo(map);
+
+				// Create custom icon using the ix location pin
+				const customIcon = L!.icon({
+					iconUrl: '/assets/images/ix--location-filled.svg',
+					iconSize: [32, 32],
+					iconAnchor: [16, 32],
+					popupAnchor: [0, -32]
+				});
+
+				// Add draggable marker with custom icon
+				marker = L!.marker([initialLat, initialLng], {
+					draggable: true,
+					autoPan: true,
+					icon: customIcon
+				}).addTo(map);
+
+				// Add radius circle (use workingRadius for initial value)
+				radiusCircle = L!.circle([initialLat, initialLng], {
+					color: '#30b566',
+					fillColor: '#30b566',
+					fillOpacity: 0.1,
+					radius: workingRadius,
+					weight: 2
+				}).addTo(map);
+
+				// Handle marker drag
+				marker.on('dragend', () => {
+					const pos = marker.getLatLng();
+					workingLocation = {
+						latitude: pos.lat,
+						longitude: pos.lng
+					};
+					// Update circle position
+					radiusCircle.setLatLng(pos);
+				});
+
+				// Handle map click to place marker
+				map.on('click', (e: any) => {
+					const pos = e.latlng;
+					marker.setLatLng(pos);
+					radiusCircle.setLatLng(pos);
+					workingLocation = {
+						latitude: pos.lat,
+						longitude: pos.lng
+					};
+				});
+			})
+			.catch((error) => {
+				console.error('Failed to load Leaflet:', error);
 			});
-
-			// Add draggable marker with custom icon
-			marker = L!.marker([initialLat, initialLng], {
-				draggable: true,
-				autoPan: true,
-				icon: customIcon
-			}).addTo(map);
-
-			// Add radius circle (use workingRadius for initial value)
-			radiusCircle = L!.circle([initialLat, initialLng], {
-				color: '#30b566',
-				fillColor: '#30b566',
-				fillOpacity: 0.1,
-				radius: workingRadius,
-				weight: 2
-			}).addTo(map);
-
-			// Handle marker drag
-			marker.on('dragend', () => {
-				const pos = marker.getLatLng();
-				workingLocation = {
-					latitude: pos.lat,
-					longitude: pos.lng
-				};
-				// Update circle position
-				radiusCircle.setLatLng(pos);
-			});
-
-			// Handle map click to place marker
-			map.on('click', (e: any) => {
-				const pos = e.latlng;
-				marker.setLatLng(pos);
-				radiusCircle.setLatLng(pos);
-				workingLocation = {
-					latitude: pos.lat,
-					longitude: pos.lng
-				};
-			});
-		});
 
 		// Cleanup function
 		return () => {
+			mounted = false;
 			if (map) {
 				map.remove();
 				map = null;
@@ -291,7 +301,7 @@
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 		width: 90vw;
 		height: 80vh;
-		max-width: 1200px;
+		max-width: 800px;
 		display: flex;
 		flex-direction: column;
 		position: relative;

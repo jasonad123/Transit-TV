@@ -48,6 +48,11 @@
 	// Location picker modal state
 	let locationPickerOpen = $state(false);
 
+	// Memoize filtered hidden routes for performance
+	let hiddenRoutesList = $derived(
+		allRoutes.filter((r) => $config.hiddenRoutes.includes(r.global_route_id))
+	);
+
 	function openLocationPicker() {
 		locationPickerOpen = true;
 	}
@@ -308,7 +313,10 @@
 									onerror={(e) => {
 										const parent = (e.currentTarget as HTMLImageElement).parentElement;
 										if (parent) {
-											parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
+											const errorSpan = document.createElement('span');
+											errorSpan.className = 'error';
+											errorSpan.textContent = $_('config.customLogo.invalidUrl');
+											parent.replaceChildren(errorSpan);
 										}
 									}}
 								/>
@@ -369,7 +377,7 @@
 					{#if $config.hiddenRoutes.length > 0}
 						<div class="route-management">
 							<div class="hidden-routes-list">
-								{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
+								{#each hiddenRoutesList as route}
 									<button
 										type="button"
 										class="hidden-route-item"
