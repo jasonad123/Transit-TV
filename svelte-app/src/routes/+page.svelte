@@ -5,12 +5,9 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
-	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
-	import Toggle from '$lib/components/Toggle.svelte';
-	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
-	import SolidSection from '$lib/components/SolidSection.svelte';
+	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
@@ -659,6 +656,15 @@
 		config.update((c) => ({ ...c, isEditing: false }));
 	}
 
+	function handleConfigSave() {
+		loadNearby();
+		// Reset to current polling interval
+		if (intervalId) {
+			clearInterval(intervalId);
+		}
+		intervalId = setInterval(loadNearby, currentPollingInterval);
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if ($config.isEditing && e.key === 'Escape') {
 			closeConfig();
@@ -807,367 +813,22 @@
 		</table>
 	</header>
 
-	{#if $config.isEditing}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="modal-backdrop" onclick={closeConfig}>
-			<div class="config-modal" onclick={(e) => e.stopPropagation()}>
-				<h2>{$_('config.title')}</h2>
-				<form onsubmit={(e) => e.preventDefault()}>
-					<label>
-						{$_('config.fields.title')}
-						<input type="text" bind:value={$config.title} />
-					</label>
-
-					<label>
-						{$_('config.fields.location')}
-						<div class="location-input-group">
-							<input
-								type="text"
-								value={formatCoordinatesForDisplay(
-									$config.latLng.latitude,
-									$config.latLng.longitude
-								)}
-								oninput={(e) => {
-									config.setLatLngStr(e.currentTarget.value);
-									validationMessage = null;
-									validationSuccess = null;
-								}}
-								onblur={handleLocationInputBlur}
-								placeholder="latitude, longitude"
-							/>
-							<button
-								type="button"
-								class="btn-location"
-								onclick={useCurrentLocation}
-								disabled={gettingLocation}
-								title={gettingLocation ? 'Getting location...' : 'Use current location'}
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-									<path
-										fill="currentColor"
-										d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
-									/>
-								</svg>
-							</button>
-						</div>
-						{#if locationError}
-							<span class="location-error">{locationError}</span>
-						{/if}
-						{#if validatingLocation}
-							<span class="location-validating">{$_('config.location.validating')}</span>
-						{:else if validationMessage}
-							<span
-								class="location-validation"
-								class:success={validationSuccess}
-								class:error={!validationSuccess}
-							>
-								{validationMessage}
-							</span>
-						{/if}
-					</label>
-
-					<label>
-						{$_('config.fields.timeFormat')}
-						<select bind:value={$config.timeFormat}>
-							<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
-							<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
-							<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
-						</select>
-					</label>
-
-					<label>
-						{$_('config.fields.language')}
-						<select bind:value={$config.language}>
-							<option value="en">{$_('config.languages.english')}</option>
-							<option value="fr">{$_('config.languages.french')}</option>
-							<option value="es">{$_('config.languages.spanish')}</option>
-							<option value="de">{$_('config.languages.german')}</option>
-						</select>
-					</label>
-					<label>
-						{$_('config.fields.maxDistance')}
-						<input
-							type="range"
-							min="250"
-							max="1500"
-							step="250"
-							value={$config.maxDistance}
-							class="styled-slider"
-							style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-							oninput={(e) => {
-								const value = parseInt(e.currentTarget.value);
-								config.update((c) => ({
-									...c,
-									maxDistance: value
-								}));
-							}}
-						/>
-						<div class="slider-value">
-							{$config.maxDistance}m
-						</div>
-					</label>
-
-					<SolidSection title={$_('config.sections.display')}>
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.autoScaleContent}>
-								{#snippet label()}
-									<span>{$_('config.columns.manualColumnControl')}</span>
-								{/snippet}
-							</Toggle>
-							{#if $config.autoScaleContent}
-								<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
-							{/if}
-						</div>
-
-						{#if $config.manualColumnsMode && typeof $config.columns === 'number'}
-							<label>
-								{$_('config.fields.columns')}
-								<input
-									type="range"
-									min="1"
-									max="8"
-									value={$config.columns}
-									class="styled-slider"
-									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
-									oninput={(e) => {
-										const value = parseInt(e.currentTarget.value);
-										const clampedValue = Math.max(1, Math.min(8, value));
-										config.update((c) => ({
-											...c,
-											columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-										}));
-									}}
-								/>
-								<div class="slider-value">
-									{$_('config.columns.word', { values: { count: $config.columns } })}
-								</div>
-								{#if columnsWarning}
-									<span class="column-warning">
-										{columnsWarning}
-									</span>
-								{/if}
-							</label>
-						{:else if !$config.autoScaleContent}
-							<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
-						{/if}
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.showQRCode}>
-								{#snippet label()}
-									<span>{$_('config.fields.showQRCode')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.autoScaleContent}>
-								{#snippet label()}
-									<span>{$_('config.fields.autoScaleContent')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text">{$_('config.autoScale.helpText')}</small>
-						</div>
-					</SolidSection>
-
-					<SolidSection title={$_('config.sections.style')}>
-						<label>
-							{$_('config.fields.theme')}
-							<div class="button-group">
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'light'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
-								>
-									{$_('config.theme.light')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'auto'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
-								>
-									{$_('config.theme.auto')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'dark'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
-								>
-									{$_('config.theme.dark')}
-								</button>
-							</div>
-						</label>
-
-						<label>
-							{$_('config.fields.headerColor')}
-							<div style="display: flex; gap: 0.5em; align-items: center;">
-								<input type="color" bind:value={$config.headerColor} />
-								<button
-									type="button"
-									class="btn-reset"
-									onclick={() => {
-										const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-										config.update((c) => ({ ...c, headerColor: defaultColor }));
-									}}
-									title={$_('config.buttons.resetToDefault')}
-								>
-									{$_('config.buttons.reset')}
-								</button>
-							</div>
-						</label>
-
-						<label>
-							{$_('config.fields.customLogo')}
-							<input
-								type="text"
-								bind:value={$config.customLogo}
-								placeholder="https://example.com/logo.png or /assets/images/logo.png"
-							/>
-							<small class="help-text">{$_('config.customLogo.helpText')}</small>
-							{#if $config.customLogo}
-								<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
-									<button
-										type="button"
-										class="btn-reset"
-										onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
-									>
-										{$_('config.customLogo.clear')}
-									</button>
-								</div>
-								<div class="logo-preview">
-									<img
-										src={$config.customLogo}
-										alt="Logo preview"
-										onerror={(e) => {
-											const parent = (e.currentTarget as HTMLImageElement).parentElement;
-											if (parent) {
-												parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
-											}
-										}}
-									/>
-								</div>
-							{/if}
-						</label>
-					</SolidSection>
-
-					<SolidSection title={$_('config.sections.routeOptions')}>
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.groupItinerariesByStop}>
-								{#snippet label()}
-									<span>{$_('config.fields.groupItinerariesByStop')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.filterRedundantTerminus}>
-								{#snippet label()}
-									<span>{$_('config.fields.filterRedundantTerminus')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.stopManagement.filterTerminushelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.showRouteLongName}>
-								{#snippet label()}
-									<span>{$_('config.fields.showRouteLongName')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.minimalAlerts}>
-								{#snippet label()}
-									<span>{$_('config.fields.minimalAlerts')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
-						</div>
-					</SolidSection>
-
-					<CollapsibleSection
-						title={$_('config.hiddenRoutes.title')}
-						helpText={$_('config.hiddenRoutes.helpText')}
-						initiallyOpen={false}
-					>
-						{#if $config.hiddenRoutes.length > 0}
-							<div class="route-management">
-								<div class="hidden-routes-list">
-									{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
-										<button
-											type="button"
-											class="hidden-route-item"
-											onclick={() => toggleRouteHidden(route.global_route_id)}
-										>
-											<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-											<span>{route.route_short_name || route.route_long_name}</span>
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/if}
-					</CollapsibleSection>
-
-					<div class="credits">
-						<h3>{$_('config.credits.title')}</h3>
-						<h4>
-							Transit TV version <a
-								href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
-								target="_blank"
-								rel="noopener">{appVersion}</a
-							>
-						</h4>
-						<p class="help-text">
-							{@html $_('config.credits.madeWith')}
-						</p>
-						<p class="help-text">
-							{@html $_('config.credits.links')}
-						</p>
-						<a
-							href="https://transitapp.com/partners/apis"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="api-badge-link"
-						>
-							<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
-						>
-					</div>
-
-					<div class="modal-actions">
-						<button type="button" class="btn-cancel" onclick={closeConfig}>
-							{$_('config.buttons.cancel')}
-						</button>
-						<button
-							type="button"
-							class="btn-save"
-							onclick={() => {
-								config.save();
-								config.update((c) => ({ ...c, isEditing: false }));
-								loadNearby();
-								// Reset to current polling interval
-								intervalId = setInterval(loadNearby, currentPollingInterval);
-							}}
-						>
-							{$_('config.buttons.save')}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	{/if}
+	<ConfigModal
+		open={$config.isEditing}
+		{allRoutes}
+		{gettingLocation}
+		{locationError}
+		{validatingLocation}
+		{validationMessage}
+		{validationSuccess}
+		{columnsWarning}
+		{appVersion}
+		onclose={closeConfig}
+		{useCurrentLocation}
+		{handleLocationInputBlur}
+		{toggleRouteHidden}
+		onsave={handleConfigSave}
+	/>
 
 	<div class="content">
 		{#if errorMessage}
@@ -1413,7 +1074,7 @@
 		vertical-align: middle;
 	}
 
-	.modal-backdrop {
+	/* .modal-backdrop {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -1425,9 +1086,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
+	} */
 
-	.config-modal {
+	/* .config-modal {
 		background: var(--bg-secondary);
 		color: var(--text-primary);
 		padding: 2em;
@@ -1437,7 +1098,6 @@
 		min-width: 400px;
 		max-height: 80vh;
 		overflow-y: auto;
-		/* Reset fixed positioning since we are using flex in parent */
 		position: relative;
 	}
 
@@ -1577,7 +1237,7 @@
 		font-weight: 500;
 		margin-top: 0.5em;
 		color: var(--text-primary);
-	}
+	} */
 
 	.route-wrapper {
 		box-sizing: border-box;
@@ -1680,7 +1340,7 @@
 		border-top: 1px solid var(--border-color);
 	} */
 
-	.hidden-routes-list {
+	/* .hidden-routes-list {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5em;
@@ -1724,7 +1384,7 @@
 		color: var(--text-primary);
 		display: flex;
 		align-items: center;
-	}
+	} */
 
 	.loading,
 	.no-routes {
@@ -1734,7 +1394,7 @@
 		color: var(--text-secondary);
 	}
 
-	.button-group {
+	/* .button-group {
 		display: flex;
 		gap: 0.5em;
 		flex-wrap: wrap;
@@ -1763,7 +1423,7 @@
 		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
-	}
+	} */
 
 	/* Floating QR Code Styles */
 	.floating-qr {
@@ -1870,7 +1530,7 @@
 	}
 
 	/* Location input group */
-	.location-input-group {
+	/* .location-input-group {
 		display: flex;
 		gap: 0.5em;
 		align-items: center;
@@ -1999,9 +1659,9 @@
 			rgba(0, 0, 0, 0.1) 100%
 		);
 		border-radius: 10px;
-	}
+	} */
 
-	.styled-slider::-moz-range-track {
+	/* .styled-slider::-moz-range-track {
 		width: 100%;
 		height: 4px;
 		background: rgba(0, 0, 0, 0.1);
@@ -2014,7 +1674,7 @@
 		border-radius: 10px;
 	}
 
-	/* Credits Styles */
+
 	.credits {
 		margin-top: 0;
 		padding-top: 1em;
@@ -2054,7 +1714,7 @@
 		height: 40px;
 		width: auto;
 		display: block;
-	}
+	} */
 
 	:global(.credits a) {
 		color: var(--bg-header);

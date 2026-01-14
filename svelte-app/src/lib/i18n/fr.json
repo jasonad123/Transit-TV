@@ -94,7 +94,16 @@
 			"geolocationPermissionDenied": "Autorisation de la géolocalisation refusée",
 			"geolocationUnavailable": "Informations de localisation non disponibles",
 			"geolocationTimeout": "Délai d'attente dépassé pour la requête de localisation",
-			"geolocationError": "Une erreur inconnue s'est produite."
+			"geolocationError": "Une erreur inconnue s'est produite.",
+			"pickOnMap": "Sélectionner sur la carte",
+			"mapPicker": {
+				"title": "Choisir l'emplacement",
+				"instructions": "Faites glisser le repère ou cliquez sur la carte pour définir votre emplacement.",
+				"coordinates": "Coordonnées",
+				"useMyLocation": "Utilisez ma position",
+				"save": "Enregistrer",
+				"cancel": "Annuler"
+			}
 		}
 	},
 	"routes": {

@@ -94,7 +94,16 @@
 			"geolocationPermissionDenied": "Location permission denied",
 			"geolocationUnavailable": "Location information unavailable",
 			"geolocationTimeout": "Location request timed out",
-			"geolocationError": "An unknown error occurred"
+			"geolocationError": "An unknown error occurred",
+			"pickOnMap": "Pick on map",
+			"mapPicker": {
+				"title": "Choose location",
+				"instructions": "Drag the pin or click the map to set your location",
+				"coordinates": "Coordinates",
+				"useMyLocation": "Use my location",
+				"save": "Save location",
+				"cancel": "Cancel"
+			}
 		},
 		"credits": {
 			"version": "Transit TV version <a href=\"https://github.com/jasonad123/Transit-TV/releases\" target=\"_blank\" rel=\"noopener\"></a>",
