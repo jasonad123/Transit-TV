@@ -62,12 +62,14 @@
 				map = L!.map(mapContainer!).setView([initialLat, initialLng], 13);
 
 				// Add CartoDB Positron tileset (no API key required)
-				L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-					attribution:
-						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-					maxZoom: 19,
-					subdomains: 'abcd'
-				}).addTo(map);
+				L!
+					.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+						maxZoom: 19,
+						subdomains: 'abcd'
+					})
+					.addTo(map);
 
 				// Create custom icon using the ix location pin
 				const customIcon = L!.icon({
@@ -78,20 +80,24 @@
 				});
 
 				// Add draggable marker with custom icon
-				marker = L!.marker([initialLat, initialLng], {
-					draggable: true,
-					autoPan: true,
-					icon: customIcon
-				}).addTo(map);
+				marker = L!
+					.marker([initialLat, initialLng], {
+						draggable: true,
+						autoPan: true,
+						icon: customIcon
+					})
+					.addTo(map);
 
 				// Add radius circle (use workingRadius for initial value)
-				radiusCircle = L!.circle([initialLat, initialLng], {
-					color: '#30b566',
-					fillColor: '#30b566',
-					fillOpacity: 0.1,
-					radius: workingRadius,
-					weight: 2
-				}).addTo(map);
+				radiusCircle = L!
+					.circle([initialLat, initialLng], {
+						color: '#30b566',
+						fillColor: '#30b566',
+						fillOpacity: 0.1,
+						radius: workingRadius,
+						weight: 2
+					})
+					.addTo(map);
 
 				// Handle marker drag
 				marker.on('dragend', () => {
@@ -240,7 +246,11 @@
 						d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
 					/>
 				</svg>
-				<span>{gettingLocation ? $_('config.location.validating') : $_('config.location.mapPicker.useMyLocation')}</span>
+				<span
+					>{gettingLocation
+						? $_('config.location.validating')
+						: $_('config.location.mapPicker.useMyLocation')}</span
+				>
 			</button>
 		</div>
 

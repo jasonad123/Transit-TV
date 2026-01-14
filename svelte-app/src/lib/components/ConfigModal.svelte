@@ -84,10 +84,7 @@
 					<div class="location-input-group">
 						<input
 							type="text"
-							value={formatCoordinatesForDisplay(
-								$config.latLng.latitude,
-								$config.latLng.longitude
-							)}
+							value={formatCoordinatesForDisplay($config.latLng.latitude, $config.latLng.longitude)}
 							oninput={(e) => {
 								config.setLatLngStr(e.currentTarget.value);
 								validationMessage = null;

@@ -152,10 +152,7 @@
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
 		return routes
-			.map(
-				(r) =>
-					`${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}`
-			)
+			.map((r) => `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}`)
 			.join('|');
 	}
 
@@ -1169,7 +1166,6 @@
 		font-size: 1.25em;
 	}
 
-
 	.loading,
 	.no-routes {
 		text-align: center;
@@ -1281,5 +1277,4 @@
 			transform: translateX(-50%) translateY(0);
 		}
 	}
-	
 </style>
