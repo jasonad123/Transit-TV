@@ -94,7 +94,16 @@
 			"geolocationPermissionDenied": "Permiso de ubicación denegado",
 			"geolocationUnavailable": "Información de ubicación no disponible",
 			"geolocationTimeout": "La solicitud de ubicación ha caducado.",
-			"geolocationError": "Ocurrió un error desconocido"
+			"geolocationError": "Ocurrió un error desconocido",
+			"pickOnMap": "Seleccionar en el mapa",
+			"mapPicker": {
+				"title": "Elegir ubicación",
+				"instructions": "Arrastra el pin o haz clic en el mapa para establecer tu ubicación",
+				"coordinates": "Coordenadas",
+				"useMyLocation": "Usar mi ubicación",
+				"save": "Guardar ubicación",
+				"cancel": "Cancelar"
+			}
 		}
 	},
 	"routes": {
