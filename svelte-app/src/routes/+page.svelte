@@ -1152,41 +1152,51 @@
 		flex-direction: column;
 		box-sizing: border-box;
 		padding: 0.5em;
-		min-width: 280px; /* Ensure minimum width for compact cards */
-		flex: 1 1 auto; /* Allow flexible sizing within flex container */
+		/* Default auto mode: consistent responsive layout matching grid's auto-fit behavior */
+		flex: 1 1 280px; /* Grow equally, shrink equally, base width 280px */
+		min-width: 280px; /* Never shrink below minimum */
+		max-width: 100%; /* Prevent overflow on small screens */
 	}
 
 	/* Column width overrides for compact view (flex-based) */
 	#routes.compact-view.cols-1 .route-wrapper {
 		width: 100%;
+		flex: 0 0 100%; /* Don't grow/shrink, stay at 100% */
 	}
 
 	#routes.compact-view.cols-2 .route-wrapper {
-		width: 50%;
+		flex: 0 0 50%;
+		max-width: 50%;
 	}
 
 	#routes.compact-view.cols-3 .route-wrapper {
-		width: 33.333%;
+		flex: 0 0 33.333%;
+		max-width: 33.333%;
 	}
 
 	#routes.compact-view.cols-4 .route-wrapper {
-		width: 25%;
+		flex: 0 0 25%;
+		max-width: 25%;
 	}
 
 	#routes.compact-view.cols-5 .route-wrapper {
-		width: 20%;
+		flex: 0 0 20%;
+		max-width: 20%;
 	}
 
 	#routes.compact-view.cols-6 .route-wrapper {
-		width: 16.666%;
+		flex: 0 0 16.666%;
+		max-width: 16.666%;
 	}
 
 	#routes.compact-view.cols-7 .route-wrapper {
-		width: 14.285%;
+		flex: 0 0 14.285%;
+		max-width: 14.285%;
 	}
 
 	#routes.compact-view.cols-8 .route-wrapper {
-		width: 12.5%;
+		flex: 0 0 12.5%;
+		max-width: 12.5%;
 	}
 
 	.route-controls {
