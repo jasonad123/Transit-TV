@@ -312,6 +312,7 @@
 		width: 90vw;
 		height: 80vh;
 		max-width: 800px;
+		max-height: 700px;
 		display: flex;
 		flex-direction: column;
 		position: relative;

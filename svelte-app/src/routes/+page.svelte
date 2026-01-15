@@ -1296,6 +1296,30 @@
 		flex-shrink: 0;
 	}
 
+	.floating-qr :global(svg path),
+	.floating-qr :global(svg rect),
+	.floating-qr :global(svg circle),
+	.floating-qr :global(svg polygon) {
+		fill: var(--bg-header) !important;
+	}
+
+	.qr-label {
+		margin: 0;
+		color: white;
+		font-size: 1.3em;
+		text-align: left;
+		letter-spacing: 0.02em;
+		opacity: 0.95;
+		flex: 1;
+		overflow-wrap: break-word;
+		line-height: 1.5;
+	}
+	.qr-label-1 {
+		font-weight: 400;
+	}
+	.qr-label-2 {
+		font-weight: bold;
+	}
 
 	.error-banner {
 		position: fixed;
