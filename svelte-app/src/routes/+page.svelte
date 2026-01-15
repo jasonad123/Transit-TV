@@ -1152,6 +1152,41 @@
 		flex-direction: column;
 		box-sizing: border-box;
 		padding: 0.5em;
+		min-width: 280px; /* Ensure minimum width for compact cards */
+		flex: 1 1 auto; /* Allow flexible sizing within flex container */
+	}
+
+	/* Column width overrides for compact view (flex-based) */
+	#routes.compact-view.cols-1 .route-wrapper {
+		width: 100%;
+	}
+
+	#routes.compact-view.cols-2 .route-wrapper {
+		width: 50%;
+	}
+
+	#routes.compact-view.cols-3 .route-wrapper {
+		width: 33.333%;
+	}
+
+	#routes.compact-view.cols-4 .route-wrapper {
+		width: 25%;
+	}
+
+	#routes.compact-view.cols-5 .route-wrapper {
+		width: 20%;
+	}
+
+	#routes.compact-view.cols-6 .route-wrapper {
+		width: 16.666%;
+	}
+
+	#routes.compact-view.cols-7 .route-wrapper {
+		width: 14.285%;
+	}
+
+	#routes.compact-view.cols-8 .route-wrapper {
+		width: 12.5%;
 	}
 
 	.route-controls {
@@ -1251,6 +1286,37 @@
 		flex-shrink: 0;
 	}
 
+
+	.error-banner {
+		position: fixed;
+		top: 5.5em;
+		left: 50%;
+		transform: translateX(-50%);
+		background: #e30079;
+		color: white;
+		padding: 1em 2em;
+		border-radius: 8px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		z-index: 200;
+		font-size: 1.5em;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.error-banner iconify-icon {
+		font-size: 1.5em;
+	}
+
+	.error-banner.error-auth {
+		background: #ff6b00;
+	}
+
+	.error-banner.error-timeout {
+		background: #f59e0b;
+	}
 
 	.error-banner.error-backend {
 		background: #8b5cf6;
