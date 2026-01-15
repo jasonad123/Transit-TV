@@ -217,6 +217,57 @@
 						<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
 					{/if}
 
+					<div class="option-container">
+						<label class="option-label">
+							<span>{$_('config.routeDisplay.viewMode')}</span>
+							<div class="button-group inline-buttons">
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'card'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'card',
+											groupItinerariesByStop: false
+										}))}
+								>
+									<iconify-icon icon="ix:application-screen"></iconify-icon>
+									{$_('config.routeDisplay.card')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'compact'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'compact',
+											groupItinerariesByStop: false
+										}))}
+								>
+									<iconify-icon icon="ix:frames"></iconify-icon>
+									{$_('config.routeDisplay.compact')}
+								</button>
+								<button
+									type="button"
+									class="btn-option"
+									class:active={$config.viewMode === 'list'}
+									onclick={() =>
+										config.update((c) => ({
+											...c,
+											viewMode: 'list',
+											groupItinerariesByStop: true
+										}))}
+								>
+									<iconify-icon icon="ix:table"></iconify-icon>
+									{$_('config.routeDisplay.list')}
+								</button>
+							</div>
+						</label>
+						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
+					</div>
+
 					<div class="toggle-container">
 						<Toggle bind:checked={$config.showQRCode}>
 							{#snippet label()}
