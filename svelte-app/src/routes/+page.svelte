@@ -1199,7 +1199,6 @@
 		color: var(--text-secondary);
 	}
 
-<<<<<<< HEAD
 	.button-group {
 		display: flex;
 		gap: 0.5em;
@@ -1219,41 +1218,6 @@
 		font-size: 0.95em;
 	}
 
-	.btn-option:hover {
-		border-color: var(--bg-header);
-		background: var(--bg-primary);
-	}
-
-	.btn-option.active {
-		border-color: var(--bg-header);
-		background-color: var(--bg-header);
-		color: white;
-		font-weight: 600;
-	}
-
-	.inline-buttons {
-		display: flex;
-		gap: 0.5em;
-		flex-wrap: wrap;
-	}
-
-	.inline-buttons .btn-option {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.4em;
-		flex: 1 1 120px;
-		min-width: unset;
-	}
-
-	.inline-buttons iconify-icon {
-		width: 1.2em;
-		height: 1.2em;
-		flex-shrink: 0;
-	}
-
-=======
->>>>>>> 5257a75 (feat: config modal extraction and Leaflet map picker (#64))
 	/* Floating QR Code Styles */
 	.floating-qr {
 		position: fixed;
