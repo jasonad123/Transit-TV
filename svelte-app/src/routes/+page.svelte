@@ -1141,7 +1141,7 @@
 
 	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
 	#routes.compact-view {
-		display: flex;
+		display: grid;
 		flex-wrap: wrap;
 		align-content: flex-start;
 		justify-content: flex-start;
@@ -1153,7 +1153,7 @@
 		box-sizing: border-box;
 		padding: 0.5em;
 		/* Default auto mode: consistent responsive layout matching grid's auto-fit behavior */
-		flex: 1 1 280px; /* Grow equally, shrink equally, base width 280px */
+		flex: 0 1 280px; /* Grow equally, shrink equally, base width 280px */
 		min-width: 280px; /* Never shrink below minimum */
 		max-width: 100%; /* Prevent overflow on small screens */
 	}
