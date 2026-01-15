@@ -23,7 +23,9 @@
 			"maxDistance": "Rayon de recherche",
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs",
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
-			"showRouteLongName": "Afficher les noms et couleurs de ligne"
+			"showRouteLongName": "Afficher les noms et couleurs de ligne",
+			"minimalAlerts": "Afficher les alertes minimales",
+			"autoScaleContent": "Ajuster automatiquement les itinéraires à l'écran"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -37,7 +39,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Commande manuelle de la colonne",
+			"automaticColumnControl": "Utilisation de la disposition automatique des colonnes",
+			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}",
+			"columnWarning": "Les colonnes peuvent paraître trop étroites à cette largeur d'écran. ({nomColWidth}px par colonne)"
 		},
 		"theme": {
 			"light": "Clair",
@@ -66,6 +72,13 @@
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Afficher les noms de couleur de ligne (ex: 'Ligne Rouge') à côté des icônes de ligne lorsqu'il n'y a pas de texte adjacent."
 		},
+		"alerts": {
+			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
+		},
+		"autoScale": {
+			"helpText": "Adaptation automatique des itinéraires pour afficher plus de cartes à l'écran sans défilement",
+			"autoColumnsHelpText": "Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)"
+		},
 		"buttons": {
 			"cancel": "Annuler",
 			"save": "Enregistrer",
@@ -81,7 +94,16 @@
 			"geolocationPermissionDenied": "Autorisation de la géolocalisation refusée",
 			"geolocationUnavailable": "Informations de localisation non disponibles",
 			"geolocationTimeout": "Délai d'attente dépassé pour la requête de localisation",
-			"geolocationError": "Une erreur inconnue s'est produite."
+			"geolocationError": "Une erreur inconnue s'est produite.",
+			"pickOnMap": "Sélectionner sur la carte",
+			"mapPicker": {
+				"title": "Choisir l'emplacement",
+				"instructions": "Faites glisser le repère ou cliquez sur la carte pour définir votre emplacement.",
+				"coordinates": "Coordonnées",
+				"useMyLocation": "Utilisez ma position",
+				"save": "Enregistrer",
+				"cancel": "Annuler"
+			}
 		}
 	},
 	"routes": {
@@ -119,7 +141,7 @@
 	},
 	"errors": {
 		"rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
-		"auth": "Impossible de se connecter au API de Transit. Personnel de l'agence : veuillez contacter votre service informatique pour obtenir de l'aide.",
+		"auth": "Impossible de se connecter au API de Transit.",
 		"timeout": "Vérification des mises à jour...",
 		"backend": "Transit TV est hors service. J'essaie encore...",
 		"generic": "Transit TV a rencontré un problème. J'essaie encore..."

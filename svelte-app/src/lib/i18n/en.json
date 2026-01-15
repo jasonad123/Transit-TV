@@ -23,7 +23,9 @@
 			"maxDistance": "Search radius",
 			"groupItinerariesByStop": "Group destinations with shared stop names",
 			"filterRedundantTerminus": "Hide nearby terminus",
-			"showRouteLongName": "Show line colours and names"
+			"showRouteLongName": "Show line colours and names",
+			"minimalAlerts": "Show minimal alerts",
+			"autoScaleContent": "Auto-scale routes to fit screen"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -37,7 +39,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Manual column control",
+			"automaticColumnControl": "Using automatic column layout",
+			"word": "{count, plural, one {1 column} other {{count} columns}}",
+			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)"
 		},
 		"theme": {
 			"light": "Light",
@@ -66,6 +72,13 @@
 		"routeDisplay": {
 			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name."
 		},
+		"alerts": {
+			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
+		},
+		"autoScale": {
+			"helpText": "Automatically scale routes to fit more cards on screen without scrolling",
+			"autoColumnsHelpText": "Disabled when auto-scale is enabled (requires auto columns)"
+		},
 		"buttons": {
 			"cancel": "Cancel",
 			"save": "Save",
@@ -81,7 +94,16 @@
 			"geolocationPermissionDenied": "Location permission denied",
 			"geolocationUnavailable": "Location information unavailable",
 			"geolocationTimeout": "Location request timed out",
-			"geolocationError": "An unknown error occurred"
+			"geolocationError": "An unknown error occurred",
+			"pickOnMap": "Pick on map",
+			"mapPicker": {
+				"title": "Choose location",
+				"instructions": "Drag the pin or click the map to set your location",
+				"coordinates": "Coordinates",
+				"useMyLocation": "Use my location",
+				"save": "Save location",
+				"cancel": "Cancel"
+			}
 		},
 		"credits": {
 			"version": "Transit TV version <a href=\"https://github.com/jasonad123/Transit-TV/releases\" target=\"_blank\" rel=\"noopener\"></a>",
@@ -125,7 +147,7 @@
 	},
 	"errors": {
 		"rateLimit": "Checking for updates. Retrying in {seconds} seconds...",
-		"auth": "Can't connect to the Transit API. Agency staff should contact the IT department for assistance.",
+		"auth": "Can't connect to the Transit API.",
 		"timeout": "Checking for updates..",
 		"backend": "Transit TV is out of service. Retrying...",
 		"generic": "Transit TV ran into a problem. Retrying..."
