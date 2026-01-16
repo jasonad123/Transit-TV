@@ -188,22 +188,34 @@
 					{#if $config.manualColumnsMode && typeof $config.columns === 'number'}
 						<label>
 							{$_('config.fields.columns')}
-							<input
-								type="range"
-								min="1"
-								max="8"
-								value={$config.columns}
-								class="styled-slider"
-								style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
-								oninput={(e) => {
-									const value = parseInt(e.currentTarget.value);
-									const clampedValue = Math.max(1, Math.min(8, value));
-									config.update((c) => ({
-										...c,
-										columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-									}));
-								}}
-							/>
+							<div class="slider-with-reset">
+								<input
+									type="range"
+									min="1"
+									max="8"
+									value={$config.columns}
+									class="styled-slider"
+									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
+									oninput={(e) => {
+										const value = parseInt(e.currentTarget.value);
+										const clampedValue = Math.max(1, Math.min(8, value));
+										config.update((c) => ({
+											...c,
+											columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+										}));
+									}}
+								/>
+								<button
+									type="button"
+									class="btn-slider-reset"
+									onclick={() => {
+										config.update((c) => ({ ...c, columns: 4 as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
+								>
+									<iconify-icon icon="ix:refresh"></iconify-icon>
+								</button>
+							</div>
 							<div class="slider-value">
 								{$_('config.columns.word', { values: { count: $config.columns } })}
 							</div>
@@ -234,6 +246,46 @@
 						</Toggle>
 						<small class="toggle-help-text">{$_('config.autoScale.helpText')}</small>
 					</div>
+
+					{#if $config.autoScaleContent}
+						<label style="margin-top: 0.75rem;">
+							{$_('config.fields.minContentScale')}
+							<div class="slider-with-reset">
+								<input
+									type="range"
+									min="0.50"
+									max="0.95"
+									step="0.05"
+									value={$config.minContentScale}
+									class="styled-slider"
+									style="--slider-progress: {(($config.minContentScale - 0.50) / (0.95 - 0.50)) * 100}%"
+									oninput={(e) => {
+										const value = parseFloat(e.currentTarget.value);
+										config.update((c) => ({
+											...c,
+											minContentScale: value
+										}));
+									}}
+								/>
+								<button
+									type="button"
+									class="btn-slider-reset"
+									onclick={() => {
+										config.update((c) => ({ ...c, minContentScale: 0.72 }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
+								>
+									<iconify-icon icon="ix:refresh"></iconify-icon>
+								</button>
+							</div>
+							<div class="slider-value">
+								{Math.round($config.minContentScale * 100)}%
+							</div>
+							<small class="help-text" style="display: block; margin-top: 0.25rem;">
+								{$_('config.minContentScale.helpText')}
+							</small>
+						</label>
+					{/if}
 				</SolidSection>
 
 				<SolidSection title={$_('config.sections.style')}>
@@ -584,6 +636,41 @@
 	.btn-reset:hover {
 		background: #e0e0e0;
 		border-color: #999;
+	}
+
+	.slider-with-reset {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.slider-with-reset .styled-slider {
+		flex: 1;
+	}
+
+	.btn-slider-reset {
+		flex-shrink: 0;
+		width: 5rem;
+		height: 1.75em;
+		padding: 0;
+		background: var(--bg-header);
+		color: white;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.btn-slider-reset:hover {
+		opacity: 0.85;
+	}
+
+	.btn-slider-reset iconify-icon {
+		display: block;
+		width: 1.25em;
+		height: 1.25em;
+		font-size: 1.25rem;
 	}
 
 	.toggle-container {

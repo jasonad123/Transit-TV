@@ -52,7 +52,6 @@
 	let isTransitioning = false;
 	let lastScaledRouteCount = $state(0);
 	let lastContentSignature = ''; // Track content changes beyond just route count
-	const MIN_CONTENT_SCALE = 0.72; // Accessibility: allow more aggressive scaling to fit content
 	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
 
 	let shouldApplyAutoScale = $derived(
@@ -442,7 +441,7 @@
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
 					const calculatedScale = availableHeight / naturalHeight;
-					const newScale = Math.min(1.0, Math.max(MIN_CONTENT_SCALE, calculatedScale));
+					const newScale = Math.min(1.0, Math.max($config.minContentScale, calculatedScale));
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {

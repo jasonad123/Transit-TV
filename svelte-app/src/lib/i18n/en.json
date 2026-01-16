@@ -25,7 +25,8 @@
 			"filterRedundantTerminus": "Hide nearby terminus",
 			"showRouteLongName": "Show line colours and names",
 			"minimalAlerts": "Show minimal alerts",
-			"autoScaleContent": "Auto-scale routes to fit screen"
+			"autoScaleContent": "Auto-scale routes to fit screen",
+			"minContentScale": "Minimum scale"
 		},
 		"timeFormats": {
 			"12hour": "12 Hours",
@@ -78,6 +79,9 @@
 		"autoScale": {
 			"helpText": "Automatically scale routes to fit more cards on screen without scrolling",
 			"autoColumnsHelpText": "Disabled when auto-scale is enabled (requires auto columns)"
+		},
+		"minContentScale": {
+			"helpText": "Lower values fit more routes but make content smaller. Higher values keep content larger but may require scrolling."
 		},
 		"buttons": {
 			"cancel": "Cancel",
