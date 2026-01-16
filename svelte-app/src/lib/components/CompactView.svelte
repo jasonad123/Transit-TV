@@ -610,8 +610,8 @@
 <style>
 	.table-view-route {
 		width: 100%;
-		padding: 0.5em;
-		margin-bottom: 1em;
+		padding: 0.3em;
+		margin-bottom: 0.3em;
 		box-sizing: border-box;
 		max-width: 100%;
 		height: 100%;

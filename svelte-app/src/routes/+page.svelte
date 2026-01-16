@@ -1138,64 +1138,18 @@
 		grid-template-columns: repeat(8, minmax(0, 1fr));
 	}
 
-	/* Fix for compact view horizontal scrolling - use flex layout like RouteItem */
+	/* Fix for compact view - use grid with explicit gap */
 	#routes.compact-view {
 		display: grid;
-		flex-wrap: wrap;
-		align-content: flex-start;
-		justify-content: flex-start;
+		gap: 0.4em;
 	}
 
 	#routes.compact-view .route-wrapper {
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
-		padding: 0.5em;
-		/* Default auto mode: consistent responsive layout matching grid's auto-fit behavior */
-		flex: 0 1 280px; /* Grow equally, shrink equally, base width 280px */
-		min-width: 280px; /* Never shrink below minimum */
-		max-width: 100%; /* Prevent overflow on small screens */
-	}
-
-	/* Column width overrides for compact view (flex-based) */
-	#routes.compact-view.cols-1 .route-wrapper {
-		width: 100%;
-		flex: 0 0 100%; /* Don't grow/shrink, stay at 100% */
-	}
-
-	#routes.compact-view.cols-2 .route-wrapper {
-		flex: 0 0 50%;
-		max-width: 50%;
-	}
-
-	#routes.compact-view.cols-3 .route-wrapper {
-		flex: 0 0 33.333%;
-		max-width: 33.333%;
-	}
-
-	#routes.compact-view.cols-4 .route-wrapper {
-		flex: 0 0 25%;
-		max-width: 25%;
-	}
-
-	#routes.compact-view.cols-5 .route-wrapper {
-		flex: 0 0 20%;
-		max-width: 20%;
-	}
-
-	#routes.compact-view.cols-6 .route-wrapper {
-		flex: 0 0 16.666%;
-		max-width: 16.666%;
-	}
-
-	#routes.compact-view.cols-7 .route-wrapper {
-		flex: 0 0 14.285%;
-		max-width: 14.285%;
-	}
-
-	#routes.compact-view.cols-8 .route-wrapper {
-		flex: 0 0 12.5%;
-		max-width: 12.5%;
+		padding: 0;
+		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
 	.route-controls {
