@@ -1058,44 +1058,72 @@
 	{/if}
 
 	{#if relevantAlerts.length > 0}
-		<div>
-			<div
-				class="route-alert-header"
-				class:severe={mostSevereLevel === 'severe'}
-				class:warning={mostSevereLevel === 'warning'}
-				class:info={mostSevereLevel === 'info'}
-				style={mostSevereLevel === 'info'
-					? `${cellStyle}; --alert-bg-color: #${route.route_color}`
-					: ''}
-			>
-				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span
-					class="alert-header-text"
-					class:scrolling={isAlertHeaderOverflowing}
-					use:bindAlertHeaderElement
-					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
+		{#if $config.minimalAlerts}
+			<div>
+				<div
+					class="route-alert-header minimal"
+					class:severe={mostSevereLevel === 'severe'}
+					class:warning={mostSevereLevel === 'warning'}
+					class:info={mostSevereLevel === 'info'}
+					style={mostSevereLevel === 'info'
+						? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+						: ''}
 				>
-			</div>
-			<div
-				class="route-alert-ticker"
-				class:grouped-alerts={$config.groupItinerariesByStop}
-				style={cellStyle}
-			>
-				<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
-					{#each parseAlertContent(alertText) as content}
-						{#if content.type === 'text'}
-							{content.value}
-						{:else if content.type === 'image'}
-							<img
-								src="/api/images/{extractImageId(content.value)}"
-								alt="transit icon"
-								class="alert-image"
-							/>
-						{/if}
-					{/each}
+					<iconify-icon icon={mostSevereIcon}></iconify-icon>
+					<span
+						class="alert-header-text-minimal"
+						class:scrolling={isAlertHeaderOverflowing}
+						use:bindAlertHeaderElement
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
+					>
+					<span class="alert-count-badge">{relevantAlertCount}</span>
 				</div>
 			</div>
-		</div>
+		{:else}
+			<div>
+				<div
+					class="route-alert-header"
+					class:severe={mostSevereLevel === 'severe'}
+					class:warning={mostSevereLevel === 'warning'}
+					class:info={mostSevereLevel === 'info'}
+					style={mostSevereLevel === 'info'
+						? `${cellStyle}; --alert-bg-color: #${route.route_color}`
+						: ''}
+				>
+					<iconify-icon icon={mostSevereIcon}></iconify-icon>
+					<span
+						class="alert-header-text"
+						class:scrolling={isAlertHeaderOverflowing}
+						use:bindAlertHeaderElement
+						>{$_('alerts.title')} - {[alertRouteName, alertModeName]
+							.filter(Boolean)
+							.join(' ')}</span
+					>
+					<span class="alert-count-badge">{relevantAlertCount}</span>
+				</div>
+				<div
+					class="route-alert-ticker"
+					class:grouped-alerts={$config.groupItinerariesByStop}
+					style={cellStyle}
+				>
+					<div class="alert-text" class:scrolling={shouldScrollAlert} use:bindAlertElement>
+						{#each parseAlertContent(alertText) as content}
+							{#if content.type === 'text'}
+								{content.value}
+							{:else if content.type === 'image'}
+								<img
+									src="/api/images/{extractImageId(content.value)}"
+									alt="transit icon"
+									class="alert-image"
+								/>
+							{/if}
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -1121,7 +1149,6 @@
 
 	.route > div:last-child {
 		flex-shrink: 0;
-		/* padding: 0 0.25em 0; */
 	}
 
 	.route h2 {
@@ -1593,5 +1620,69 @@
 
 	.route.white .inactive {
 		background-image: url('/assets/images/inactive@2x.png');
+	}
+
+	/* Minimal alert mode styling */
+	.route-alert-header.minimal {
+		justify-content: center;
+		padding: 0.75em 0.5em 0.5em;
+		max-width: 100%;
+		overflow: hidden;
+		border-radius: 0.5em;
+		border-bottom: none !important;
+	}
+
+	.route-alert-header.minimal .alert-header-text-minimal {
+		display: inline-block;
+		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.route-alert-header.minimal .alert-header-text-minimal.scrolling {
+		animation: scroll-alert-header-horizontal 150s linear infinite;
+		will-change: transform;
+		overflow: visible;
+	}
+
+	.route-alert-header.minimal .alert-header-text-minimal:not(.scrolling) {
+		will-change: auto;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.alert-count-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.3);
+		color: inherit;
+		border-radius: 40rem;
+		padding: 5px 0.5em;
+		font-size: 1em;
+		font-weight: 800;
+		line-height: 1;
+		min-width: 1.35em;
+		z-index: 3;
+		flex-shrink: 1;
+		transform: translateY(-0.1em);
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.route-alert-header.minimal .alert-count-badge {
+		transform: translateY(-0.15em) !important;
+	}
+
+	.route-alert-header.severe .alert-count-badge {
+		background: color-mix(in srgb, #e30613, white 30%) 0%;
+	}
+
+	.route-alert-header.warning .alert-count-badge {
+		background: color-mix(in srgb, #ffa700, white 30%) 0%;
+	}
+
+	.route-alert-header.info .alert-count-badge {
+		background: color-mix(in srgb, var(--alert-bg-color), white 30%) 0%;
 	}
 </style>
