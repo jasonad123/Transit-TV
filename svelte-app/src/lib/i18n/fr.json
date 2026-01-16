@@ -74,7 +74,8 @@
 			"scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d’arrêt en une seule carte (Cette fonctionnalité n'est pas prise en charge en mode Compact . Cette fonctionnalité est activée par défaut en mode Liste.)",
+			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d'arrêt en une seule carte (N'est pas prise en charge en mode Compact . Est activée par défaut en mode Liste.)",
+			"groupDisabledInCompactMode": "Cette option est désactivée en mode Compact",
 			"filterTerminushelpText": "Aux stations terminus, afficher uniquement les directions opposées ou sortantes"
 		},
 		"routeDisplay": {

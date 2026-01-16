@@ -74,7 +74,8 @@
 			"scanPrompt2": "Escanea para abrir en la aplicación Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (Esta función no es compatible con el modo Compacto. Esta función está habilitada de forma predeterminada en el modo Lista.)",
+			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (No es compatible con el modo Compacto. Esta habilitada de forma predeterminada en el modo Lista.)",
+			"groupDisabledInCompactMode": "Esta opción está desactivada en modo Compacto.",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
 		"routeDisplay": {

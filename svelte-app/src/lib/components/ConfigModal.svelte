@@ -427,14 +427,18 @@
 
 				<SolidSection title={$_('config.sections.routeOptions')}>
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.groupItinerariesByStop}>
+						<Toggle bind:checked={$config.groupItinerariesByStop} disabled={$config.viewMode === 'compact'}>
 							{#snippet label()}
 								<span>{$_('config.fields.groupItinerariesByStop')}</span>
 							{/snippet}
 						</Toggle>
-						<small class="toggle-help-text"
-							>{$_('config.stopManagement.groupItinerarieshelpText')}</small
-						>
+						{#if $config.viewMode === 'compact'}
+							<small class="toggle-help-text">{$_('config.stopManagement.groupDisabledInCompactMode')}</small>
+						{:else}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
+							>
+						{/if}
 					</div>
 
 					<div class="toggle-container">
@@ -655,6 +659,12 @@
 		line-height: 1;
 	}
 
+	.config-modal button iconify-icon {
+		display: block;
+		width: 1.25em;
+		height: 1.25em;
+	}
+
 	.btn-save {
 		background: #30b566;
 		color: white;
@@ -719,9 +729,9 @@
 
 	.btn-slider-reset iconify-icon {
 		display: block;
-		width: 1.25em;
+		width: 1em;
 		height: 1.25em;
-		font-size: 1.25rem;
+		font-size: 1rem;
 	}
 
 	.toggle-container {
