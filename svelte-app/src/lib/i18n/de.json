@@ -108,7 +108,7 @@
 	},
 	"alerts": {
 		"default": "Störungsinformation",
-		"title": "Meldungen"
+		"title": "Störungen"
 	},
 	"time": {
 		"min": "min",

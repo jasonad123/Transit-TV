@@ -41,7 +41,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.4'); // Fallback version
+	let appVersion = $state<string>('1.3.5'); // Fallback version
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -1748,44 +1748,4 @@
 		text-decoration: underline;
 	}
 
-	/* QR Code Section Styles */
-
-	/* .qr-section {
-		margin-top: 1em;
-		padding: 1em;
-		background: var(--bg-secondary);
-		border-radius: 8px;
-		text-align: center;
-	}
-
-	.qr-section h3 {
-		margin: 0 0 0.5em 0;
-		font-size: 1.1em;
-		color: var(--text-primary);
-	}
-
-	.qr-section .help-text {
-		margin: 0 0 1em 0;
-		font-size: 0.9em;
-		color: var(--text-secondary);
-	}
-
-	.qr-display {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background: white;
-		padding: 1.5em;
-		border-radius: 8px;
-		width: fit-content;
-		margin: 0 auto;
-		border: 2px solid #ddd;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	[data-theme="dark"] .qr-display {
-		background: white;
-		border-color: #666;
-		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-	} */
 </style>
