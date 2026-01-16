@@ -32,7 +32,8 @@
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
 			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
-			"autoScaleContent": "Routen automatisch an Bildschirm anpassen"
+			"autoScaleContent": "Routen automatisch an Bildschirm anpassen",
+			"minContentScale": "Minimale Skalierung"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -90,6 +91,9 @@
 		"autoScale": {
 			"helpText": "Routen automatisch skalieren, um mehr Karten ohne Scrollen anzuzeigen",
 			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
+		},
+		"minContentScale": {
+			"helpText": "Kleinere Werte zeigen mehr Routen, verkleinern aber den Inhalt. Höhere Werte halten den Inhalt größer, erfordern aber möglicherweise Scrollen."
 		},
 		"buttons": {
 			"cancel": "Stornieren",

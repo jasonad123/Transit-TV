@@ -29,6 +29,7 @@ export interface Config {
 	minimalAlerts: boolean;
 	autoScaleContent: boolean;
 	manualColumnsMode: boolean;
+	minContentScale: number;
 }
 
 const defaultConfig: Config = {
@@ -55,7 +56,8 @@ const defaultConfig: Config = {
 	viewMode: 'card',
 	minimalAlerts: false,
 	autoScaleContent: false,
-	manualColumnsMode: false
+	manualColumnsMode: false,
+	minContentScale: 0.72
 };
 
 function createConfigStore() {

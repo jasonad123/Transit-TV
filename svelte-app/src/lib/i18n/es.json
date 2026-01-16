@@ -32,7 +32,8 @@
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
 			"minimalAlerts": "Mostrar alertas mínimas",
-			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla"
+			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla",
+			"minContentScale": "Escala mínima"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -90,6 +91,9 @@
 		"autoScale": {
 			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
 			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
+		},
+		"minContentScale": {
+			"helpText": "Los valores más bajos muestran más rutas pero reducen el contenido. Los valores más altos mantienen el contenido más grande pero pueden requerir desplazamiento."
 		},
 		"buttons": {
 			"cancel": "Cancelar",
