@@ -188,22 +188,34 @@
 					{#if $config.manualColumnsMode && typeof $config.columns === 'number'}
 						<label>
 							{$_('config.fields.columns')}
-							<input
-								type="range"
-								min="1"
-								max="8"
-								value={$config.columns}
-								class="styled-slider"
-								style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
-								oninput={(e) => {
-									const value = parseInt(e.currentTarget.value);
-									const clampedValue = Math.max(1, Math.min(8, value));
-									config.update((c) => ({
-										...c,
-										columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-									}));
-								}}
-							/>
+							<div class="slider-with-reset">
+								<input
+									type="range"
+									min="1"
+									max="8"
+									value={$config.columns}
+									class="styled-slider"
+									style="--slider-progress: {(($config.columns - 1) / (8 - 1)) * 100}%"
+									oninput={(e) => {
+										const value = parseInt(e.currentTarget.value);
+										const clampedValue = Math.max(1, Math.min(8, value));
+										config.update((c) => ({
+											...c,
+											columns: clampedValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+										}));
+									}}
+								/>
+								<button
+									type="button"
+									class="btn-slider-reset"
+									onclick={() => {
+										config.update((c) => ({ ...c, columns: 4 as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
+								>
+									<iconify-icon icon="ix:refresh"></iconify-icon>
+								</button>
+							</div>
 							<div class="slider-value">
 								{$_('config.columns.word', { values: { count: $config.columns } })}
 							</div>
@@ -263,7 +275,7 @@
 									}}
 									title={$_('config.buttons.resetToDefault')}
 								>
-									<iconify-icon icon="mdi:refresh"></iconify-icon>
+									<iconify-icon icon="ix:refresh"></iconify-icon>
 								</button>
 							</div>
 							<div class="slider-value">
