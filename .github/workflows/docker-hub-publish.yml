@@ -3,7 +3,7 @@ name: Build and publish standard Docker image (Docker Hub)
 on:
   push:
     tags:
-      - 'v*'  # Semantic version tags (v1.2.3, v1.2.3-beta.1, etc.)
+      - 'v*'  # Semantic version tags (v1.2.3, v1.2.3-rc.1, etc.)
   workflow_dispatch:
     inputs:
       release_type:
@@ -12,7 +12,6 @@ on:
         type: choice
         options:
           - stable
-          - beta
           - test
         default: 'test'
       custom_tag:
@@ -104,15 +103,6 @@ jobs:
             if [[ "$RELEASE_TYPE" == "stable" ]]; then
               echo "version=stable-${SHORT_SHA}" >> $GITHUB_OUTPUT
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
-            elif [[ "$RELEASE_TYPE" == "beta" ]]; then
-              TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-              if [[ -n "${{ inputs.custom_tag }}" ]]; then
-                CUSTOM=$(echo "${{ inputs.custom_tag }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
-                echo "version=beta-${CUSTOM}-${SHORT_SHA}" >> $GITHUB_OUTPUT
-              else
-                echo "version=beta-${TIMESTAMP}-${SHORT_SHA}" >> $GITHUB_OUTPUT
-              fi
-              echo "is_prerelease=true" >> $GITHUB_OUTPUT
             else
               # Test build
               if [[ -n "${{ inputs.custom_tag }}" ]]; then
@@ -130,7 +120,25 @@ jobs:
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Skip alpha and beta releases
+        if: steps.version.outputs.release_type == 'alpha' || steps.version.outputs.release_type == 'beta'
+        run: |
+          echo "Skipping Docker Hub publish for ${{ steps.version.outputs.release_type }} releases"
+          echo "Only RC and stable releases are published to Docker Hub"
+          exit 0
+
+      - name: Check if should continue
+        id: should_continue
+        run: |
+          RELEASE_TYPE="${{ steps.version.outputs.release_type }}"
+          if [[ "$RELEASE_TYPE" == "alpha" || "$RELEASE_TYPE" == "beta" ]]; then
+            echo "continue=false" >> $GITHUB_OUTPUT
+          else
+            echo "continue=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Extract metadata and generate tags
+        if: steps.should_continue.outputs.continue == 'true'
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
@@ -141,17 +149,9 @@ jobs:
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'stable' }}
             type=raw,value=latest,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'stable' }}
 
-            # Beta: tags 'v1.2.3-beta.1' and 'beta'
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'beta' }}
-            type=raw,value=beta,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'beta' }}
-
             # RC: tags 'v1.2.3-rc.1' and 'rc'
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'rc' }}
             type=raw,value=rc,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'rc' }}
-
-            # Alpha
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'alpha' }}
-            type=raw,value=alpha,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'alpha' }}
 
             # Manual
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
@@ -166,6 +166,7 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Build and push Docker image
+        if: steps.should_continue.outputs.continue == 'true'
         id: build
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
@@ -182,6 +183,7 @@ jobs:
           sbom: false
 
       - name: Verify pushed images
+        if: steps.should_continue.outputs.continue == 'true'
         run: |
           echo "Verifying pushed images..."
           echo "Image digest: ${{ steps.build.outputs.digest }}"
@@ -199,6 +201,7 @@ jobs:
           done
 
       - name: Generate summary
+        if: steps.should_continue.outputs.continue == 'true'
         run: |
           echo "## Standard Docker Image Published to Docker Hub" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -211,8 +214,8 @@ jobs:
               echo "**Release Type:** Stable Release (Latest)" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
-            "beta")
-              echo "**Release Type:** Beta Prerelease" >> $GITHUB_STEP_SUMMARY
+            "rc")
+              echo "**Release Type:** Release Candidate" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
             *)
