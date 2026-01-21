@@ -1013,7 +1013,7 @@
 	}
 
 	.content {
-		height: calc(100vh - 4.9em);
+		height: calc(100vh - 3em);
 		position: relative;
 	}
 
@@ -1056,13 +1056,13 @@
 	}
 
 	.transit-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		display: block;
 	}
 
 	.custom-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		max-width: 120px;
 		object-fit: contain;
@@ -1084,7 +1084,7 @@
 
 	#title h1 {
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		font-size: 2em;
+		font-size: 1.75em;
 		vertical-align: middle;
 		display: inline-block;
 		line-height: 1.4em;
@@ -1133,7 +1133,7 @@
 	}
 
 	.clock {
-		font-size: 1.8em;
+		font-size: 1.5em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		line-height: 2.1em;
 		font-weight: 500;
