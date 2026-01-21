@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, scale } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
@@ -52,7 +52,28 @@
 	let isTransitioning = false;
 	let lastScaledRouteCount = $state(0);
 	let lastContentSignature = ''; // Track content changes beyond just route count
-	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
+	let resizeObserver: ResizeObserver | null = null;
+	let measurementRetryTimeout: ReturnType<typeof setTimeout> | null = null;
+	const MAX_MEASUREMENT_RETRIES = 2;
+	let measurementRetries = 0;
+
+	// Get transition duration dynamically from computed styles
+	function getTransitionDuration(): number {
+		if (!routesElement) return 200;
+		const style = getComputedStyle(routesElement);
+		const duration = parseFloat(style.transitionDuration) * 1000;
+		return duration || 200; // Fallback to 200ms
+	}
+
+	// Calculate scale value from measurements
+	function calculateScale(
+		naturalHeight: number,
+		availableHeight: number,
+		minScale: number
+	): number {
+		const ratio = availableHeight / naturalHeight;
+		return Math.min(1.0, Math.max(minScale, ratio));
+	}
 
 	let shouldApplyAutoScale = $derived(
 		$config.autoScaleContent &&
@@ -151,7 +172,17 @@
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
 		return routes
-			.map((r) => `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}`)
+			.map((r) => {
+				const itineraryTextLen = r.itineraries
+					?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+					.reduce((a, b) => a + b, 0) || 0;
+				const alertTextLen = r.alerts
+					?.map((a) => a.description?.length || 0)
+					.reduce((a, b) => a + b, 0) || 0;
+				const splitCount = (r as any)._totalSplits || 1;
+
+				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+			})
 			.join('|');
 	}
 
@@ -391,7 +422,7 @@
 		}
 	}
 
-	function calculateContentScale(forceRecalc = false) {
+	function calculateContentScale(forceRecalc = false, fastPath = false) {
 		if (!routesElement || !shouldApplyAutoScale || !tabVisible) {
 			if (!shouldApplyAutoScale) {
 				contentScale = 1.0;
@@ -405,15 +436,19 @@
 			clearTimeout(scaleCheckTimeout);
 		}
 
+		// Use shorter debounce for fast-path (when autoscale just enabled)
+		const debounceDelay = fastPath ? 50 : 150;
+
 		scaleCheckTimeout = setTimeout(() => {
-			// Prevent concurrent calculations or calculations during transitions
-			// Exception: forced recalculations (like resize) can interrupt transitions
-			if (isCalculatingScale || (!forceRecalc && isTransitioning)) {
+			// Prevent concurrent calculations
+			// Only block on transitions for manual resize events (forceRecalc)
+			// Allow content-driven rescales even during transitions
+			if (isCalculatingScale || (forceRecalc && isTransitioning)) {
 				return;
 			}
 			isCalculatingScale = true;
 
-			requestAnimationFrame(() => {
+			requestAnimationFrame(async () => {
 				try {
 					// Verify element is still in DOM
 					if (!routesElement || !routesElement.isConnected) {
@@ -423,25 +458,46 @@
 					// Use untrack to prevent contentScale from being a dependency
 					const previousScale = untrack(() => contentScale);
 
-					// Temporarily reset to 100% to measure natural height
-					const prevFontSize = routesElement.style.fontSize;
-					routesElement.style.fontSize = '100%';
+					// Clone element for measurement without visual flash
+					const clone = routesElement.cloneNode(true) as HTMLElement;
+					clone.style.position = 'absolute';
+					clone.style.top = '-9999px';
+					clone.style.left = '-9999px';
+					clone.style.fontSize = '100%';
+					clone.style.visibility = 'hidden';
+					document.body.appendChild(clone);
 
-					// Force layout recalculation
-					routesElement.offsetHeight;
+					// Force layout and measure
+					clone.offsetHeight;
+					const naturalHeight = clone.scrollHeight;
 
-					// Measure natural height at 100% scale
-					const naturalHeight = routesElement.scrollHeight;
+					// Cleanup
+					document.body.removeChild(clone);
 
-					// Restore previous font-size (to avoid visual flash)
-					routesElement.style.fontSize = prevFontSize;
+					// Check if height is stable (not mid-animation)
+					const heightBefore = naturalHeight;
+					await new Promise(resolve => setTimeout(resolve, 50));
+
+					// Remeasure actual element to check stability
+					const currentHeight = routesElement.scrollHeight;
+
+					if (Math.abs(currentHeight - heightBefore) > 5 && measurementRetries < MAX_MEASUREMENT_RETRIES) {
+						measurementRetries++;
+						if (measurementRetryTimeout) {
+							clearTimeout(measurementRetryTimeout);
+						}
+						measurementRetryTimeout = setTimeout(() => {
+							calculateContentScale(forceRecalc, fastPath);
+						}, getTransitionDuration());
+						return;
+					}
+					measurementRetries = 0; // Reset on stable measurement
 
 					const headerHeight =
 						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
-					const calculatedScale = availableHeight / naturalHeight;
-					const newScale = Math.min(1.0, Math.max($config.minContentScale, calculatedScale));
+					const newScale = calculateScale(naturalHeight, availableHeight, $config.minContentScale);
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
@@ -457,7 +513,7 @@
 						transitionTimeout = setTimeout(() => {
 							isTransitioning = false;
 							transitionTimeout = null;
-						}, TRANSITION_DURATION);
+						}, getTransitionDuration());
 					}
 
 					// Track that we've scaled for this route count
@@ -466,7 +522,7 @@
 					isCalculatingScale = false;
 				}
 			});
-		}, 300); // Increased debounce to reduce sensitivity to animations
+		}, debounceDelay);
 	}
 
 	onMount(async () => {
@@ -529,6 +585,16 @@
 
 		// Mark as mounted to enable reactive width effects
 		isMounted = true;
+
+		// Initialize ResizeObserver for content height changes
+		if (browser && routesElement) {
+			resizeObserver = new ResizeObserver(() => {
+				if (shouldApplyAutoScale && !isCalculatingScale) {
+					calculateContentScale(false, false);
+				}
+			});
+			resizeObserver.observe(routesElement);
+		}
 	});
 
 	// React to screen width changes (only after mount to avoid double loading)
@@ -606,7 +672,7 @@
 				const justEnabled = !wasAutoScaleEnabled && currentAutoScale;
 
 				if (justEnabled || signatureChanged) {
-					calculateContentScale(justEnabled);
+					calculateContentScale(justEnabled, justEnabled);
 				}
 
 				wasAutoScaleEnabled = true;
@@ -638,6 +704,12 @@
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
+		}
+		if (resizeObserver) {
+			resizeObserver.disconnect();
+		}
+		if (measurementRetryTimeout) {
+			clearTimeout(measurementRetryTimeout);
 		}
 	});
 
@@ -819,6 +891,7 @@
 		{validationSuccess}
 		{columnsWarning}
 		{appVersion}
+		{contentScale}
 		onclose={closeConfig}
 		{useCurrentLocation}
 		{handleLocationInputBlur}
