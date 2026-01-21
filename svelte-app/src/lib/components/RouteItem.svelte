@@ -1150,7 +1150,7 @@
 	}
 
 	.route > div {
-		padding: 0.25em 0.25em 0.5em;
+		padding: 0.25em 0.25em 0.3em;
 		border-radius: 0.5em;
 	}
 
@@ -1311,14 +1311,14 @@
 		border-radius: 0 0 0.5em 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5em, 9vh, 10em);
+		height: clamp(5em, 6vh, 9em);
 		flex-shrink: 0;
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-			height: clamp(5em, 8vh, 8em);
+			height: clamp(5em, 5vh, 5em);
 		}
 	}
 
