@@ -55,7 +55,7 @@ const defaultConfig: Config = {
 	minimalAlerts: false,
 	autoScaleContent: false,
 	manualColumnsMode: false,
-	minContentScale: 0.72
+	minContentScale: 0.72 // Balances density with readability for 10-12 routes on 1080p display
 };
 
 function createConfigStore() {
