@@ -21,6 +21,7 @@
 		validationSuccess: boolean | null;
 		columnsWarning: string | null;
 		appVersion: string;
+		contentScale: number;
 		onclose: () => void;
 		useCurrentLocation: () => void;
 		handleLocationInputBlur: () => void;
@@ -38,6 +39,7 @@
 		validationSuccess,
 		columnsWarning,
 		appVersion,
+		contentScale,
 		onclose,
 		useCurrentLocation,
 		handleLocationInputBlur,
@@ -332,6 +334,11 @@
 							<div class="slider-value">
 								{Math.round($config.minContentScale * 100)}%
 							</div>
+							{#if contentScale < 1}
+								<div class="current-scale-indicator">
+									{$_('config.autoScale.currentScale')} {Math.round(contentScale * 100)}%
+								</div>
+							{/if}
 							<small class="help-text" style="display: block; margin-top: 0.25rem;">
 								{$_('config.minContentScale.helpText')}
 							</small>
@@ -757,6 +764,18 @@
 		font-weight: 500;
 		margin-top: 0.5em;
 		color: var(--text-primary);
+	}
+
+	.current-scale-indicator {
+		text-align: center;
+		font-size: 0.85em;
+		font-weight: 600;
+		margin-top: 0.4em;
+		padding: 0.4em 0.8em;
+		background: var(--bg-header);
+		color: white;
+		border-radius: 4px;
+		opacity: 0.9;
 	}
 
 	.hidden-routes-list {

@@ -91,7 +91,8 @@
 		},
 		"autoScale": {
 			"helpText": "Automatically scale routes to fit more cards on screen without scrolling",
-			"autoColumnsHelpText": "Disabled when auto-scale is enabled (requires auto columns)"
+			"autoColumnsHelpText": "Disabled when auto-scale is enabled (requires auto columns)",
+			"currentScale": "Currently scaled to:"
 		},
 		"minContentScale": {
 			"helpText": "Lower values fit more routes but make content smaller. Higher values keep content larger but may require scrolling."
