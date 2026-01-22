@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import { fade, scale } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
@@ -53,9 +53,6 @@
 	let lastScaledRouteCount = $state(0);
 	let lastContentSignature = ''; // Track content changes beyond just route count
 	let resizeObserver: ResizeObserver | null = null;
-	let measurementRetryTimeout: ReturnType<typeof setTimeout> | null = null;
-	const MAX_MEASUREMENT_RETRIES = 2;
-	let measurementRetries = 0;
 
 	// Get transition duration dynamically from computed styles
 	function getTransitionDuration(): number {
@@ -448,7 +445,7 @@
 			}
 			isCalculatingScale = true;
 
-			requestAnimationFrame(async () => {
+			requestAnimationFrame(() => {
 				try {
 					// Verify element is still in DOM
 					if (!routesElement || !routesElement.isConnected) {
@@ -474,27 +471,8 @@
 					// Cleanup
 					document.body.removeChild(clone);
 
-					// Check if height is stable (not mid-animation)
-					const heightBefore = naturalHeight;
-					await new Promise(resolve => setTimeout(resolve, 50));
-
-					// Remeasure actual element to check stability
-					const currentHeight = routesElement.scrollHeight;
-
-					if (Math.abs(currentHeight - heightBefore) > 5 && measurementRetries < MAX_MEASUREMENT_RETRIES) {
-						measurementRetries++;
-						if (measurementRetryTimeout) {
-							clearTimeout(measurementRetryTimeout);
-						}
-						measurementRetryTimeout = setTimeout(() => {
-							calculateContentScale(forceRecalc, fastPath);
-						}, getTransitionDuration());
-						return;
-					}
-					measurementRetries = 0; // Reset on stable measurement
-
 					const headerHeight =
-						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+						3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
 					const newScale = calculateScale(naturalHeight, availableHeight, $config.minContentScale);
@@ -585,16 +563,6 @@
 
 		// Mark as mounted to enable reactive width effects
 		isMounted = true;
-
-		// Initialize ResizeObserver for content height changes
-		if (browser && routesElement) {
-			resizeObserver = new ResizeObserver(() => {
-				if (shouldApplyAutoScale && !isCalculatingScale) {
-					calculateContentScale(false, false);
-				}
-			});
-			resizeObserver.observe(routesElement);
-		}
 	});
 
 	// React to screen width changes (only after mount to avoid double loading)
@@ -683,6 +651,32 @@
 		});
 	});
 
+	// Initialize ResizeObserver when routesElement becomes available
+	$effect(() => {
+		if (browser && routesElement && shouldApplyAutoScale) {
+			// Cleanup previous observer if it exists
+			if (resizeObserver) {
+				resizeObserver.disconnect();
+			}
+
+			// Create new observer
+			resizeObserver = new ResizeObserver(() => {
+				if (shouldApplyAutoScale && !isCalculatingScale) {
+					calculateContentScale(false, false);
+				}
+			});
+			resizeObserver.observe(routesElement);
+
+			// Cleanup function
+			return () => {
+				if (resizeObserver) {
+					resizeObserver.disconnect();
+					resizeObserver = null;
+				}
+			};
+		}
+	});
+
 	onDestroy(() => {
 		if (intervalId) {
 			clearInterval(intervalId);
@@ -707,9 +701,6 @@
 		}
 		if (resizeObserver) {
 			resizeObserver.disconnect();
-		}
-		if (measurementRetryTimeout) {
-			clearTimeout(measurementRetryTimeout);
 		}
 	});
 
