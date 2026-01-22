@@ -24,7 +24,9 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas"
+			"minimalAlerts": "Mostrar alertas mínimas",
+			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla",
+			"minContentScale": "Escala mínima"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -38,7 +40,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Control manual de columna",
+			"automaticColumnControl": "Usando diseño de columna automático",
+			"word": "{count, plural, one {1 columna} other {{count} columnas}}",
+			"columnWarning": "Es posible que las columnas sean demasiado estrechas con este ancho de pantalla. ({nomColWidth}px por columna)"
 		},
 		"theme": {
 			"light": "Claro",
@@ -70,6 +76,13 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
+		"autoScale": {
+			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
+			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
+		},
+		"minContentScale": {
+			"helpText": "Los valores más bajos muestran más rutas pero reducen el contenido. Los valores más altos mantienen el contenido más grande pero pueden requerir desplazamiento."
+		},
 		"buttons": {
 			"cancel": "Cancelar",
 			"save": "Ahorrar",
@@ -85,7 +98,16 @@
 			"geolocationPermissionDenied": "Permiso de ubicación denegado",
 			"geolocationUnavailable": "Información de ubicación no disponible",
 			"geolocationTimeout": "La solicitud de ubicación ha caducado.",
-			"geolocationError": "Ocurrió un error desconocido"
+			"geolocationError": "Ocurrió un error desconocido",
+			"pickOnMap": "Seleccionar en el mapa",
+			"mapPicker": {
+				"title": "Elegir ubicación",
+				"instructions": "Arrastra el pin o haz clic en el mapa para establecer tu ubicación",
+				"coordinates": "Coordenadas",
+				"useMyLocation": "Usar mi ubicación",
+				"save": "Guardar ubicación",
+				"cancel": "Cancelar"
+			}
 		}
 	},
 	"routes": {

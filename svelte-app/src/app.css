@@ -95,18 +95,18 @@ button {
 
 @media (min-width: 1920px) {
 	body {
-		font-size: 18px;
+		font-size: 20px;
 	}
 }
 
 @media (min-width: 2560px) {
 	body {
-		font-size: 20px;
+		font-size: 22px;
 	}
 }
 
 @media (min-width: 3840px) {
 	body {
-		font-size: 22px;
+		font-size: 24px;
 	}
 }
