@@ -170,7 +170,7 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return routes
+		return `${$config.viewMode}:` + routes
 			.map((r) => {
 				const itineraryTextLen = r.itineraries
 					?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
