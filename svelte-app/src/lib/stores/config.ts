@@ -94,8 +94,18 @@ function createConfigStore() {
 							parsed.scaleMode = parsed.autoScaleContent ? 'auto' : 'manual';
 							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.72;
 							parsed.manualScale = 1.0;
+							// When migrating to auto mode, ensure columns are set to auto
+							if (parsed.scaleMode === 'auto') {
+								parsed.columns = 'auto';
+								parsed.manualColumnsMode = false;
+							}
 							delete parsed.autoScaleContent;
 							delete parsed.minContentScale;
+						}
+						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
+						if (parsed.scaleMode === 'auto' && parsed.columns !== 'auto') {
+							parsed.columns = 'auto';
+							parsed.manualColumnsMode = false;
 						}
 						set({
 							...defaultConfig,
@@ -131,8 +141,18 @@ function createConfigStore() {
 							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
 							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.72;
 							unattendedConfig.manualScale = 1.0;
+							// When migrating to auto mode, ensure columns are set to auto
+							if (unattendedConfig.scaleMode === 'auto') {
+								unattendedConfig.columns = 'auto';
+								unattendedConfig.manualColumnsMode = false;
+							}
 							delete unattendedConfig.autoScaleContent;
 							delete unattendedConfig.minContentScale;
+						}
+						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
+						if (unattendedConfig.scaleMode === 'auto' && unattendedConfig.columns !== 'auto') {
+							unattendedConfig.columns = 'auto';
+							unattendedConfig.manualColumnsMode = false;
 						}
 						set({
 							...defaultConfig,
