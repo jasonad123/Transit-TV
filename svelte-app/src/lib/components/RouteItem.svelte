@@ -1524,10 +1524,21 @@
 	}
 
 	.route .time h4 span.cancelled {
-		/* position: relative;
-    	display: inline;  */
-		text-decoration: line-through;
+		position: relative;
+		display: inline-block;
 		opacity: 0.8;
+	}
+
+	.route .time h4 span.cancelled::after {
+		content: '';
+		position: absolute;
+		left: -0.1em;
+		right: -0.1em;
+		top: 50%;
+		height: 0.1em;
+		background: currentColor;
+		transform: rotate(-12deg);
+		transform-origin: center;
 	}
 
 	.route .time h4:nth-child(n + 4) {
