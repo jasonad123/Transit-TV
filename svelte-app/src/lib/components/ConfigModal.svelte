@@ -247,7 +247,12 @@
 								type="button"
 								class="btn-option"
 								class:active={$config.scaleMode === 'auto'}
-								onclick={() => config.update((c) => ({ ...c, scaleMode: 'auto' }))}
+								onclick={() => config.update((c) => ({
+									...c,
+									scaleMode: 'auto',
+									manualColumnsMode: false,
+									columns: 'auto'
+								}))}
 							>
 								{$_('config.scaleMode.auto')}
 							</button>
