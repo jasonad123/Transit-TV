@@ -56,7 +56,7 @@ const defaultConfig: Config = {
 	showRouteLongName: false,
 	viewMode: 'card',
 	minimalAlerts: false,
-	scaleMode: 'auto',
+	scaleMode: 'manual',
 	autoScaleMinimum: 0.72, // Balances density with readability for 10-12 routes on 1080p display
 	manualScale: 1.0,
 	manualColumnsMode: false
