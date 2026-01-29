@@ -73,11 +73,16 @@
 	}
 
 	let shouldApplyAutoScale = $derived(
-		$config.autoScaleContent &&
+		$config.scaleMode === 'auto' &&
 			!$config.isEditing &&
 			routes.length > 0 &&
 			!loading &&
 			$config.columns === 'auto' // Only auto-scale when using auto columns
+	);
+
+	// Effective scale: uses calculated scale for auto mode, config value for manual mode
+	let effectiveScale = $derived(
+		$config.scaleMode === 'manual' ? $config.manualScale : contentScale
 	);
 
 	// Check if manual columns might be too narrow for viewport
@@ -475,7 +480,7 @@
 						3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
-					const newScale = calculateScale(naturalHeight, availableHeight, $config.minContentScale);
+					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
@@ -911,7 +916,7 @@
 			<section
 				id="routes"
 				bind:this={routesElement}
-				style:font-size={shouldApplyAutoScale && contentScale < 1 ? `${contentScale * 100}%` : null}
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) && effectiveScale < 1 ? `${effectiveScale * 100}%` : null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}

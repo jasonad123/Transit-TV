@@ -26,9 +26,10 @@ export interface Config {
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
 	minimalAlerts: boolean;
-	autoScaleContent: boolean;
+	scaleMode: 'auto' | 'manual';
+	autoScaleMinimum: number;
+	manualScale: number;
 	manualColumnsMode: boolean;
-	minContentScale: number;
 }
 
 const defaultConfig: Config = {
@@ -53,9 +54,10 @@ const defaultConfig: Config = {
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
 	minimalAlerts: false,
-	autoScaleContent: false,
-	manualColumnsMode: false,
-	minContentScale: 0.72 // Balances density with readability for 10-12 routes on 1080p display
+	scaleMode: 'auto',
+	autoScaleMinimum: 0.72, // Balances density with readability for 10-12 routes on 1080p display
+	manualScale: 1.0,
+	manualColumnsMode: false
 };
 
 function createConfigStore() {
@@ -85,6 +87,14 @@ function createConfigStore() {
 						if (parsed.maxDistance) {
 							parsed.maxDistance = parseInt(parsed.maxDistance);
 						}
+						// Migrate old autoScaleContent config to new scaleMode
+						if (parsed.autoScaleContent !== undefined && parsed.scaleMode === undefined) {
+							parsed.scaleMode = parsed.autoScaleContent ? 'auto' : 'manual';
+							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.72;
+							parsed.manualScale = 1.0;
+							delete parsed.autoScaleContent;
+							delete parsed.minContentScale;
+						}
 						set({
 							...defaultConfig,
 							...parsed,
@@ -111,6 +121,14 @@ function createConfigStore() {
 						// Ensure maxDistance is always a number, not a string
 						if (unattendedConfig.maxDistance) {
 							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
+						}
+						// Migrate old autoScaleContent config to new scaleMode
+						if (unattendedConfig.autoScaleContent !== undefined && unattendedConfig.scaleMode === undefined) {
+							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
+							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.72;
+							unattendedConfig.manualScale = 1.0;
+							delete unattendedConfig.autoScaleContent;
+							delete unattendedConfig.minContentScale;
 						}
 						set({
 							...defaultConfig,
