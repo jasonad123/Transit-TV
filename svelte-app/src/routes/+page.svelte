@@ -593,7 +593,7 @@
 
 	// Enforce auto columns when auto-scale is enabled
 	$effect(() => {
-		if ($config.autoScaleContent && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
 			config.update((c) => ({
 				...c,
 				columns: 'auto',
@@ -609,7 +609,7 @@
 			config.update((c) => ({ ...c, columns: 4 }));
 		} else if (
 			!$config.manualColumnsMode &&
-			!$config.autoScaleContent &&
+			$config.scaleMode !== 'auto' &&
 			$config.columns !== 'auto'
 		) {
 			// Switching from manual to auto mode
