@@ -1504,9 +1504,8 @@
 	}
 
 	.route .time h4 span.cancelled {
-		/* position: relative;
-    	display: inline;  */
-		text-decoration: line-through;
+		position: relative;
+		display: inline-block;
 		opacity: 0.8;
 	}
 
