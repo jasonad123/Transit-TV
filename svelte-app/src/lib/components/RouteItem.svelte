@@ -1510,6 +1510,18 @@
 		opacity: 0.8;
 	}
 
+	.route .time h4 span.cancelled::after {
+		content: '';
+		position: absolute;
+		left: -0.1em;
+		right: -0.1em;
+		top: 40%;
+		height: 0.125em;
+		background: currentColor;
+		transform: rotate(30deg);
+		transform-origin: top center;
+	}
+
 	.route .time h4:nth-child(n + 4) {
 		display: none;
 	}
