@@ -55,7 +55,7 @@ const defaultConfig: Config = {
 	showRouteLongName: false,
 	minimalAlerts: false,
 	scaleMode: 'manual',
-	autoScaleMinimum: 0.72, // Balances density with readability for 10-12 routes on 1080p display
+	autoScaleMinimum: 0.65, // Balances readability with density; allows ~20-25 routes on 1080p display
 	manualScale: 1.0,
 	manualColumnsMode: false
 };
@@ -91,7 +91,7 @@ function createConfigStore() {
 						let configWasMigrated = false;
 						if (parsed.autoScaleContent !== undefined && parsed.scaleMode === undefined) {
 							parsed.scaleMode = parsed.autoScaleContent ? 'auto' : 'manual';
-							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.72;
+							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.65;
 							parsed.manualScale = 1.0;
 							// When migrating to auto mode, ensure columns are set to auto
 							if (parsed.scaleMode === 'auto') {
@@ -147,7 +147,7 @@ function createConfigStore() {
 							unattendedConfig.scaleMode === undefined
 						) {
 							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
-							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.72;
+							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.65;
 							unattendedConfig.manualScale = 1.0;
 							// When migrating to auto mode, ensure columns are set to auto
 							if (unattendedConfig.scaleMode === 'auto') {
