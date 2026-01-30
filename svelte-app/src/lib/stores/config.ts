@@ -90,6 +90,7 @@ function createConfigStore() {
 							parsed.maxDistance = parseInt(parsed.maxDistance);
 						}
 						// Migrate old autoScaleContent config to new scaleMode
+						let configWasMigrated = false;
 						if (parsed.autoScaleContent !== undefined && parsed.scaleMode === undefined) {
 							parsed.scaleMode = parsed.autoScaleContent ? 'auto' : 'manual';
 							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.72;
@@ -101,11 +102,13 @@ function createConfigStore() {
 							}
 							delete parsed.autoScaleContent;
 							delete parsed.minContentScale;
+							configWasMigrated = true;
 						}
 						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
 						if (parsed.scaleMode === 'auto' && parsed.columns !== 'auto') {
 							parsed.columns = 'auto';
 							parsed.manualColumnsMode = false;
+							configWasMigrated = true;
 						}
 						set({
 							...defaultConfig,
@@ -115,9 +118,14 @@ function createConfigStore() {
 							isEditing: false
 						});
 
+						// Save migrated config back to cookies
+						if (configWasMigrated) {
+							setCookie('config', JSON.stringify(parsed));
+						}
+
 						// Migrate localStorage to cookies if found in localStorage
 						if (browser && localStorage.getItem('config')) {
-							setCookie('config', savedConfig);
+							setCookie('config', JSON.stringify(parsed));
 							localStorage.removeItem('config');
 							console.log('Migrated config from localStorage to cookies');
 						}
@@ -137,7 +145,11 @@ function createConfigStore() {
 							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
 						}
 						// Migrate old autoScaleContent config to new scaleMode
-						if (unattendedConfig.autoScaleContent !== undefined && unattendedConfig.scaleMode === undefined) {
+						let unattendedConfigWasMigrated = false;
+						if (
+							unattendedConfig.autoScaleContent !== undefined &&
+							unattendedConfig.scaleMode === undefined
+						) {
 							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
 							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.72;
 							unattendedConfig.manualScale = 1.0;
@@ -148,17 +160,24 @@ function createConfigStore() {
 							}
 							delete unattendedConfig.autoScaleContent;
 							delete unattendedConfig.minContentScale;
+							unattendedConfigWasMigrated = true;
 						}
 						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
 						if (unattendedConfig.scaleMode === 'auto' && unattendedConfig.columns !== 'auto') {
 							unattendedConfig.columns = 'auto';
 							unattendedConfig.manualColumnsMode = false;
+							unattendedConfigWasMigrated = true;
 						}
 						set({
 							...defaultConfig,
 							...unattendedConfig,
 							isEditing: false
 						});
+
+						// Save migrated unattended config to cookies for persistence
+						if (unattendedConfigWasMigrated) {
+							setCookie('config', JSON.stringify(unattendedConfig));
+						}
 						return;
 					}
 				} catch (e) {
