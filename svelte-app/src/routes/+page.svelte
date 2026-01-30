@@ -90,7 +90,7 @@
 	// Check if manual columns might be too narrow for viewport
 	let columnsWarning = $derived.by(() => {
 		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
-		const minColumnWidth = 280; // Minimum comfortable width per column
+		const minColumnWidth = 300; // Minimum comfortable width per column
 		const estimatedWidth = windowWidth / $config.columns;
 		if (estimatedWidth < minColumnWidth) {
 			const nomColWidth = Math.round(estimatedWidth);
