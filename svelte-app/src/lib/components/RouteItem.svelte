@@ -1534,11 +1534,11 @@
 		position: absolute;
 		left: -0.1em;
 		right: -0.1em;
-		top: 50%;
-		height: 0.1em;
+		top: 40%;
+		height: 0.125em;
 		background: currentColor;
-		transform: rotate(-12deg);
-		transform-origin: center;
+		transform: rotate(30deg);
+		transform-origin: top center;
 	}
 
 	.route .time h4:nth-child(n + 4) {
