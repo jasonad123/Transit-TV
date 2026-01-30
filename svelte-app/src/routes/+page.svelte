@@ -467,6 +467,11 @@
 					clone.style.left = '-9999px';
 					clone.style.fontSize = '100%';
 					clone.style.visibility = 'hidden';
+
+					// Copy the computed grid layout to ensure clone measures correctly
+					const currentGridColumns = window.getComputedStyle(routesElement).gridTemplateColumns;
+					clone.style.gridTemplateColumns = currentGridColumns;
+
 					document.body.appendChild(clone);
 
 					// Force layout and measure
@@ -480,6 +485,19 @@
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
 					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
+
+					// Diagnostic logging in development mode
+					if (import.meta.env.DEV) {
+						console.log('=== AUTO-SCALE DEBUG ===');
+						console.log('Routes:', routes.length);
+						console.log('Natural height:', naturalHeight);
+						console.log('Available height:', availableHeight);
+						console.log('Raw ratio:', (availableHeight / naturalHeight).toFixed(3));
+						console.log('Min scale:', $config.autoScaleMinimum);
+						console.log('Final scale:', newScale);
+						console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
+						console.log('Columns (CSS):', window.getComputedStyle(routesElement).gridTemplateColumns);
+					}
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
