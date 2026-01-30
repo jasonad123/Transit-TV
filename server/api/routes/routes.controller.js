@@ -3,6 +3,28 @@
 const config = require('../../config/environment');
 
 /**
+ * Calculate distance between two coordinates using Haversine formula
+ * @param {number} lat1 - First latitude
+ * @param {number} lon1 - First longitude
+ * @param {number} lat2 - Second latitude
+ * @param {number} lon2 - Second longitude
+ * @returns {number} Distance in meters
+ */
+function haversine(lat1, lon1, lat2, lon2) {
+	const R = 6371000; // Earth radius in meters
+	const φ1 = (lat1 * Math.PI) / 180;
+	const φ2 = (lat2 * Math.PI) / 180;
+	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+	const a =
+		Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	return R * c;
+}
+
+/**
  * Analyzes Transit API response to detect if it contains real-time predictions
  * @param {Object} data - The API response data
  * @returns {boolean} - True if any schedule items have is_real_time: true
@@ -101,12 +123,17 @@ exports.nearby = async function (req, res) {
 		return res.status(400).json({ error: 'Missing required parameters: lat and lon are required' });
 	}
 
-	// Use default max_distance if not provided
-	const distance = max_distance || 1000;
+	// Parse max_distance as integer (query params are strings)
+	const distance = max_distance ? parseInt(max_distance, 10) : 1000;
 
 	// Validate that lat and lon are valid numbers
 	if (isNaN(parseFloat(lat)) || isNaN(parseFloat(lon))) {
 		return res.status(400).json({ error: 'Invalid parameters: lat and lon must be valid numbers' });
+	}
+
+	// Validate distance is a valid number and not negative
+	if (isNaN(distance) || distance < 0) {
+		return res.status(400).json({ error: 'Invalid max_distance parameter' });
 	}
 
 	// Round coordinates to 4 decimal places (~10.1m precision) for effective cache key grouping
@@ -204,6 +231,27 @@ exports.nearby = async function (req, res) {
 			}
 
 			const data = await response.json();
+
+			// Client-side filtering by distance
+			// Transit API v3 doesn't properly respect max_distance, so we filter here
+			if (data.routes && Array.isArray(data.routes)) {
+				data.routes = data.routes.filter((route) => {
+					// Keep route if ANY of its stops are within max_distance
+					return (
+						route.itineraries &&
+						route.itineraries.some((itinerary) => {
+							if (!itinerary.closest_stop) return false;
+							const dist = haversine(
+								parseFloat(lat),
+								parseFloat(lon),
+								itinerary.closest_stop.stop_lat,
+								itinerary.closest_stop.stop_lon
+							);
+							return dist <= distance;
+						})
+					);
+				});
+			}
 
 			// Store in cache if enabled
 			if (CACHE_ENABLED) {
