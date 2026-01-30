@@ -343,7 +343,7 @@
 									type="button"
 									class="btn-slider-reset"
 									onclick={() => {
-										config.update((c) => ({ ...c, autoScaleMinimum: 0.72 }));
+										config.update((c) => ({ ...c, autoScaleMinimum: 0.65 }));
 									}}
 									title={$_('config.buttons.resetToDefault')}
 								>

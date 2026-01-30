@@ -1051,7 +1051,7 @@
 
 	#routes {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(18em, 1fr));
 		gap: 0;
 		transition: font-size 0.4s ease-in;
 	}
