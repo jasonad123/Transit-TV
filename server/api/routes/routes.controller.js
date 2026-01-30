@@ -17,7 +17,9 @@ function haversine(lat1, lon1, lat2, lon2) {
 	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
 	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-	const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+	const a =
+		Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 }
@@ -232,7 +234,9 @@ exports.nearby = async function (req, res) {
 			try {
 				const data = await Promise.race([
 					pending,
-					new Promise((_, reject) => setTimeout(() => reject(new Error('In-flight request timeout')), 15000))
+					new Promise((_, reject) =>
+						setTimeout(() => reject(new Error('In-flight request timeout')), 15000)
+					)
 				]);
 				// Use conservative short TTL for in-flight (no freshness info yet)
 				res.set({
@@ -309,16 +313,19 @@ exports.nearby = async function (req, res) {
 			if (data.routes && Array.isArray(data.routes)) {
 				data.routes = data.routes.filter((route) => {
 					// Keep route if ANY of its stops are within max_distance
-					return route.itineraries && route.itineraries.some((itinerary) => {
-						if (!itinerary.closest_stop) return false;
-						const dist = haversine(
-							parseFloat(lat),
-							parseFloat(lon),
-							itinerary.closest_stop.stop_lat,
-							itinerary.closest_stop.stop_lon
-						);
-						return dist <= distance;
-					});
+					return (
+						route.itineraries &&
+						route.itineraries.some((itinerary) => {
+							if (!itinerary.closest_stop) return false;
+							const dist = haversine(
+								parseFloat(lat),
+								parseFloat(lon),
+								itinerary.closest_stop.stop_lat,
+								itinerary.closest_stop.stop_lon
+							);
+							return dist <= distance;
+						})
+					);
 				});
 			}
 

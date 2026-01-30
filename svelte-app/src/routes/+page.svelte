@@ -175,12 +175,12 @@
 	function getContentSignature(routes: Route[]): string {
 		return routes
 			.map((r) => {
-				const itineraryTextLen = r.itineraries
-					?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
-					.reduce((a, b) => a + b, 0) || 0;
-				const alertTextLen = r.alerts
-					?.map((a) => a.description?.length || 0)
-					.reduce((a, b) => a + b, 0) || 0;
+				const itineraryTextLen =
+					r.itineraries
+						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+						.reduce((a, b) => a + b, 0) || 0;
+				const alertTextLen =
+					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
 				const splitCount = (r as any)._totalSplits || 1;
 
 				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
@@ -476,8 +476,7 @@
 					// Cleanup
 					document.body.removeChild(clone);
 
-					const headerHeight =
-						3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+					const headerHeight = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
 					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
@@ -916,7 +915,10 @@
 			<section
 				id="routes"
 				bind:this={routesElement}
-				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) && effectiveScale < 1 ? `${effectiveScale * 100}%` : null}
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
+				effectiveScale < 1
+					? `${effectiveScale * 100}%`
+					: null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}

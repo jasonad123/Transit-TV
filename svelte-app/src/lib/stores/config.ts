@@ -133,7 +133,10 @@ function createConfigStore() {
 							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
 						}
 						// Migrate old autoScaleContent config to new scaleMode
-						if (unattendedConfig.autoScaleContent !== undefined && unattendedConfig.scaleMode === undefined) {
+						if (
+							unattendedConfig.autoScaleContent !== undefined &&
+							unattendedConfig.scaleMode === undefined
+						) {
 							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
 							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.72;
 							unattendedConfig.manualScale = 1.0;

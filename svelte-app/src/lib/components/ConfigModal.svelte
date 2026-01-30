@@ -177,7 +177,10 @@
 
 				<SolidSection title={$_('config.sections.display')}>
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.scaleMode === 'auto'}>
+						<Toggle
+							bind:checked={$config.manualColumnsMode}
+							disabled={$config.scaleMode === 'auto'}
+						>
 							{#snippet label()}
 								<span>{$_('config.columns.manualColumnControl')}</span>
 							{/snippet}
@@ -247,12 +250,13 @@
 								type="button"
 								class="btn-option"
 								class:active={$config.scaleMode === 'auto'}
-								onclick={() => config.update((c) => ({
-									...c,
-									scaleMode: 'auto',
-									manualColumnsMode: false,
-									columns: 'auto'
-								}))}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										scaleMode: 'auto',
+										manualColumnsMode: false,
+										columns: 'auto'
+									}))}
 							>
 								{$_('config.scaleMode.auto')}
 							</button>
@@ -279,7 +283,8 @@
 									step="0.05"
 									value={$config.autoScaleMinimum}
 									class="styled-slider"
-									style="--slider-progress: {(($config.autoScaleMinimum - 0.50) / (0.95 - 0.50)) * 100}%"
+									style="--slider-progress: {(($config.autoScaleMinimum - 0.5) / (0.95 - 0.5)) *
+										100}%"
 									oninput={(e) => {
 										const value = parseFloat(e.currentTarget.value);
 										config.update((c) => ({
@@ -304,7 +309,8 @@
 							</div>
 							{#if contentScale < 1}
 								<div class="current-scale-indicator">
-									{$_('config.autoScale.currentScale')} {Math.round(contentScale * 100)}%
+									{$_('config.autoScale.currentScale')}
+									{Math.round(contentScale * 100)}%
 								</div>
 							{/if}
 							<small class="help-text" style="display: block; margin-top: 0.25rem;">
@@ -324,7 +330,7 @@
 									step="0.05"
 									value={$config.manualScale}
 									class="styled-slider"
-									style="--slider-progress: {(($config.manualScale - 0.50) / (1.00 - 0.50)) * 100}%"
+									style="--slider-progress: {(($config.manualScale - 0.5) / (1.0 - 0.5)) * 100}%"
 									oninput={(e) => {
 										const value = parseFloat(e.currentTarget.value);
 										config.update((c) => ({
