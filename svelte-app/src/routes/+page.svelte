@@ -496,7 +496,10 @@
 						console.log('Min scale:', $config.autoScaleMinimum);
 						console.log('Final scale:', newScale);
 						console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
-						console.log('Columns (CSS):', window.getComputedStyle(routesElement).gridTemplateColumns);
+						console.log(
+							'Columns (CSS):',
+							window.getComputedStyle(routesElement).gridTemplateColumns
+						);
 					}
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
