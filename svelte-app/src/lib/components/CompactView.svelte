@@ -893,20 +893,20 @@
 		padding: 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5em, 15vh, 18em);
+		height: clamp(5em, 8vh, 10em);
 		flex-shrink: 0;
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-			height: clamp(5em, 7vh, 18em);
+			height: clamp(5em, 8vh, 10em);
 		}
 	}
 
 	/* Increase alert ticker height when stop grouping is enabled */
 	.route-alert-container.grouped-alerts .route-alert-ticker {
-		height: clamp(5em, 19.5vh, 22em);
+		height: clamp(5em, 19.5vh, 10em);
 	}
 
 	@media (orientation: portrait) {
