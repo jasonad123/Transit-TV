@@ -1029,7 +1029,6 @@
 	}
 
 	.content section {
-		height: 100%;
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
@@ -1040,6 +1039,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
 		gap: 0;
+		align-items: start;
 		transition: font-size 0.4s ease-in;
 	}
 
@@ -1157,7 +1157,7 @@
 	.route-wrapper {
 		box-sizing: border-box;
 		position: relative;
-		padding: 0.3em 0.4em;
+		padding: 0 0.4em;
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
@@ -1215,7 +1215,7 @@
 	/* Fix for compact view - use grid with explicit gap */
 	#routes.compact-view {
 		display: grid;
-		gap: 0.4em;
+		gap: 0;
 	}
 
 	#routes.compact-view .route-wrapper {
