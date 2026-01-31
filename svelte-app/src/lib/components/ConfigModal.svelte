@@ -547,7 +547,7 @@
 					{#if $config.hiddenRoutes.length > 0}
 						<div class="route-management">
 							<div class="hidden-routes-list">
-								{#each hiddenRoutesList as route}
+								{#each hiddenRoutesList as route (route.global_route_id)}
 									<button
 										type="button"
 										class="hidden-route-item"
