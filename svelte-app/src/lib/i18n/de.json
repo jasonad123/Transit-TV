@@ -32,8 +32,9 @@
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
 			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
-			"autoScaleContent": "Routen automatisch an Bildschirm anpassen",
-			"minContentScale": "Minimale Skalierung"
+			"scaleMode": "Inhaltsskalierung",
+			"autoScaleMinimum": "Minimale automatische Skalierung",
+			"manualScale": "Feste Skalierung"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -89,12 +90,20 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
-		"autoScale": {
-			"helpText": "Routen automatisch skalieren, um mehr Karten ohne Scrollen anzuzeigen",
-			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten)."
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manuell",
+			"helpText": "Auto passt die Inhaltsgröße an den Bildschirm an. Manuell verwendet eine feste Skalierung."
 		},
-		"minContentScale": {
-			"helpText": "Kleinere Werte zeigen mehr Routen, verkleinern aber den Inhalt. Höhere Werte halten den Inhalt größer, erfordern aber möglicherweise Scrollen."
+		"autoScale": {
+			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten).",
+			"currentScale": "Aktuell skaliert auf:"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Mindestgröße bei automatischer Skalierung. Kleinere Werte zeigen mehr Routen, verringern aber die Lesbarkeit."
+		},
+		"manualScale": {
+			"helpText": "Feste Inhaltsskalierung. Bei zu großem Wert für die Routenanzahl muss möglicherweise gescrollt werden."
 		},
 		"buttons": {
 			"cancel": "Stornieren",

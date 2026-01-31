@@ -1139,11 +1139,10 @@
 		contain: layout style;
 		display: flex;
 		flex-direction: column;
-		height: 100%;
 	}
 
 	.route > div {
-		padding: 0.25em 0.25em 0.5em;
+		padding: 0.25em 0.25em 0.3em;
 		border-radius: 0.5em;
 	}
 
@@ -1304,14 +1303,14 @@
 		border-radius: 0 0 0.5em 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5em, 9vh, 10em);
+		height: clamp(5em, 6vh, 9em);
 		flex-shrink: 0;
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-			height: clamp(5em, 8vh, 8em);
+			height: clamp(5em, 5vh, 5em);
 		}
 	}
 
@@ -1504,10 +1503,21 @@
 	}
 
 	.route .time h4 span.cancelled {
-		/* position: relative;
-    	display: inline;  */
-		text-decoration: line-through;
+		position: relative;
+		display: inline-block;
 		opacity: 0.8;
+	}
+
+	.route .time h4 span.cancelled::after {
+		content: '';
+		position: absolute;
+		left: -0.1em;
+		right: -0.1em;
+		top: 40%;
+		height: 0.125em;
+		background: currentColor;
+		transform: rotate(30deg);
+		transform-origin: top center;
 	}
 
 	.route .time h4:nth-child(n + 4) {
