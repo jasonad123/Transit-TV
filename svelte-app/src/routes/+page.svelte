@@ -73,17 +73,22 @@
 	}
 
 	let shouldApplyAutoScale = $derived(
-		$config.autoScaleContent &&
+		$config.scaleMode === 'auto' &&
 			!$config.isEditing &&
 			routes.length > 0 &&
 			!loading &&
 			$config.columns === 'auto' // Only auto-scale when using auto columns
 	);
 
+	// Effective scale: uses calculated scale for auto mode, config value for manual mode
+	let effectiveScale = $derived(
+		$config.scaleMode === 'manual' ? $config.manualScale : contentScale
+	);
+
 	// Check if manual columns might be too narrow for viewport
 	let columnsWarning = $derived.by(() => {
 		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
-		const minColumnWidth = 280; // Minimum comfortable width per column
+		const minColumnWidth = 300; // Minimum comfortable width per column
 		const estimatedWidth = windowWidth / $config.columns;
 		if (estimatedWidth < minColumnWidth) {
 			const nomColWidth = Math.round(estimatedWidth);
@@ -170,12 +175,12 @@
 	function getContentSignature(routes: Route[]): string {
 		return routes
 			.map((r) => {
-				const itineraryTextLen = r.itineraries
-					?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
-					.reduce((a, b) => a + b, 0) || 0;
-				const alertTextLen = r.alerts
-					?.map((a) => a.description?.length || 0)
-					.reduce((a, b) => a + b, 0) || 0;
+				const itineraryTextLen =
+					r.itineraries
+						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+						.reduce((a, b) => a + b, 0) || 0;
+				const alertTextLen =
+					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
 				const splitCount = (r as any)._totalSplits || 1;
 
 				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
@@ -462,6 +467,11 @@
 					clone.style.left = '-9999px';
 					clone.style.fontSize = '100%';
 					clone.style.visibility = 'hidden';
+
+					// Copy the computed grid layout to ensure clone measures correctly
+					const currentGridColumns = window.getComputedStyle(routesElement).gridTemplateColumns;
+					clone.style.gridTemplateColumns = currentGridColumns;
+
 					document.body.appendChild(clone);
 
 					// Force layout and measure
@@ -471,11 +481,10 @@
 					// Cleanup
 					document.body.removeChild(clone);
 
-					const headerHeight =
-						3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+					const headerHeight = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
-					const newScale = calculateScale(naturalHeight, availableHeight, $config.minContentScale);
+					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
@@ -586,7 +595,7 @@
 
 	// Enforce auto columns when auto-scale is enabled
 	$effect(() => {
-		if ($config.autoScaleContent && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
 			config.update((c) => ({
 				...c,
 				columns: 'auto',
@@ -602,7 +611,7 @@
 			config.update((c) => ({ ...c, columns: 4 }));
 		} else if (
 			!$config.manualColumnsMode &&
-			!$config.autoScaleContent &&
+			$config.scaleMode !== 'auto' &&
 			$config.columns !== 'auto'
 		) {
 			// Switching from manual to auto mode
@@ -911,7 +920,10 @@
 			<section
 				id="routes"
 				bind:this={routesElement}
-				style:font-size={shouldApplyAutoScale && contentScale < 1 ? `${contentScale * 100}%` : null}
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
+				effectiveScale < 1
+					? `${effectiveScale * 100}%`
+					: null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
@@ -1018,7 +1030,7 @@
 
 	#routes {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
 		gap: 0;
 		transition: font-size 0.4s ease-in;
 	}

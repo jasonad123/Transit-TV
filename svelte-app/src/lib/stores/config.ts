@@ -26,9 +26,10 @@ export interface Config {
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
 	minimalAlerts: boolean;
-	autoScaleContent: boolean;
+	scaleMode: 'auto' | 'manual';
+	autoScaleMinimum: number;
+	manualScale: number;
 	manualColumnsMode: boolean;
-	minContentScale: number;
 }
 
 const defaultConfig: Config = {
@@ -53,9 +54,10 @@ const defaultConfig: Config = {
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
 	minimalAlerts: false,
-	autoScaleContent: false,
-	manualColumnsMode: false,
-	minContentScale: 0.72 // Balances density with readability for 10-12 routes on 1080p display
+	scaleMode: 'manual',
+	autoScaleMinimum: 0.65, // Balances readability with density; allows ~20-25 routes on 1080p display
+	manualScale: 1.0,
+	manualColumnsMode: false
 };
 
 function createConfigStore() {
@@ -85,15 +87,41 @@ function createConfigStore() {
 						if (parsed.maxDistance) {
 							parsed.maxDistance = parseInt(parsed.maxDistance);
 						}
+						// Migrate old autoScaleContent config to new scaleMode
+						let configWasMigrated = false;
+						if (parsed.autoScaleContent !== undefined && parsed.scaleMode === undefined) {
+							parsed.scaleMode = parsed.autoScaleContent ? 'auto' : 'manual';
+							parsed.autoScaleMinimum = parsed.minContentScale ?? 0.65;
+							parsed.manualScale = 1.0;
+							// When migrating to auto mode, ensure columns are set to auto
+							if (parsed.scaleMode === 'auto') {
+								parsed.columns = 'auto';
+								parsed.manualColumnsMode = false;
+							}
+							delete parsed.autoScaleContent;
+							delete parsed.minContentScale;
+							configWasMigrated = true;
+						}
+						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
+						if (parsed.scaleMode === 'auto' && parsed.columns !== 'auto') {
+							parsed.columns = 'auto';
+							parsed.manualColumnsMode = false;
+							configWasMigrated = true;
+						}
 						set({
 							...defaultConfig,
 							...parsed,
 							isEditing: false
 						});
 
+						// Save migrated config back to cookies
+						if (configWasMigrated) {
+							setCookie('config', JSON.stringify(parsed));
+						}
+
 						// Migrate localStorage to cookies if found in localStorage
 						if (browser && localStorage.getItem('config')) {
-							setCookie('config', savedConfig);
+							setCookie('config', JSON.stringify(parsed));
 							localStorage.removeItem('config');
 							console.log('Migrated config from localStorage to cookies');
 						}
@@ -112,11 +140,40 @@ function createConfigStore() {
 						if (unattendedConfig.maxDistance) {
 							unattendedConfig.maxDistance = parseInt(unattendedConfig.maxDistance);
 						}
+						// Migrate old autoScaleContent config to new scaleMode
+						let unattendedConfigWasMigrated = false;
+						if (
+							unattendedConfig.autoScaleContent !== undefined &&
+							unattendedConfig.scaleMode === undefined
+						) {
+							unattendedConfig.scaleMode = unattendedConfig.autoScaleContent ? 'auto' : 'manual';
+							unattendedConfig.autoScaleMinimum = unattendedConfig.minContentScale ?? 0.65;
+							unattendedConfig.manualScale = 1.0;
+							// When migrating to auto mode, ensure columns are set to auto
+							if (unattendedConfig.scaleMode === 'auto') {
+								unattendedConfig.columns = 'auto';
+								unattendedConfig.manualColumnsMode = false;
+							}
+							delete unattendedConfig.autoScaleContent;
+							delete unattendedConfig.minContentScale;
+							unattendedConfigWasMigrated = true;
+						}
+						// Ensure auto scale mode always has auto columns (fixes any inconsistent configs)
+						if (unattendedConfig.scaleMode === 'auto' && unattendedConfig.columns !== 'auto') {
+							unattendedConfig.columns = 'auto';
+							unattendedConfig.manualColumnsMode = false;
+							unattendedConfigWasMigrated = true;
+						}
 						set({
 							...defaultConfig,
 							...unattendedConfig,
 							isEditing: false
 						});
+
+						// Save migrated unattended config to cookies for persistence
+						if (unattendedConfigWasMigrated) {
+							setCookie('config', JSON.stringify(unattendedConfig));
+						}
 						return;
 					}
 				} catch (e) {

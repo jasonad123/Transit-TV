@@ -25,8 +25,9 @@
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
 			"showRouteLongName": "Afficher les noms et couleurs de ligne",
 			"minimalAlerts": "Afficher les alertes minimales",
-			"autoScaleContent": "Ajuster automatiquement les itinéraires à l'écran",
-			"minContentScale": "Échelle minimale"
+			"scaleMode": "Mise à l'échelle du contenu",
+			"autoScaleMinimum": "Échelle automatique minimale",
+			"manualScale": "Échelle fixe"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -76,12 +77,20 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
 		},
-		"autoScale": {
-			"helpText": "Adaptation automatique des itinéraires pour afficher plus de cartes à l'écran sans défilement",
-			"autoColumnsHelpText": "Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)"
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manuel",
+			"helpText": "Auto ajuste la taille du contenu pour s'adapter à l'écran. Manuel utilise une échelle fixe."
 		},
-		"minContentScale": {
-			"helpText": "Les valeurs plus petites affichent plus d'itinéraires mais réduisent le contenu. Les valeurs plus élevées gardent le contenu plus grand mais peuvent nécessiter un défilement."
+		"autoScale": {
+			"autoColumnsHelpText": "Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)",
+			"currentScale": "Actuellement mis à l'échelle à :"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Taille minimale lors de la mise à l'échelle automatique. Des valeurs plus basses affichent plus de lignes mais réduisent la lisibilité."
+		},
+		"manualScale": {
+			"helpText": "Échelle de contenu fixe. Le contenu peut défiler si la valeur est trop grande pour le nombre de lignes."
 		},
 		"buttons": {
 			"cancel": "Annuler",
