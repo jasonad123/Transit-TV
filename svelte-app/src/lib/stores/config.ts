@@ -25,6 +25,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
+	viewMode: 'card' | 'compact' | 'list';
 	minimalAlerts: boolean;
 	scaleMode: 'auto' | 'manual';
 	autoScaleMinimum: number;
@@ -53,6 +54,7 @@ const defaultConfig: Config = {
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
+	viewMode: 'card',
 	minimalAlerts: false,
 	scaleMode: 'manual',
 	autoScaleMinimum: 0.65, // Balances readability with density; allows ~20-25 routes on 1080p display
@@ -111,6 +113,8 @@ function createConfigStore() {
 						set({
 							...defaultConfig,
 							...parsed,
+							// Ensure viewMode is set (migration for old configs)
+							viewMode: parsed.viewMode || defaultConfig.viewMode,
 							isEditing: false
 						});
 
