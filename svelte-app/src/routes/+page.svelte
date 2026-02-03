@@ -1021,6 +1021,7 @@
 	}
 
 	.content section {
+		height: 100%;
 		width: 100%;
 		overflow-y: auto;
 		box-sizing: border-box;
@@ -1032,6 +1033,7 @@
 		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
 		gap: 0;
 		align-items: start;
+		align-content: start;
 		transition: font-size 0.4s ease-in;
 	}
 
