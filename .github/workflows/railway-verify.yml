@@ -8,7 +8,7 @@ on:
 
 jobs:
   verify-railway-template:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - name: Checkout code
