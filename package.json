@@ -1,7 +1,7 @@
 {
 	"name": "transit-tv-server",
 	"version": "1.4.0",
-	"main": "server/app.js",
+	"main": "dist/app.js",
 	"dependencies": {
 		"compression": "^1.8.1",
 		"cookie-parser": "~1.4.7",
@@ -14,12 +14,16 @@
 		"pino-http": "^11.0.0"
 	},
 	"scripts": {
-		"start": "node --env-file=.env server/app.js",
-		"build": "cd svelte-app && pnpm install && pnpm build",
+		"start": "node --env-file=.env dist/app.js",
+		"dev": "tsx watch --env-file=.env server/app.ts",
+		"build:server": "tsc -p server/tsconfig.json",
+		"build:client": "cd svelte-app && pnpm install && pnpm build",
+		"build": "pnpm build:server && pnpm build:client",
 		"start-auth": "op run --env-file=\"./.env.local\" pnpm start",
-		"clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit",
+		"clean": "rm -rf node_modules svelte-app/node_modules svelte-app/.svelte-kit dist",
 		"format": "prettier --write .",
-		"lint": "prettier --check ."
+		"lint": "prettier --check .",
+		"typecheck": "tsc -p server/tsconfig.json --noEmit"
 	},
 	"engines": {
 		"node": ">=24.0.0"
@@ -27,9 +31,16 @@
 	"private": true,
 	"devDependencies": {
 		"@playwright/test": "^1.58.1",
+		"@types/compression": "^1.8.1",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/ejs": "^3.1.5",
+		"@types/errorhandler": "^1.5.3",
+		"@types/express": "^5.0.6",
 		"@types/node": "^24.10.9",
 		"pino-pretty": "^13.1.3",
 		"prettier": "^3.7.4",
-		"prettier-plugin-svelte": "^3.4.1"
+		"prettier-plugin-svelte": "^3.4.1",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
 	}
 }
