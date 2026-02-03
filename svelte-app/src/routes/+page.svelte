@@ -554,7 +554,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.4.0';
+				appVersion = healthData.version || '1.5.0';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
