@@ -3,6 +3,13 @@
 		"title": "Transit TV",
 		"nearbyRoutes": "Nearby Routes"
 	},
+	"table": {
+		"destination": "Destination",
+		"due": "Due",
+		"mins": "mins",
+		"arrivesIn": "Arrives in",
+		"loadingDepartures": "Loading departures..."
+	},
 	"config": {
 		"title": "Configure Transit TV",
 		"sections": {
@@ -68,11 +75,17 @@
 			"scanPrompt2": "Scan the code to open in Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card",
+			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (Not supported in Compact mode. Enabled by default in List mode.)",
+			"groupDisabledInCompactMode": "This option is disabled in Compact mode",
 			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name."
+			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name.",
+			"viewMode": "View mode",
+			"card": "Card",
+			"compact": "Compact",
+			"list": "List",
+			"viewModeHelpText": "Select between Card mode (default), Compact mode (better for vertical displays), or List mode (better for large numbers of routes)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
@@ -147,6 +160,9 @@
 	"alerts": {
 		"default": "Service alert",
 		"title": "Alerts"
+	},
+	"departures": {
+		"last": "last"
 	},
 	"time": {
 		"min": "min",

@@ -3,6 +3,13 @@
 		"title": "Transit TV",
 		"nearbyRoutes": "Líneas cercanas"
 	},
+	"table": {
+		"destination": "Destino",
+		"due": "Due",
+		"mins": "min",
+		"arrivesIn": "Llega a",
+		"loadingDepartures": "Cargando salidas..."
+	},
 	"config": {
 		"title": "Configurar Transit TV",
 		"sections": {
@@ -68,11 +75,17 @@
 			"scanPrompt2": "Escanea para abrir en la aplicación Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta",
+			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (No es compatible con el modo Compacto. Esta habilitada de forma predeterminada en el modo Lista.)",
+			"groupDisabledInCompactMode": "Esta opción está desactivada en modo Compacto.",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
+			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización.",
+			"viewMode": "Modo de vista",
+			"card": "Tarjeta",
+			"compact": "Compacto",
+			"list": "Lista",
+			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales) o el modo Lista (mejor para grandes cantidades de rutas)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
@@ -141,6 +154,9 @@
 	"alerts": {
 		"default": "Avisos de servicio",
 		"title": "Avisos"
+	},
+	"departures": {
+		"last": "último"
 	},
 	"time": {
 		"min": "min",
