@@ -1391,6 +1391,19 @@
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
+	#routes.compact-view {
+		display: grid;
+		gap: 0;
+	}
+
+	#routes.compact-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 0;
+		min-width: 0; /* Allow grid items to shrink below content size */
+	}
+
 	.route-split-badge {
 		position: absolute;
 		top: 0.8em;
