@@ -175,19 +175,22 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return `${$config.viewMode}:` + routes
-			.map((r) => {
-				const itineraryTextLen =
-					r.itineraries
-						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
-						.reduce((a, b) => a + b, 0) || 0;
-				const alertTextLen =
-					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
-				const splitCount = (r as any)._totalSplits || 1;
+		return (
+			`${$config.viewMode}:` +
+			routes
+				.map((r) => {
+					const itineraryTextLen =
+						r.itineraries
+							?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+							.reduce((a, b) => a + b, 0) || 0;
+					const alertTextLen =
+						r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
+					const splitCount = (r as any)._totalSplits || 1;
 
-				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
-			})
-			.join('|');
+					return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+				})
+				.join('|')
+		);
 	}
 
 	// Adaptive polling configuration
