@@ -21,6 +21,7 @@
 		validationSuccess: boolean | null;
 		columnsWarning: string | null;
 		appVersion: string;
+		contentScale: number;
 		onclose: () => void;
 		useCurrentLocation: () => void;
 		handleLocationInputBlur: () => void;
@@ -38,6 +39,7 @@
 		validationSuccess,
 		columnsWarning,
 		appVersion,
+		contentScale,
 		onclose,
 		useCurrentLocation,
 		handleLocationInputBlur,
@@ -175,12 +177,12 @@
 
 				<SolidSection title={$_('config.sections.display')}>
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.autoScaleContent}>
+						<Toggle bind:checked={$config.manualColumnsMode} disabled={$config.scaleMode === 'auto'}>
 							{#snippet label()}
 								<span>{$_('config.columns.manualColumnControl')}</span>
 							{/snippet}
 						</Toggle>
-						{#if $config.autoScaleContent}
+						{#if $config.scaleMode === 'auto'}
 							<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
 						{/if}
 					</div>
@@ -225,7 +227,7 @@
 								</span>
 							{/if}
 						</label>
-					{:else if !$config.autoScaleContent}
+					{:else if $config.scaleMode !== 'auto'}
 						<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
 					{/if}
 
@@ -289,32 +291,51 @@
 						<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
 					</div>
 
-					<div class="toggle-container">
-						<Toggle bind:checked={$config.autoScaleContent}>
-							{#snippet label()}
-								<span>{$_('config.fields.autoScaleContent')}</span>
-							{/snippet}
-						</Toggle>
-						<small class="toggle-help-text">{$_('config.autoScale.helpText')}</small>
-					</div>
+					<label>
+						{$_('config.fields.scaleMode')}
+						<div class="button-group">
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.scaleMode === 'auto'}
+								onclick={() => config.update((c) => ({
+									...c,
+									scaleMode: 'auto',
+									manualColumnsMode: false,
+									columns: 'auto'
+								}))}
+							>
+								{$_('config.scaleMode.auto')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.scaleMode === 'manual'}
+								onclick={() => config.update((c) => ({ ...c, scaleMode: 'manual' }))}
+							>
+								{$_('config.scaleMode.manual')}
+							</button>
+						</div>
+						<small class="toggle-help-text">{$_('config.scaleMode.helpText')}</small>
+					</label>
 
-					{#if $config.autoScaleContent}
+					{#if $config.scaleMode === 'auto'}
 						<label style="margin-top: 0.75rem;">
-							{$_('config.fields.minContentScale')}
+							{$_('config.fields.autoScaleMinimum')}
 							<div class="slider-with-reset">
 								<input
 									type="range"
 									min="0.50"
 									max="0.95"
 									step="0.05"
-									value={$config.minContentScale}
+									value={$config.autoScaleMinimum}
 									class="styled-slider"
-									style="--slider-progress: {(($config.minContentScale - 0.50) / (0.95 - 0.50)) * 100}%"
+									style="--slider-progress: {(($config.autoScaleMinimum - 0.50) / (0.95 - 0.50)) * 100}%"
 									oninput={(e) => {
 										const value = parseFloat(e.currentTarget.value);
 										config.update((c) => ({
 											...c,
-											minContentScale: value
+											autoScaleMinimum: value
 										}));
 									}}
 								/>
@@ -322,7 +343,7 @@
 									type="button"
 									class="btn-slider-reset"
 									onclick={() => {
-										config.update((c) => ({ ...c, minContentScale: 0.72 }));
+										config.update((c) => ({ ...c, autoScaleMinimum: 0.65 }));
 									}}
 									title={$_('config.buttons.resetToDefault')}
 								>
@@ -330,10 +351,55 @@
 								</button>
 							</div>
 							<div class="slider-value">
-								{Math.round($config.minContentScale * 100)}%
+								{Math.round($config.autoScaleMinimum * 100)}%
+							</div>
+							{#if contentScale < 1}
+								<div class="current-scale-indicator">
+									{$_('config.autoScale.currentScale')} {Math.round(contentScale * 100)}%
+								</div>
+							{/if}
+							<small class="help-text" style="display: block; margin-top: 0.25rem;">
+								{$_('config.autoScaleMinimum.helpText')}
+							</small>
+						</label>
+					{/if}
+
+					{#if $config.scaleMode === 'manual'}
+						<label style="margin-top: 0.75rem;">
+							{$_('config.fields.manualScale')}
+							<div class="slider-with-reset">
+								<input
+									type="range"
+									min="0.50"
+									max="1.00"
+									step="0.05"
+									value={$config.manualScale}
+									class="styled-slider"
+									style="--slider-progress: {(($config.manualScale - 0.50) / (1.00 - 0.50)) * 100}%"
+									oninput={(e) => {
+										const value = parseFloat(e.currentTarget.value);
+										config.update((c) => ({
+											...c,
+											manualScale: value
+										}));
+									}}
+								/>
+								<button
+									type="button"
+									class="btn-slider-reset"
+									onclick={() => {
+										config.update((c) => ({ ...c, manualScale: 1.0 }));
+									}}
+									title={$_('config.buttons.resetToDefault')}
+								>
+									<iconify-icon icon="ix:refresh"></iconify-icon>
+								</button>
+							</div>
+							<div class="slider-value">
+								{Math.round($config.manualScale * 100)}%
 							</div>
 							<small class="help-text" style="display: block; margin-top: 0.25rem;">
-								{$_('config.minContentScale.helpText')}
+								{$_('config.manualScale.helpText')}
 							</small>
 						</label>
 					{/if}
@@ -481,7 +547,7 @@
 					{#if $config.hiddenRoutes.length > 0}
 						<div class="route-management">
 							<div class="hidden-routes-list">
-								{#each hiddenRoutesList as route}
+								{#each hiddenRoutesList as route (route.global_route_id)}
 									<button
 										type="button"
 										class="hidden-route-item"
@@ -757,6 +823,18 @@
 		font-weight: 500;
 		margin-top: 0.5em;
 		color: var(--text-primary);
+	}
+
+	.current-scale-indicator {
+		text-align: center;
+		font-size: 0.85em;
+		font-weight: 600;
+		margin-top: 0.4em;
+		padding: 0.4em 0.8em;
+		background: var(--bg-header);
+		color: white;
+		border-radius: 4px;
+		opacity: 0.9;
 	}
 
 	.hidden-routes-list {

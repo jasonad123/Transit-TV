@@ -54,20 +54,43 @@
 	let isTransitioning = false;
 	let lastScaledRouteCount = $state(0);
 	let lastContentSignature = ''; // Track content changes beyond just route count
-	const TRANSITION_DURATION = 200; // Match CSS transition duration in ms
+	let resizeObserver: ResizeObserver | null = null;
+
+	// Get transition duration dynamically from computed styles
+	function getTransitionDuration(): number {
+		if (!routesElement) return 200;
+		const style = getComputedStyle(routesElement);
+		const duration = parseFloat(style.transitionDuration) * 1000;
+		return duration || 200; // Fallback to 200ms
+	}
+
+	// Calculate scale value from measurements
+	function calculateScale(
+		naturalHeight: number,
+		availableHeight: number,
+		minScale: number
+	): number {
+		const ratio = availableHeight / naturalHeight;
+		return Math.min(1.0, Math.max(minScale, ratio));
+	}
 
 	let shouldApplyAutoScale = $derived(
-		$config.autoScaleContent &&
+		$config.scaleMode === 'auto' &&
 			!$config.isEditing &&
 			routes.length > 0 &&
 			!loading &&
 			$config.columns === 'auto' // Only auto-scale when using auto columns
 	);
 
+	// Effective scale: uses calculated scale for auto mode, config value for manual mode
+	let effectiveScale = $derived(
+		$config.scaleMode === 'manual' ? $config.manualScale : contentScale
+	);
+
 	// Check if manual columns might be too narrow for viewport
 	let columnsWarning = $derived.by(() => {
 		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
-		const minColumnWidth = 280; // Minimum comfortable width per column
+		const minColumnWidth = 300; // Minimum comfortable width per column
 		const estimatedWidth = windowWidth / $config.columns;
 		if (estimatedWidth < minColumnWidth) {
 			const nomColWidth = Math.round(estimatedWidth);
@@ -152,8 +175,18 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return routes
-			.map((r) => `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}`)
+		return `${$config.viewMode}:` + routes
+			.map((r) => {
+				const itineraryTextLen = r.itineraries
+					?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+					.reduce((a, b) => a + b, 0) || 0;
+				const alertTextLen = r.alerts
+					?.map((a) => a.description?.length || 0)
+					.reduce((a, b) => a + b, 0) || 0;
+				const splitCount = (r as any)._totalSplits || 1;
+
+				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+			})
 			.join('|');
 	}
 
@@ -393,7 +426,7 @@
 		}
 	}
 
-	function calculateContentScale(forceRecalc = false) {
+	function calculateContentScale(forceRecalc = false, fastPath = false) {
 		if (!routesElement || !shouldApplyAutoScale || !tabVisible) {
 			if (!shouldApplyAutoScale) {
 				contentScale = 1.0;
@@ -407,10 +440,14 @@
 			clearTimeout(scaleCheckTimeout);
 		}
 
+		// Use shorter debounce for fast-path (when autoscale just enabled)
+		const debounceDelay = fastPath ? 50 : 150;
+
 		scaleCheckTimeout = setTimeout(() => {
-			// Prevent concurrent calculations or calculations during transitions
-			// Exception: forced recalculations (like resize) can interrupt transitions
-			if (isCalculatingScale || (!forceRecalc && isTransitioning)) {
+			// Prevent concurrent calculations
+			// Only block on transitions for manual resize events (forceRecalc)
+			// Allow content-driven rescales even during transitions
+			if (isCalculatingScale || (forceRecalc && isTransitioning)) {
 				return;
 			}
 			isCalculatingScale = true;
@@ -425,25 +462,32 @@
 					// Use untrack to prevent contentScale from being a dependency
 					const previousScale = untrack(() => contentScale);
 
-					// Temporarily reset to 100% to measure natural height
-					const prevFontSize = routesElement.style.fontSize;
-					routesElement.style.fontSize = '100%';
+					// Clone element for measurement without visual flash
+					const clone = routesElement.cloneNode(true) as HTMLElement;
+					clone.style.position = 'absolute';
+					clone.style.top = '-9999px';
+					clone.style.left = '-9999px';
+					clone.style.fontSize = '100%';
+					clone.style.visibility = 'hidden';
 
-					// Force layout recalculation
-					routesElement.offsetHeight;
+					// Copy the computed grid layout to ensure clone measures correctly
+					const currentGridColumns = window.getComputedStyle(routesElement).gridTemplateColumns;
+					clone.style.gridTemplateColumns = currentGridColumns;
 
-					// Measure natural height at 100% scale
-					const naturalHeight = routesElement.scrollHeight;
+					document.body.appendChild(clone);
 
-					// Restore previous font-size (to avoid visual flash)
-					routesElement.style.fontSize = prevFontSize;
+					// Force layout and measure
+					clone.offsetHeight;
+					const naturalHeight = clone.scrollHeight;
+
+					// Cleanup
+					document.body.removeChild(clone);
 
 					const headerHeight =
-						4.9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+						3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
 
-					const calculatedScale = availableHeight / naturalHeight;
-					const newScale = Math.min(1.0, Math.max($config.minContentScale, calculatedScale));
+					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
 
 					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
 					if (Math.abs(newScale - previousScale) > 0.02) {
@@ -459,7 +503,7 @@
 						transitionTimeout = setTimeout(() => {
 							isTransitioning = false;
 							transitionTimeout = null;
-						}, TRANSITION_DURATION);
+						}, getTransitionDuration());
 					}
 
 					// Track that we've scaled for this route count
@@ -468,7 +512,7 @@
 					isCalculatingScale = false;
 				}
 			});
-		}, 300); // Increased debounce to reduce sensitivity to animations
+		}, debounceDelay);
 	}
 
 	onMount(async () => {
@@ -554,7 +598,7 @@
 
 	// Enforce auto columns when auto-scale is enabled
 	$effect(() => {
-		if ($config.autoScaleContent && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
 			config.update((c) => ({
 				...c,
 				columns: 'auto',
@@ -570,7 +614,7 @@
 			config.update((c) => ({ ...c, columns: 4 }));
 		} else if (
 			!$config.manualColumnsMode &&
-			!$config.autoScaleContent &&
+			$config.scaleMode !== 'auto' &&
 			$config.columns !== 'auto'
 		) {
 			// Switching from manual to auto mode
@@ -608,7 +652,7 @@
 				const justEnabled = !wasAutoScaleEnabled && currentAutoScale;
 
 				if (justEnabled || signatureChanged) {
-					calculateContentScale(justEnabled);
+					calculateContentScale(justEnabled, justEnabled);
 				}
 
 				wasAutoScaleEnabled = true;
@@ -617,6 +661,32 @@
 				wasAutoScaleEnabled = false;
 			}
 		});
+	});
+
+	// Initialize ResizeObserver when routesElement becomes available
+	$effect(() => {
+		if (browser && routesElement && shouldApplyAutoScale) {
+			// Cleanup previous observer if it exists
+			if (resizeObserver) {
+				resizeObserver.disconnect();
+			}
+
+			// Create new observer
+			resizeObserver = new ResizeObserver(() => {
+				if (shouldApplyAutoScale && !isCalculatingScale) {
+					calculateContentScale(false, false);
+				}
+			});
+			resizeObserver.observe(routesElement);
+
+			// Cleanup function
+			return () => {
+				if (resizeObserver) {
+					resizeObserver.disconnect();
+					resizeObserver = null;
+				}
+			};
+		}
 	});
 
 	onDestroy(() => {
@@ -640,6 +710,9 @@
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
+		}
+		if (resizeObserver) {
+			resizeObserver.disconnect();
 		}
 	});
 
@@ -821,6 +894,7 @@
 		{validationSuccess}
 		{columnsWarning}
 		{appVersion}
+		{contentScale}
 		onclose={closeConfig}
 		{useCurrentLocation}
 		{handleLocationInputBlur}
@@ -850,7 +924,7 @@
 			<section
 				id="routes"
 				bind:this={routesElement}
-				style:font-size={shouldApplyAutoScale && contentScale < 1 ? `${contentScale * 100}%` : null}
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) && effectiveScale < 1 ? `${effectiveScale * 100}%` : null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
@@ -950,7 +1024,7 @@
 	}
 
 	.content {
-		height: calc(100vh - 4.9em);
+		height: calc(100vh - 3em);
 		position: relative;
 	}
 
@@ -964,8 +1038,10 @@
 
 	#routes {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
 		gap: 0;
+		align-items: start;
+		align-content: start;
 		transition: font-size 0.4s ease-in;
 	}
 
@@ -993,13 +1069,13 @@
 	}
 
 	.transit-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		display: block;
 	}
 
 	.custom-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		max-width: 120px;
 		object-fit: contain;
@@ -1021,7 +1097,7 @@
 
 	#title h1 {
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		font-size: 2em;
+		font-size: 1.75em;
 		vertical-align: middle;
 		display: inline-block;
 		line-height: 1.4em;
@@ -1070,7 +1146,7 @@
 	}
 
 	.clock {
-		font-size: 1.8em;
+		font-size: 1.5em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		line-height: 2.1em;
 		font-weight: 500;
@@ -1083,7 +1159,7 @@
 	.route-wrapper {
 		box-sizing: border-box;
 		position: relative;
-		padding: 0.3em 0.4em;
+		padding: 0 0.4em;
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
@@ -1141,7 +1217,7 @@
 	/* Fix for compact view - use grid with explicit gap */
 	#routes.compact-view {
 		display: grid;
-		gap: 0.4em;
+		gap: 0;
 	}
 
 	#routes.compact-view .route-wrapper {

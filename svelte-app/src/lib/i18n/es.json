@@ -32,8 +32,9 @@
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
 			"minimalAlerts": "Mostrar alertas mínimas",
-			"autoScaleContent": "Ajustar rutas automáticamente a la pantalla",
-			"minContentScale": "Escala mínima"
+			"scaleMode": "Escala del contenido",
+			"autoScaleMinimum": "Escala automática mínima",
+			"manualScale": "Escala fija"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -89,12 +90,20 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
-		"autoScale": {
-			"helpText": "Ajustar automáticamente las rutas para mostrar más tarjetas sin desplazamiento",
-			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)"
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manual",
+			"helpText": "Auto ajusta el tamaño del contenido para ajustarse a la pantalla. Manual utiliza una escala fija."
 		},
-		"minContentScale": {
-			"helpText": "Los valores más bajos muestran más rutas pero reducen el contenido. Los valores más altos mantienen el contenido más grande pero pueden requerir desplazamiento."
+		"autoScale": {
+			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)",
+			"currentScale": "Actualmente escalado a:"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Tamaño mínimo al usar escala automática. Valores más bajos muestran más rutas pero reducen la legibilidad."
+		},
+		"manualScale": {
+			"helpText": "Escala de contenido fija. El contenido puede desplazarse si es demasiado grande para la cantidad de rutas."
 		},
 		"buttons": {
 			"cancel": "Cancelar",
