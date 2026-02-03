@@ -1324,12 +1324,12 @@
 	/* Increase alert ticker height when stop grouping is enabled */
 	/* Grouping saves space by consolidating cards, so give that space to alerts */
 	.route-alert-ticker.grouped-alerts {
-		height: clamp(5em, 10vh, 15em);
+		height: clamp(5em, 7vh, 10em);
 	}
 
 	@media (orientation: portrait) {
 		.route-alert-ticker.grouped-alerts {
-			height: clamp(5em, 10vh, 12em);
+			height: clamp(5em, 6vh, 6em);
 		}
 	}
 

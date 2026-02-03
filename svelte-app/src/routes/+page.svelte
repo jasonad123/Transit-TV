@@ -1030,7 +1030,7 @@
 
 	#routes {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(24em, 1fr));
 		gap: 0;
 		align-items: start;
 		align-content: start;
