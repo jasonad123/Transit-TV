@@ -234,6 +234,55 @@
 						<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
 					{/if}
 
+					<label>
+						{$_('config.routeDisplay.viewMode')}
+						<div class="button-group">
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'card'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'card',
+										groupItinerariesByStop: false
+									}))}
+							>
+								<iconify-icon icon="ix:application-screen"></iconify-icon>
+								{$_('config.routeDisplay.card')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'compact'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'compact',
+										groupItinerariesByStop: false
+									}))}
+							>
+								<iconify-icon icon="ix:frames"></iconify-icon>
+								{$_('config.routeDisplay.compact')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'list'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'list',
+										groupItinerariesByStop: true
+									}))}
+							>
+								<iconify-icon icon="ix:table"></iconify-icon>
+								{$_('config.routeDisplay.list')}
+							</button>
+						</div>
+						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
+					</label>
+
 					<div class="toggle-container">
 						<Toggle bind:checked={$config.showQRCode}>
 							{#snippet label()}
@@ -448,14 +497,23 @@
 
 				<SolidSection title={$_('config.sections.routeOptions')}>
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.groupItinerariesByStop}>
+						<Toggle
+							bind:checked={$config.groupItinerariesByStop}
+							disabled={$config.viewMode === 'compact'}
+						>
 							{#snippet label()}
 								<span>{$_('config.fields.groupItinerariesByStop')}</span>
 							{/snippet}
 						</Toggle>
-						<small class="toggle-help-text"
-							>{$_('config.stopManagement.groupItinerarieshelpText')}</small
-						>
+						{#if $config.viewMode === 'compact'}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupDisabledInCompactMode')}</small
+							>
+						{:else}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
+							>
+						{/if}
 					</div>
 
 					<div class="toggle-container">
@@ -857,6 +915,13 @@
 		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	.btn-option iconify-icon {
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 0.3em;
+		font-size: 1.1em;
 	}
 
 	.location-input-group {
