@@ -6,6 +6,8 @@
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import CompactView from '$lib/components/CompactView.svelte';
+	import ListView from '$lib/components/ListView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -41,7 +43,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.4.0'); // Fallback version
+	let appVersion = $state<string>('1.5.0'); // Fallback version
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
@@ -173,7 +175,7 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return routes
+		return `${$config.viewMode}:` + routes
 			.map((r) => {
 				const itineraryTextLen =
 					r.itineraries
@@ -932,10 +934,17 @@
 				class:cols-6={$config.columns === 6}
 				class:cols-7={$config.columns === 7}
 				class:cols-8={$config.columns === 8}
+				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if $config.viewMode === 'card'}
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'compact'}
+							<CompactView {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'list'}
+							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
 						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
 							<div class="route-split-badge">
 								{route._splitIndex + 1}/{route._totalSplits}
@@ -1152,6 +1161,19 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.3em 0.4em;
+		min-width: 0; /* Allow grid items to shrink below content size */
+	}
+
+	#routes.compact-view {
+		display: grid;
+		gap: 0;
+	}
+
+	#routes.compact-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 0;
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
