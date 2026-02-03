@@ -1,16 +1,13 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
-	import { formatCoordinatesForDisplay } from '$lib/utils/formatters';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
-	import Toggle from '$lib/components/Toggle.svelte';
-	import CollapsibleSection from '$lib/components/CollapsibleSection.svelte';
-	import SolidSection from '$lib/components/SolidSection.svelte';
+	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
@@ -31,6 +28,9 @@
 	let resizeCleanup: (() => void) | null = null;
 	let isMounted = $state(false);
 
+	// Tab visibility tracking (for battery savings on 24/7 displays)
+	let tabVisible = $state(true);
+
 	// Geolocation state
 	let gettingLocation = $state(false);
 	let locationError = $state<string | null>(null);
@@ -41,7 +41,152 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.3.6'); // Fallback version
+	let appVersion = $state<string>('1.4.0'); // Fallback version
+
+	// Auto-scale state
+	let contentScale = $state(1.0);
+	let routesElement = $state<HTMLElement | null>(null);
+	let scaleCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+	let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
+	let isCalculatingScale = false;
+	let isTransitioning = false;
+	let lastScaledRouteCount = $state(0);
+	let lastContentSignature = ''; // Track content changes beyond just route count
+	let resizeObserver: ResizeObserver | null = null;
+
+	// Get transition duration dynamically from computed styles
+	function getTransitionDuration(): number {
+		if (!routesElement) return 200;
+		const style = getComputedStyle(routesElement);
+		const duration = parseFloat(style.transitionDuration) * 1000;
+		return duration || 200; // Fallback to 200ms
+	}
+
+	// Calculate scale value from measurements
+	function calculateScale(
+		naturalHeight: number,
+		availableHeight: number,
+		minScale: number
+	): number {
+		const ratio = availableHeight / naturalHeight;
+		return Math.min(1.0, Math.max(minScale, ratio));
+	}
+
+	let shouldApplyAutoScale = $derived(
+		$config.scaleMode === 'auto' &&
+			!$config.isEditing &&
+			routes.length > 0 &&
+			!loading &&
+			$config.columns === 'auto' // Only auto-scale when using auto columns
+	);
+
+	// Effective scale: uses calculated scale for auto mode, config value for manual mode
+	let effectiveScale = $derived(
+		$config.scaleMode === 'manual' ? $config.manualScale : contentScale
+	);
+
+	// Check if manual columns might be too narrow for viewport
+	let columnsWarning = $derived.by(() => {
+		if (!$config.manualColumnsMode || typeof $config.columns !== 'number') return null;
+		const minColumnWidth = 300; // Minimum comfortable width per column
+		const estimatedWidth = windowWidth / $config.columns;
+		if (estimatedWidth < minColumnWidth) {
+			const nomColWidth = Math.round(estimatedWidth);
+			return $_('config.columns.columnWarning', { values: { nomColWidth } });
+		}
+		return null;
+	});
+
+	// Split routes with too many cards into multiple display items
+	const MAX_CARDS_PER_ROUTE = 3;
+
+	let displayRoutes = $derived.by(() => {
+		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
+
+		for (const route of routes) {
+			const itineraries = route.itineraries || [];
+
+			// Skip routes with no departures
+			if (itineraries.length === 0) {
+				continue;
+			}
+
+			const maxItineraries = MAX_CARDS_PER_ROUTE;
+
+			if (itineraries.length <= maxItineraries) {
+				// Fits in one card
+				result.push(route);
+			} else {
+				// Group by direction_id to keep directions together
+				const directionGroups = new Map<number | undefined, typeof itineraries>();
+				for (const itinerary of itineraries) {
+					const dirId = itinerary.direction_id;
+					if (!directionGroups.has(dirId)) {
+						directionGroups.set(dirId, []);
+					}
+					directionGroups.get(dirId)!.push(itinerary);
+				}
+
+				// Split into chunks, trying to keep direction groups intact
+				const chunks: (typeof itineraries)[] = [];
+				let currentChunk: typeof itineraries = [];
+
+				for (const [_, dirItineraries] of directionGroups) {
+					if (currentChunk.length + dirItineraries.length <= maxItineraries) {
+						// Fits in current chunk
+						currentChunk.push(...dirItineraries);
+					} else {
+						// Start new chunk
+						if (currentChunk.length > 0) {
+							chunks.push(currentChunk);
+							currentChunk = [];
+						}
+						// If single direction is too large, split it
+						if (dirItineraries.length > maxItineraries) {
+							for (let i = 0; i < dirItineraries.length; i += maxItineraries) {
+								chunks.push(dirItineraries.slice(i, i + maxItineraries));
+							}
+						} else {
+							currentChunk.push(...dirItineraries);
+						}
+					}
+				}
+				if (currentChunk.length > 0) {
+					chunks.push(currentChunk);
+				}
+
+				// Create split route items
+				chunks.forEach((chunk, index) => {
+					result.push({
+						...route,
+						itineraries: chunk,
+						alerts: index === 0 ? route.alerts : [], // Alert only on first chunk
+						_splitIndex: index,
+						_totalSplits: chunks.length
+					});
+				});
+			}
+		}
+
+		return result;
+	});
+
+	// Helper to create content signature for detecting meaningful changes
+	function getContentSignature(routes: Route[]): string {
+		return routes
+			.map((r) => {
+				const itineraryTextLen =
+					r.itineraries
+						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+						.reduce((a, b) => a + b, 0) || 0;
+				const alertTextLen =
+					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
+				const splitCount = (r as any)._totalSplits || 1;
+
+				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+			})
+			.join('|');
+	}
 
 	// Adaptive polling configuration
 	let consecutiveErrors = 0;
@@ -279,6 +424,94 @@
 		}
 	}
 
+	function calculateContentScale(forceRecalc = false, fastPath = false) {
+		if (!routesElement || !shouldApplyAutoScale || !tabVisible) {
+			if (!shouldApplyAutoScale) {
+				contentScale = 1.0;
+				lastScaledRouteCount = 0;
+			}
+			return;
+		}
+
+		// Cancel any pending calculation
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
+		}
+
+		// Use shorter debounce for fast-path (when autoscale just enabled)
+		const debounceDelay = fastPath ? 50 : 150;
+
+		scaleCheckTimeout = setTimeout(() => {
+			// Prevent concurrent calculations
+			// Only block on transitions for manual resize events (forceRecalc)
+			// Allow content-driven rescales even during transitions
+			if (isCalculatingScale || (forceRecalc && isTransitioning)) {
+				return;
+			}
+			isCalculatingScale = true;
+
+			requestAnimationFrame(() => {
+				try {
+					// Verify element is still in DOM
+					if (!routesElement || !routesElement.isConnected) {
+						return;
+					}
+
+					// Use untrack to prevent contentScale from being a dependency
+					const previousScale = untrack(() => contentScale);
+
+					// Clone element for measurement without visual flash
+					const clone = routesElement.cloneNode(true) as HTMLElement;
+					clone.style.position = 'absolute';
+					clone.style.top = '-9999px';
+					clone.style.left = '-9999px';
+					clone.style.fontSize = '100%';
+					clone.style.visibility = 'hidden';
+
+					// Copy the computed grid layout to ensure clone measures correctly
+					const currentGridColumns = window.getComputedStyle(routesElement).gridTemplateColumns;
+					clone.style.gridTemplateColumns = currentGridColumns;
+
+					document.body.appendChild(clone);
+
+					// Force layout and measure
+					clone.offsetHeight;
+					const naturalHeight = clone.scrollHeight;
+
+					// Cleanup
+					document.body.removeChild(clone);
+
+					const headerHeight = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+					const availableHeight = window.innerHeight - headerHeight - 10; // 10px buffer for safety
+
+					const newScale = calculateScale(naturalHeight, availableHeight, $config.autoScaleMinimum);
+
+					// Only update if scale changed significantly (more than 2% to avoid animation-induced jitter)
+					if (Math.abs(newScale - previousScale) > 0.02) {
+						contentScale = newScale;
+						// Set transition flag to prevent recalculation during animation
+						isTransitioning = true;
+
+						// Clear any existing transition timeout
+						if (transitionTimeout) {
+							clearTimeout(transitionTimeout);
+						}
+
+						transitionTimeout = setTimeout(() => {
+							isTransitioning = false;
+							transitionTimeout = null;
+						}, getTransitionDuration());
+					}
+
+					// Track that we've scaled for this route count
+					lastScaledRouteCount = displayRoutes.length;
+				} finally {
+					isCalculatingScale = false;
+				}
+			});
+		}, debounceDelay);
+	}
+
 	onMount(async () => {
 		await config.load();
 
@@ -288,13 +521,24 @@
 
 			const handleResize = () => {
 				windowWidth = window.innerWidth;
+				if (shouldApplyAutoScale) {
+					calculateContentScale(true); // Force recalc on resize
+				}
 			};
 
 			window.addEventListener('resize', handleResize);
 
+			// Track tab visibility for battery savings
+			const handleVisibilityChange = () => {
+				tabVisible = !document.hidden;
+			};
+
+			document.addEventListener('visibilitychange', handleVisibilityChange);
+
 			// Store cleanup function
 			resizeCleanup = () => {
 				window.removeEventListener('resize', handleResize);
+				document.removeEventListener('visibilitychange', handleVisibilityChange);
 			};
 		}
 
@@ -308,7 +552,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.3.6';
+				appVersion = healthData.version || '1.4.0';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
@@ -349,12 +593,111 @@
 		}
 	});
 
+	// Enforce auto columns when auto-scale is enabled
+	$effect(() => {
+		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+			config.update((c) => ({
+				...c,
+				columns: 'auto',
+				manualColumnsMode: false
+			}));
+		}
+	});
+
+	// When manual mode is toggled, handle column value transitions
+	$effect(() => {
+		if ($config.manualColumnsMode && $config.columns === 'auto') {
+			// Switching to manual mode: set a default numeric value
+			config.update((c) => ({ ...c, columns: 4 }));
+		} else if (
+			!$config.manualColumnsMode &&
+			$config.scaleMode !== 'auto' &&
+			$config.columns !== 'auto'
+		) {
+			// Switching from manual to auto mode
+			config.update((c) => ({ ...c, columns: 'auto' }));
+		}
+	});
+
+	// Track content signature to detect meaningful changes beyond just route count
+	let contentSignature = $derived(getContentSignature(displayRoutes));
+
+	// Track previous state to detect when autoscale is re-enabled
+	let wasAutoScaleEnabled = false;
+
+	// Recalculate scale when relevant dependencies change
+	$effect(() => {
+		// Explicit dependencies - use untrack to prevent feedback loops from contentScale changes
+		const currentAutoScale = shouldApplyAutoScale;
+		const currentSignature = contentSignature;
+		void [
+			currentAutoScale,
+			currentSignature, // Detects route additions/removals, itinerary changes, alert changes
+			$config.columns,
+			$config.isEditing,
+			tabVisible // Recalculate when tab becomes visible again
+			// Note: windowWidth is NOT included here because resize handler calls calculateContentScale directly
+		];
+
+		untrack(() => {
+			if (currentAutoScale && tabVisible) {
+				// Track if content signature actually changed
+				const signatureChanged = currentSignature !== lastContentSignature;
+				lastContentSignature = currentSignature;
+
+				// If autoscale was just re-enabled or content changed, recalculate
+				const justEnabled = !wasAutoScaleEnabled && currentAutoScale;
+
+				if (justEnabled || signatureChanged) {
+					calculateContentScale(justEnabled, justEnabled);
+				}
+
+				wasAutoScaleEnabled = true;
+			} else {
+				contentScale = 1.0;
+				wasAutoScaleEnabled = false;
+			}
+		});
+	});
+
+	// Initialize ResizeObserver when routesElement becomes available
+	$effect(() => {
+		if (browser && routesElement && shouldApplyAutoScale) {
+			// Cleanup previous observer if it exists
+			if (resizeObserver) {
+				resizeObserver.disconnect();
+			}
+
+			// Create new observer
+			resizeObserver = new ResizeObserver(() => {
+				if (shouldApplyAutoScale && !isCalculatingScale) {
+					calculateContentScale(false, false);
+				}
+			});
+			resizeObserver.observe(routesElement);
+
+			// Cleanup function
+			return () => {
+				if (resizeObserver) {
+					resizeObserver.disconnect();
+					resizeObserver = null;
+				}
+			};
+		}
+	});
+
 	onDestroy(() => {
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
 		if (clockIntervalId) {
 			clearInterval(clockIntervalId);
+		}
+		if (scaleCheckTimeout) {
+			clearTimeout(scaleCheckTimeout);
+		}
+		if (transitionTimeout) {
+			clearTimeout(transitionTimeout);
 		}
 		if (countdownIntervalId) {
 			clearInterval(countdownIntervalId);
@@ -364,6 +707,9 @@
 		}
 		if (resizeCleanup) {
 			resizeCleanup();
+		}
+		if (resizeObserver) {
+			resizeObserver.disconnect();
 		}
 	});
 
@@ -376,6 +722,15 @@
 		// Existing cancel button just hides. Save button saves then hides.
 		// Clicking outside usually implies cancel/dismiss.
 		config.update((c) => ({ ...c, isEditing: false }));
+	}
+
+	function handleConfigSave() {
+		loadNearby();
+		// Reset to current polling interval
+		if (intervalId) {
+			clearInterval(intervalId);
+		}
+		intervalId = setInterval(loadNearby, currentPollingInterval);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -526,364 +881,23 @@
 		</table>
 	</header>
 
-	{#if $config.isEditing}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="modal-backdrop" onclick={closeConfig}>
-			<div class="config-modal" onclick={(e) => e.stopPropagation()}>
-				<h2>{$_('config.title')}</h2>
-				<form onsubmit={(e) => e.preventDefault()}>
-					<label>
-						{$_('config.fields.title')}
-						<input type="text" bind:value={$config.title} />
-					</label>
-
-					<label>
-						{$_('config.fields.location')}
-						<div class="location-input-group">
-							<input
-								type="text"
-								value={formatCoordinatesForDisplay(
-									$config.latLng.latitude,
-									$config.latLng.longitude
-								)}
-								oninput={(e) => {
-									config.setLatLngStr(e.currentTarget.value);
-									validationMessage = null;
-									validationSuccess = null;
-								}}
-								onblur={handleLocationInputBlur}
-								placeholder="latitude, longitude"
-							/>
-							<button
-								type="button"
-								class="btn-location"
-								onclick={useCurrentLocation}
-								disabled={gettingLocation}
-								title={gettingLocation ? 'Getting location...' : 'Use current location'}
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-									<path
-										fill="currentColor"
-										d="M8 10.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5m.5-9a.5.5 0 0 0-1 0v1.525A5 5 0 0 0 3.025 7.5H1.5a.5.5 0 0 0 0 1h1.525A5 5 0 0 0 7.5 12.976V14.5a.5.5 0 0 0 1 0v-1.524A5 5 0 0 0 12.975 8.5H14.5a.5.5 0 1 0 0-1h-1.525A5 5 0 0 0 8.5 3.025zM8 12a4 4 0 1 1 0-8a4 4 0 0 1 0 8"
-									/>
-								</svg>
-							</button>
-						</div>
-						{#if locationError}
-							<span class="location-error">{locationError}</span>
-						{/if}
-						{#if validatingLocation}
-							<span class="location-validating">{$_('config.location.validating')}</span>
-						{:else if validationMessage}
-							<span
-								class="location-validation"
-								class:success={validationSuccess}
-								class:error={!validationSuccess}
-							>
-								{validationMessage}
-							</span>
-						{/if}
-					</label>
-
-					<label>
-						{$_('config.fields.timeFormat')}
-						<select bind:value={$config.timeFormat}>
-							<option value="hh:mm A">{$_('config.timeFormats.12hour')}</option>
-							<option value="hh:mm">{$_('config.timeFormats.12hourNoAmPm')}</option>
-							<option value="HH:mm">{$_('config.timeFormats.24hour')}</option>
-						</select>
-					</label>
-
-					<label>
-						{$_('config.fields.language')}
-						<select bind:value={$config.language}>
-							<option value="en">{$_('config.languages.english')}</option>
-							<option value="fr">{$_('config.languages.french')}</option>
-							<option value="es">{$_('config.languages.spanish')}</option>
-							<option value="de">{$_('config.languages.german')}</option>
-						</select>
-					</label>
-					<label>
-						{$_('config.fields.maxDistance')}
-						<div class="slider-container">
-							<input
-								type="range"
-								min="250"
-								max="1500"
-								step="250"
-								bind:value={$config.maxDistance}
-								class="distance-slider"
-								style="--slider-progress: {(($config.maxDistance - 250) / (1500 - 250)) * 100}%"
-							/>
-							<div class="slider-labels">
-								<span>{$config.maxDistance}m</span>
-							</div>
-						</div>
-					</label>
-
-					<SolidSection title={$_('config.sections.display')}>
-						<label>
-							{$_('config.fields.columns')}
-							<div class="button-group">
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 'auto'}
-									onclick={() => config.update((c) => ({ ...c, columns: 'auto' }))}
-								>
-									{$_('config.columns.auto')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 1}
-									onclick={() => config.update((c) => ({ ...c, columns: 1 }))}
-								>
-									1
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 2}
-									onclick={() => config.update((c) => ({ ...c, columns: 2 }))}
-								>
-									2
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 3}
-									onclick={() => config.update((c) => ({ ...c, columns: 3 }))}
-								>
-									3
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 4}
-									onclick={() => config.update((c) => ({ ...c, columns: 4 }))}
-								>
-									4
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.columns === 5}
-									onclick={() => config.update((c) => ({ ...c, columns: 5 }))}
-								>
-									5
-								</button>
-							</div>
-						</label>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.showQRCode}>
-								{#snippet label()}
-									<span>{$_('config.fields.showQRCode')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text">{$_('config.qrCode.helpText')}</small>
-						</div>
-					</SolidSection>
-
-					<SolidSection title={$_('config.sections.style')}>
-						<label>
-							{$_('config.fields.theme')}
-							<div class="button-group">
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'light'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'light' }))}
-								>
-									{$_('config.theme.light')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'auto'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'auto' }))}
-								>
-									{$_('config.theme.auto')}
-								</button>
-								<button
-									type="button"
-									class="btn-option"
-									class:active={$config.theme === 'dark'}
-									onclick={() => config.update((c) => ({ ...c, theme: 'dark' }))}
-								>
-									{$_('config.theme.dark')}
-								</button>
-							</div>
-						</label>
-
-						<label>
-							{$_('config.fields.headerColor')}
-							<div style="display: flex; gap: 0.5em; align-items: center;">
-								<input type="color" bind:value={$config.headerColor} />
-								<button
-									type="button"
-									class="btn-reset"
-									onclick={() => {
-										const defaultColor = $config.theme === 'dark' ? '#1f7a42' : '#30b566';
-										config.update((c) => ({ ...c, headerColor: defaultColor }));
-									}}
-									title={$_('config.buttons.resetToDefault')}
-								>
-									{$_('config.buttons.reset')}
-								</button>
-							</div>
-						</label>
-
-						<label>
-							{$_('config.fields.customLogo')}
-							<input
-								type="text"
-								bind:value={$config.customLogo}
-								placeholder="https://example.com/logo.png or /assets/images/logo.png"
-							/>
-							<small class="help-text">{$_('config.customLogo.helpText')}</small>
-							{#if $config.customLogo}
-								<div style="display: flex; gap: 0.5em; margin-top: 0.5em;">
-									<button
-										type="button"
-										class="btn-reset"
-										onclick={() => config.update((c) => ({ ...c, customLogo: null }))}
-									>
-										{$_('config.customLogo.clear')}
-									</button>
-								</div>
-								<div class="logo-preview">
-									<img
-										src={$config.customLogo}
-										alt="Logo preview"
-										onerror={(e) => {
-											const parent = (e.currentTarget as HTMLImageElement).parentElement;
-											if (parent) {
-												parent.innerHTML = `<span class="error">${$_('config.customLogo.invalidUrl')}</span>`;
-											}
-										}}
-									/>
-								</div>
-							{/if}
-						</label>
-					</SolidSection>
-
-					<SolidSection title={$_('config.sections.routeOptions')}>
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.groupItinerariesByStop}>
-								{#snippet label()}
-									<span>{$_('config.fields.groupItinerariesByStop')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.filterRedundantTerminus}>
-								{#snippet label()}
-									<span>{$_('config.fields.filterRedundantTerminus')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.stopManagement.filterTerminushelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.showRouteLongName}>
-								{#snippet label()}
-									<span>{$_('config.fields.showRouteLongName')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text"
-								>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
-							>
-						</div>
-
-						<div class="toggle-container">
-							<Toggle bind:checked={$config.minimalAlerts}>
-								{#snippet label()}
-									<span>{$_('config.fields.minimalAlerts')}</span>
-								{/snippet}
-							</Toggle>
-							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
-						</div>
-					</SolidSection>
-
-					<CollapsibleSection
-						title={$_('config.hiddenRoutes.title')}
-						helpText={$_('config.hiddenRoutes.helpText')}
-						initiallyOpen={false}
-					>
-						{#if $config.hiddenRoutes.length > 0}
-							<div class="route-management">
-								<div class="hidden-routes-list">
-									{#each allRoutes.filter( (r) => $config.hiddenRoutes.includes(r.global_route_id) ) as route}
-										<button
-											type="button"
-											class="hidden-route-item"
-											onclick={() => toggleRouteHidden(route.global_route_id)}
-										>
-											<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
-											<span>{route.route_short_name || route.route_long_name}</span>
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/if}
-					</CollapsibleSection>
-
-					<div class="credits">
-						<h3>{$_('config.credits.title')}</h3>
-						<h4>
-							Transit TV version <a
-								href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
-								target="_blank"
-								rel="noopener">{appVersion}</a
-							>
-						</h4>
-						<p class="help-text">
-							{@html $_('config.credits.madeWith')}
-						</p>
-						<p class="help-text">
-							{@html $_('config.credits.links')}
-						</p>
-						<a
-							href="https://transitapp.com/partners/apis"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="api-badge-link"
-						>
-							<img src="/assets/images/api-badge.svg" alt="Transit Logo" class="credits-logo" /></a
-						>
-					</div>
-
-					<div class="modal-actions">
-						<button type="button" class="btn-cancel" onclick={closeConfig}>
-							{$_('config.buttons.cancel')}
-						</button>
-						<button
-							type="button"
-							class="btn-save"
-							onclick={() => {
-								config.save();
-								config.update((c) => ({ ...c, isEditing: false }));
-								loadNearby();
-								// Reset to current polling interval
-								intervalId = setInterval(loadNearby, currentPollingInterval);
-							}}
-						>
-							{$_('config.buttons.save')}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	{/if}
+	<ConfigModal
+		open={$config.isEditing}
+		{allRoutes}
+		{gettingLocation}
+		{locationError}
+		{validatingLocation}
+		{validationMessage}
+		{validationSuccess}
+		{columnsWarning}
+		{appVersion}
+		{contentScale}
+		onclose={closeConfig}
+		{useCurrentLocation}
+		{handleLocationInputBlur}
+		{toggleRouteHidden}
+		onsave={handleConfigSave}
+	/>
 
 	<div class="content">
 		{#if errorMessage}
@@ -905,15 +919,28 @@
 		{:else}
 			<section
 				id="routes"
+				bind:this={routesElement}
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
+				effectiveScale < 1
+					? `${effectiveScale * 100}%`
+					: null}
 				class:cols-1={$config.columns === 1}
 				class:cols-2={$config.columns === 2}
 				class:cols-3={$config.columns === 3}
 				class:cols-4={$config.columns === 4}
 				class:cols-5={$config.columns === 5}
+				class:cols-6={$config.columns === 6}
+				class:cols-7={$config.columns === 7}
+				class:cols-8={$config.columns === 8}
 			>
-				{#each routes as route, index (route.global_route_id)}
+				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
+							<div class="route-split-badge">
+								{route._splitIndex + 1}/{route._totalSplits}
+							</div>
+						{/if}
 						<div class="route-controls">
 							{#if index > 0}
 								<button
@@ -989,7 +1016,7 @@
 	}
 
 	.content {
-		height: calc(100vh - 4.9em);
+		height: calc(100vh - 3em);
 		position: relative;
 	}
 
@@ -999,6 +1026,15 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: 0;
+	}
+
+	#routes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(22em, 1fr));
+		gap: 0;
+		align-items: start;
+		align-content: start;
+		transition: font-size 0.4s ease-in;
 	}
 
 	header {
@@ -1025,13 +1061,13 @@
 	}
 
 	.transit-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		display: block;
 	}
 
 	.custom-logo {
-		height: 3.5em;
+		height: 3em;
 		width: auto;
 		max-width: 120px;
 		object-fit: contain;
@@ -1053,7 +1089,7 @@
 
 	#title h1 {
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		font-size: 2em;
+		font-size: 1.75em;
 		vertical-align: middle;
 		display: inline-block;
 		line-height: 1.4em;
@@ -1102,7 +1138,7 @@
 	}
 
 	.clock {
-		font-size: 1.8em;
+		font-size: 1.5em;
 		font-family: 'Overpass Variable', Helvetica, Arial, serif;
 		line-height: 2.1em;
 		font-weight: 500;
@@ -1112,205 +1148,62 @@
 		vertical-align: middle;
 	}
 
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.1);
-		backdrop-filter: blur(1px);
-		z-index: 1000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.config-modal {
-		background: var(--bg-secondary);
-		color: var(--text-primary);
-		padding: 2em;
-		border-radius: 8px;
-		box-shadow: 0 4px 6px var(--shadow-color);
-		max-width: 30vw;
-		min-width: 400px;
-		max-height: 80vh;
-		overflow-y: auto;
-		/* Reset fixed positioning since we are using flex in parent */
-		position: relative;
-	}
-
-	.config-modal h2 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		color: var(--text-primary);
-		font-size: 2em;
-	}
-
-	.config-modal form {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-	}
-
-	.config-modal label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.3em;
-		color: var(--text-primary);
-	}
-
-	.config-modal input,
-	.config-modal select {
-		padding: 0.5em;
-		border: 1px solid var(--border-color);
-		border-radius: 4px;
-		font-size: 1em;
-		background: var(--bg-primary);
-		color: var(--text-primary);
-		width: 100%;
-		max-width: 100%;
+	.route-wrapper {
 		box-sizing: border-box;
+		position: relative;
+		padding: 0.3em 0.4em;
+		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
-	.help-text {
-		display: block;
-		margin-top: 0.25em;
-		margin-bottom: 0;
-		font-size: 0.95em;
-		color: var(--text-secondary);
-		word-wrap: break-word;
-		overflow-wrap: break-word;
-		max-width: 100%;
-	}
-
-	.logo-preview {
-		margin-top: 0.5em;
-		padding: 1em;
-		background: var(--bg-header);
-		border-radius: 4px;
-		text-align: center;
-	}
-
-	.logo-preview img {
-		max-height: 60px;
-		max-width: 200px;
-		object-fit: contain;
-	}
-
-	.modal-actions {
-		display: flex;
-		gap: 1em;
-		justify-content: flex-end;
-		margin-top: 0.5em;
-	}
-
-	.config-modal button {
-		padding: 0.65em 1.5em 0.55em 1.5em;
-		border: none;
-		border-radius: 6px;
-		cursor: pointer;
-		font-size: 1em;
-		font-family: 'Overpass Variable', Helvetica, Arial, serif;
-		font-weight: 600;
+	.route-split-badge {
+		position: absolute;
+		top: 0.8em;
+		right: 0.8em;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		line-height: 1;
-	}
-
-	.btn-save {
-		background: #30b566;
+		background: rgba(0, 0, 0, 0.75);
 		color: white;
+		font-size: 0.85em;
+		font-weight: 600;
+		padding: 0.3em 0.5em;
+		border-radius: 0.3em;
+		z-index: 5;
+		backdrop-filter: blur(4px);
+		box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	.btn-save:hover {
-		background: #1f7a42;
+	/* Manual column overrides */
+	#routes.cols-1 {
+		grid-template-columns: repeat(1, minmax(0, 1fr));
 	}
 
-	.btn-cancel {
-		background: #e0e0e0;
-		color: #333;
+	#routes.cols-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.btn-cancel:hover {
-		background: #c0c0c0;
+	#routes.cols-3 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
-	.btn-reset {
-		padding: 0.4em 0.8em;
-		font-size: 0.9em;
-		background: #f0f0f0;
-		color: #333;
-		border-radius: 4px;
-		border: 1px solid #ccc;
-		cursor: pointer;
-		white-space: nowrap;
+	#routes.cols-4 {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
-	.btn-reset:hover {
-		background: #e0e0e0;
-		border-color: #999;
+	#routes.cols-5 {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 	}
 
-	.toggle-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.3em;
+	#routes.cols-6 {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
 	}
 
-	.toggle-help-text {
-		display: block !important;
-		margin-top: 0.25em;
-		margin-bottom: 0;
-		font-size: 0.95em;
-		color: var(--text-secondary);
-		word-wrap: break-word;
-		overflow-wrap: break-word;
-		max-width: 85%;
+	#routes.cols-7 {
+		grid-template-columns: repeat(7, minmax(0, 1fr));
 	}
 
-	.route-wrapper {
-		display: inline-block;
-		width: 25%;
-		vertical-align: top;
-		box-sizing: border-box;
-		position: relative;
-		padding: 0.5em 0.5em;
-	}
-
-	/* Responsive auto-layout defaults */
-	@media (min-width: 2560px) {
-		.route-wrapper {
-			width: 20%; /* 5 columns at 2.5K+ */
-		}
-	}
-
-	@media (min-width: 3200px) {
-		.route-wrapper {
-			width: 16.666%; /* 6 columns at 3.2K+ */
-		}
-	}
-
-	/* Column overrides (take precedence over auto-layout) */
-	#routes.cols-1 .route-wrapper {
-		width: 100%;
-	}
-
-	#routes.cols-2 .route-wrapper {
-		width: 50%;
-	}
-
-	#routes.cols-3 .route-wrapper {
-		width: 33.333%;
-	}
-
-	#routes.cols-4 .route-wrapper {
-		width: 25%;
-	}
-
-	#routes.cols-5 .route-wrapper {
-		width: 20%;
+	#routes.cols-8 {
+		grid-template-columns: repeat(8, minmax(0, 1fr));
 	}
 
 	.route-controls {
@@ -1350,95 +1243,12 @@
 		font-size: 1.25em;
 	}
 
-	/* .route-management {
-		margin-top: 0;
-		padding-top: 1em;
-		border-top: 1px solid var(--border-color);
-	} */
-
-	.hidden-routes-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-		max-height: 200px;
-		overflow-y: auto;
-		padding: 0.5em;
-		background: var(--bg-primary);
-		border-radius: 4px;
-	}
-
-	.hidden-route-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		padding: 0.8em;
-		background: var(--bg-secondary);
-		border: 1px solid var(--border-color);
-		border-radius: 4px;
-		cursor: pointer;
-		transition: background 0.2s;
-		text-align: left;
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	.hidden-route-item:hover {
-		background: var(--bg-primary);
-	}
-
-	.hidden-route-item iconify-icon {
-		color: var(--text-secondary);
-		display: inline-flex;
-		align-items: center;
-		vertical-align: middle;
-		flex-shrink: 0;
-		font-size: 1.2em;
-	}
-
-	.hidden-route-item span {
-		font-weight: 500;
-		color: var(--text-primary);
-		display: flex;
-		align-items: center;
-	}
-
 	.loading,
 	.no-routes {
 		text-align: center;
 		padding: 3em;
 		font-size: 1.5em;
 		color: var(--text-secondary);
-	}
-
-	.button-group {
-		display: flex;
-		gap: 0.5em;
-		flex-wrap: wrap;
-	}
-
-	.btn-option {
-		flex: 2;
-		min-width: 60px;
-		padding: 0.6em 1em;
-		border: 2px solid var(--border-color);
-		border-radius: 4px;
-		background: var(--bg-secondary);
-		color: var(--text-primary);
-		cursor: pointer;
-		transition: all 0.2s;
-		font-size: 0.95em;
-	}
-
-	.btn-option:hover {
-		border-color: var(--bg-header);
-		background: var(--bg-primary);
-	}
-
-	.btn-option.active {
-		border-color: var(--bg-header);
-		background-color: var(--bg-header);
-		color: white;
-		font-weight: 600;
 	}
 
 	/* Floating QR Code Styles */
@@ -1544,208 +1354,4 @@
 			transform: translateX(-50%) translateY(0);
 		}
 	}
-
-	/* Location input group */
-	.location-input-group {
-		display: flex;
-		gap: 0.5em;
-		align-items: center;
-	}
-
-	.location-input-group input {
-		flex: 1;
-	}
-
-	.btn-location {
-		flex-shrink: 0;
-		width: auto;
-		padding: 0.4em 0.5em;
-		background: var(--bg-header);
-		color: white;
-		border: 1px solid var(--border-color);
-		border-radius: 4px;
-		cursor: pointer;
-		transition: opacity 0.2s;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1em;
-		backface-visibility: hidden;
-		-webkit-font-smoothing: antialiased;
-	}
-
-	.btn-location:hover:not(:disabled) {
-		opacity: 0.85;
-	}
-
-	.btn-location:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.btn-location svg {
-		width: 1.25em;
-		height: 1.25em;
-		display: block;
-		color: white;
-	}
-
-	.location-error {
-		display: block;
-		color: #e30022;
-		font-size: 0.9em;
-		margin-top: 0.3em;
-	}
-
-	.location-validating {
-		display: block;
-		color: var(--text-secondary);
-		font-size: 0.9em;
-		margin-top: 0.3em;
-		font-style: italic;
-	}
-
-	.location-validation {
-		display: block;
-		font-size: 0.9em;
-		margin-top: 0.3em;
-		font-weight: 500;
-	}
-
-	.location-validation.success {
-		color: #30b566;
-	}
-
-	.location-validation.error {
-		color: #f59e0b;
-	}
-
-	.slider-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-		padding: 0.3em 9px;
-	}
-
-	.distance-slider {
-		width: 100%;
-		height: 4px;
-		border-radius: 10px;
-		background: var(--border-color);
-		outline: none;
-		-webkit-appearance: none;
-		appearance: none;
-		cursor: pointer;
-		box-sizing: border-box;
-	}
-
-	.distance-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 18px;
-		height: 18px;
-		border-radius: 50%;
-		background: white;
-		cursor: pointer;
-		border: none;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-		margin-top: -7px;
-	}
-
-	.distance-slider::-moz-range-thumb {
-		width: 18px;
-		height: 18px;
-		border-radius: 50%;
-		background: white;
-		cursor: pointer;
-		border: none;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-	}
-
-	.distance-slider::-webkit-slider-runnable-track {
-		width: 100%;
-		height: 4px;
-		background: linear-gradient(
-			to right,
-			var(--bg-header) 0%,
-			var(--bg-header) var(--slider-progress, 0%),
-			var(--border-color) var(--slider-progress, 0%),
-			var(--border-color) 100%
-		);
-		border-radius: 10px;
-	}
-
-	.distance-slider::-moz-range-track {
-		width: 100%;
-		height: 4px;
-		background: var(--border-color);
-		border-radius: 10px;
-	}
-
-	.distance-slider::-moz-range-progress {
-		background: var(--bg-header);
-		height: 4px;
-		border-radius: 10px;
-	}
-
-	.slider-labels {
-		display: flex;
-		justify-content: center;
-		font-size: 0.9em;
-		font-weight: 500;
-		color: var(--text-primary);
-	}
-
-	/* Credits Styles */
-	.credits {
-		margin-top: 0;
-		padding-top: 1em;
-		border-top: 1px solid var(--border-color);
-		text-align: left;
-	}
-
-	.credits h3 {
-		margin-top: 0;
-		margin-bottom: 0.5em;
-		font-size: 1.2em;
-		color: var(--text-primary);
-	}
-
-	.credits h4 {
-		margin-bottom: 0.2em;
-		font-size: 1em;
-		color: var(--text-secondary);
-		font-weight: 400;
-	}
-
-	.credits .help-text {
-		text-align: left;
-		line-height: 1.5;
-		font-size: 0.85em;
-	}
-
-	:global(.credits iconify-icon) {
-		display: inline-block !important;
-		vertical-align: middle !important;
-		font-size: 1.3em !important;
-		transform: translateY(-1px);
-	}
-
-	.credits-logo {
-		margin-top: 0.5em;
-		height: 40px;
-		width: auto;
-		display: block;
-	}
-
-	:global(.credits a) {
-		color: var(--bg-header);
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	:global(.credits a:hover) {
-		text-decoration: underline;
-	}
-
 </style>

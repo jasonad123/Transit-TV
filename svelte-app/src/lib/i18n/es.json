@@ -24,7 +24,10 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas"
+			"minimalAlerts": "Mostrar alertas mínimas",
+			"scaleMode": "Escala del contenido",
+			"autoScaleMinimum": "Escala automática mínima",
+			"manualScale": "Escala fija"
 		},
 		"timeFormats": {
 			"12hour": "12 horas",
@@ -38,7 +41,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Control manual de columna",
+			"automaticColumnControl": "Usando diseño de columna automático",
+			"word": "{count, plural, one {1 columna} other {{count} columnas}}",
+			"columnWarning": "Es posible que las columnas sean demasiado estrechas con este ancho de pantalla. ({nomColWidth}px por columna)"
 		},
 		"theme": {
 			"light": "Claro",
@@ -70,6 +77,21 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
 		},
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manual",
+			"helpText": "Auto ajusta el tamaño del contenido para ajustarse a la pantalla. Manual utiliza una escala fija."
+		},
+		"autoScale": {
+			"autoColumnsHelpText": "Desactivado cuando la escala automática está habilitada (requiere columnas automáticas)",
+			"currentScale": "Actualmente escalado a:"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Tamaño mínimo al usar escala automática. Valores más bajos muestran más rutas pero reducen la legibilidad."
+		},
+		"manualScale": {
+			"helpText": "Escala de contenido fija. El contenido puede desplazarse si es demasiado grande para la cantidad de rutas."
+		},
 		"buttons": {
 			"cancel": "Cancelar",
 			"save": "Ahorrar",
@@ -85,7 +107,16 @@
 			"geolocationPermissionDenied": "Permiso de ubicación denegado",
 			"geolocationUnavailable": "Información de ubicación no disponible",
 			"geolocationTimeout": "La solicitud de ubicación ha caducado.",
-			"geolocationError": "Ocurrió un error desconocido"
+			"geolocationError": "Ocurrió un error desconocido",
+			"pickOnMap": "Seleccionar en el mapa",
+			"mapPicker": {
+				"title": "Elegir ubicación",
+				"instructions": "Arrastra el pin o haz clic en el mapa para establecer tu ubicación",
+				"coordinates": "Coordenadas",
+				"useMyLocation": "Usar mi ubicación",
+				"save": "Guardar ubicación",
+				"cancel": "Cancelar"
+			}
 		}
 	},
 	"routes": {

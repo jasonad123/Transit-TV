@@ -25,6 +25,74 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 /**
+ * Transforms v4 API response to v3 format for frontend compatibility.
+ * v4 wraps itineraries in merged_itineraries with additional nesting.
+ * This function flattens it back to v3 structure while preserving stop information.
+ * @param {Object} v4Response - The v4 API response
+ * @returns {Object} - Transformed response in v3 format
+ */
+function transformV4ToV3Format(v4Response) {
+	if (!v4Response || !v4Response.nearby_routes) {
+		return v4Response;
+	}
+
+	// Transform nearby_routes to routes format
+	const routes = v4Response.nearby_routes.map((route) => {
+		// Flatten merged_itineraries structure
+		const flattenedRoute = { ...route };
+		delete flattenedRoute.merged_itineraries;
+
+		// Combine all itineraries and schedule_items from merged_itineraries
+		// Preserve closest_stop from merged_itinerary on each itinerary
+		// Associate schedule_items with their itineraries using internal_itinerary_id
+		const allItineraries = [];
+		const allScheduleItems = [];
+		const scheduleItemsByItineraryId = {};
+
+		if (Array.isArray(route.merged_itineraries)) {
+			// First pass: collect all schedule items grouped by internal_itinerary_id
+			for (const merged of route.merged_itineraries) {
+				if (Array.isArray(merged.schedule_items)) {
+					for (const scheduleItem of merged.schedule_items) {
+						const itineraryId = scheduleItem.internal_itinerary_id;
+						if (!scheduleItemsByItineraryId[itineraryId]) {
+							scheduleItemsByItineraryId[itineraryId] = [];
+						}
+						// Remove internal_itinerary_id from schedule_item (v3 doesn't have it at item level)
+						const { internal_itinerary_id, ...scheduleItemWithoutId } = scheduleItem;
+						scheduleItemsByItineraryId[itineraryId].push(scheduleItemWithoutId);
+					}
+					allScheduleItems.push(...merged.schedule_items);
+				}
+			}
+
+			// Second pass: create itineraries with their associated schedule_items
+			for (const merged of route.merged_itineraries) {
+				if (Array.isArray(merged.itineraries)) {
+					// Add closest_stop from merged_itinerary to each itinerary
+					// Also add schedule_items that belong to this itinerary
+					const itinerariesWithData = merged.itineraries.map((itinerary) => ({
+						...itinerary,
+						closest_stop: merged.closest_stop,
+						schedule_items: scheduleItemsByItineraryId[itinerary.internal_itinerary_id] || []
+					}));
+					allItineraries.push(...itinerariesWithData);
+				}
+			}
+		}
+
+		// Return route in v3 format
+		return {
+			...flattenedRoute,
+			itineraries: allItineraries,
+			schedule_items: allScheduleItems
+		};
+	});
+
+	return { routes };
+}
+
+/**
  * Analyzes Transit API response to detect if it contains real-time predictions
  * @param {Object} data - The API response data
  * @returns {boolean} - True if any schedule items have is_real_time: true
@@ -124,6 +192,7 @@ exports.nearby = async function (req, res) {
 	}
 
 	// Parse max_distance as integer (query params are strings)
+	// Transit API expects an integer, not a string
 	const distance = max_distance ? parseInt(max_distance, 10) : 1000;
 
 	// Validate that lat and lon are valid numbers
@@ -131,7 +200,7 @@ exports.nearby = async function (req, res) {
 		return res.status(400).json({ error: 'Invalid parameters: lat and lon must be valid numbers' });
 	}
 
-	// Validate distance is a valid number and not negative
+	// Validate distance is a valid number
 	if (isNaN(distance) || distance < 0) {
 		return res.status(400).json({ error: 'Invalid max_distance parameter' });
 	}
@@ -163,7 +232,12 @@ exports.nearby = async function (req, res) {
 		const pending = pendingRequests.get(cacheKey);
 		if (pending) {
 			try {
-				const data = await pending;
+				const data = await Promise.race([
+					pending,
+					new Promise((_, reject) =>
+						setTimeout(() => reject(new Error('In-flight request timeout')), 15000)
+					)
+				]);
 				// Use conservative short TTL for in-flight (no freshness info yet)
 				res.set({
 					'Cache-Control': 'public, max-age=3',
@@ -177,12 +251,11 @@ exports.nearby = async function (req, res) {
 			}
 		}
 	}
-
 	// Create promise for API request (for in-flight deduplication)
 	const fetchPromise = (async () => {
 		try {
 			const response = await fetch(
-				`https://external.transitapp.com/v3/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}&max_num_departures=6`,
+				`https://external.transitapp.com/v4/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}&max_num_departures=6`,
 				{
 					headers: {
 						Accept: 'application/json',
@@ -230,10 +303,13 @@ exports.nearby = async function (req, res) {
 				throw error;
 			}
 
-			const data = await response.json();
+			const v4Data = await response.json();
+
+			// Transform v4 response to v3 format for frontend compatibility
+			const data = transformV4ToV3Format(v4Data);
 
 			// Client-side filtering by distance
-			// Transit API v3 doesn't properly respect max_distance, so we filter here
+			// Transit API v4 doesn't properly filter by max_distance, so we do it here
 			if (data.routes && Array.isArray(data.routes)) {
 				data.routes = data.routes.filter((route) => {
 					// Keep route if ANY of its stops are within max_distance

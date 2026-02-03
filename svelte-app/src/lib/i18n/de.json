@@ -24,7 +24,10 @@
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
-			"minimalAlerts": "Minimale Benachrichtigungen anzeigen"
+			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
+			"scaleMode": "Inhaltsskalierung",
+			"autoScaleMinimum": "Minimale automatische Skalierung",
+			"manualScale": "Feste Skalierung"
 		},
 		"timeFormats": {
 			"12hour": "12 Stunden",
@@ -38,7 +41,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Manuelle Spaltensteuerung",
+			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
+			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}",
+			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)"
 		},
 		"theme": {
 			"light": "Hell",
@@ -70,6 +77,21 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
 		},
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manuell",
+			"helpText": "Auto passt die Inhaltsgröße an den Bildschirm an. Manuell verwendet eine feste Skalierung."
+		},
+		"autoScale": {
+			"autoColumnsHelpText": "Deaktiviert, wenn die automatische Skalierung aktiviert ist (erfordert automatische Spalten).",
+			"currentScale": "Aktuell skaliert auf:"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Mindestgröße bei automatischer Skalierung. Kleinere Werte zeigen mehr Routen, verringern aber die Lesbarkeit."
+		},
+		"manualScale": {
+			"helpText": "Feste Inhaltsskalierung. Bei zu großem Wert für die Routenanzahl muss möglicherweise gescrollt werden."
+		},
 		"buttons": {
 			"cancel": "Stornieren",
 			"save": "Speichern",
@@ -85,7 +107,16 @@
 			"geolocationPermissionDenied": "Standortberechtigung verweigert",
 			"geolocationUnavailable": "Standortinformationen nicht verfügbar",
 			"geolocationTimeout": "Standortanfrage abgelaufen",
-			"geolocationError": "Es ist ein unbekannter Fehler aufgetreten."
+			"geolocationError": "Es ist ein unbekannter Fehler aufgetreten.",
+			"pickOnMap": "Auf Karte auswählen",
+			"mapPicker": {
+				"title": "Standort auswählen",
+				"instructions": "Ziehen Sie den Pin oder klicken Sie auf die Karte, um Ihren Standort festzulegen",
+				"coordinates": "Koordinaten",
+				"useMyLocation": "Meinen Standort verwenden",
+				"save": "Standort speichern",
+				"cancel": "Abbrechen"
+			}
 		}
 	},
 	"routes": {

@@ -24,7 +24,10 @@
 			"groupItinerariesByStop": "Regrouper les destinations ayant des noms d'arrêt communs",
 			"filterRedundantTerminus": "Masquer le terminus à proximité",
 			"showRouteLongName": "Afficher les noms et couleurs de ligne",
-			"minimalAlerts": "Afficher les alertes minimales"
+			"minimalAlerts": "Afficher les alertes minimales",
+			"scaleMode": "Mise à l'échelle du contenu",
+			"autoScaleMinimum": "Échelle automatique minimale",
+			"manualScale": "Échelle fixe"
 		},
 		"timeFormats": {
 			"12hour": "12 heures",
@@ -38,7 +41,11 @@
 			"german": "Deutsch"
 		},
 		"columns": {
-			"auto": "Auto"
+			"auto": "Auto",
+			"manualColumnControl": "Commande manuelle de la colonne",
+			"automaticColumnControl": "Utilisation de la disposition automatique des colonnes",
+			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}",
+			"columnWarning": "Les colonnes peuvent paraître trop étroites à cette largeur d'écran. ({nomColWidth}px par colonne)"
 		},
 		"theme": {
 			"light": "Clair",
@@ -70,6 +77,21 @@
 		"alerts": {
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
 		},
+		"scaleMode": {
+			"auto": "Auto",
+			"manual": "Manuel",
+			"helpText": "Auto ajuste la taille du contenu pour s'adapter à l'écran. Manuel utilise une échelle fixe."
+		},
+		"autoScale": {
+			"autoColumnsHelpText": "Désactivé lorsque la mise à l'échelle automatique est activée (nécessite des colonnes automatiques)",
+			"currentScale": "Actuellement mis à l'échelle à :"
+		},
+		"autoScaleMinimum": {
+			"helpText": "Taille minimale lors de la mise à l'échelle automatique. Des valeurs plus basses affichent plus de lignes mais réduisent la lisibilité."
+		},
+		"manualScale": {
+			"helpText": "Échelle de contenu fixe. Le contenu peut défiler si la valeur est trop grande pour le nombre de lignes."
+		},
 		"buttons": {
 			"cancel": "Annuler",
 			"save": "Enregistrer",
@@ -85,7 +107,16 @@
 			"geolocationPermissionDenied": "Autorisation de la géolocalisation refusée",
 			"geolocationUnavailable": "Informations de localisation non disponibles",
 			"geolocationTimeout": "Délai d'attente dépassé pour la requête de localisation",
-			"geolocationError": "Une erreur inconnue s'est produite."
+			"geolocationError": "Une erreur inconnue s'est produite.",
+			"pickOnMap": "Sélectionner sur la carte",
+			"mapPicker": {
+				"title": "Choisir l'emplacement",
+				"instructions": "Faites glisser le repère ou cliquez sur la carte pour définir votre emplacement.",
+				"coordinates": "Coordonnées",
+				"useMyLocation": "Utilisez ma position",
+				"save": "Enregistrer",
+				"cancel": "Annuler"
+			}
 		}
 	},
 	"routes": {
