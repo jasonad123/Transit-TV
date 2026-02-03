@@ -3,6 +3,13 @@
 		"title": "Transit-TV",
 		"nearbyRoutes": "Routen in der Nähe"
 	},
+	"table": {
+		"destination": "Nach",
+		"due": "Heute",
+		"mins": "mins",
+		"arrivesIn": "Kommt an",
+		"loadingDepartures": "Abfahrten werden geladen..."
+	},
 	"config": {
 		"title": "Konfigurieren Transit-TV",
 		"sections": {
@@ -68,11 +75,17 @@
 			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte",
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Im Kompaktmodus nicht unterstützt aber im Listenmodus standardmäßig aktiviert.)",
+			"groupDisabledInCompactMode": "Diese Option ist im Kompaktmodus deaktiviert",
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden."
+			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden.",
+			"viewMode": "Anzeigemodus",
+			"card": "Karte",
+			"compact": "Kompakt",
+			"list": "Liste",
+			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard), Kompaktmodus (besser für vertikale Anzeigen) oder Listenmodus (besser für viele Routen)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
@@ -140,6 +153,9 @@
 	"alerts": {
 		"default": "Störungsinformation",
 		"title": "Störungen"
+	},
+	"departures": {
+		"last": "letzt"
 	},
 	"time": {
 		"min": "min",

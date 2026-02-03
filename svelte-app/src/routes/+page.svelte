@@ -6,6 +6,8 @@
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import CompactView from '$lib/components/CompactView.svelte';
+	import ListView from '$lib/components/ListView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -41,7 +43,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.4.0'); // Fallback version
+	let appVersion = $state<string>('1.5.0'); // Fallback version
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
@@ -173,19 +175,22 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return routes
-			.map((r) => {
-				const itineraryTextLen =
-					r.itineraries
-						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
-						.reduce((a, b) => a + b, 0) || 0;
-				const alertTextLen =
-					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
-				const splitCount = (r as any)._totalSplits || 1;
+		return (
+			`${$config.viewMode}:` +
+			routes
+				.map((r) => {
+					const itineraryTextLen =
+						r.itineraries
+							?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+							.reduce((a, b) => a + b, 0) || 0;
+					const alertTextLen =
+						r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
+					const splitCount = (r as any)._totalSplits || 1;
 
-				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
-			})
-			.join('|');
+					return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+				})
+				.join('|')
+		);
 	}
 
 	// Adaptive polling configuration
@@ -552,7 +557,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.4.0';
+				appVersion = healthData.version || '1.5.0';
 			}
 		} catch (err) {
 			console.log('Could not fetch version, using fallback');
@@ -932,10 +937,17 @@
 				class:cols-6={$config.columns === 6}
 				class:cols-7={$config.columns === 7}
 				class:cols-8={$config.columns === 8}
+				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{#if $config.viewMode === 'card'}
+							<RouteItem {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'compact'}
+							<CompactView {route} showLongName={$config.showRouteLongName} />
+						{:else if $config.viewMode === 'list'}
+							<ListView {route} showLongName={$config.showRouteLongName} />
+						{/if}
 						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
 							<div class="route-split-badge">
 								{route._splitIndex + 1}/{route._totalSplits}
@@ -1152,6 +1164,19 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.3em 0.4em;
+		min-width: 0; /* Allow grid items to shrink below content size */
+	}
+
+	#routes.compact-view {
+		display: grid;
+		gap: 0;
+	}
+
+	#routes.compact-view .route-wrapper {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 0;
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 
