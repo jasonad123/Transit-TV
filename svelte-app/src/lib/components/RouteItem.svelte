@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
-	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 
 	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
 

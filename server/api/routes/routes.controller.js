@@ -329,27 +329,6 @@ exports.nearby = async function (req, res) {
 				});
 			}
 
-			// Client-side filtering by distance
-			// Transit API v3 doesn't properly respect max_distance, so we filter here
-			if (data.routes && Array.isArray(data.routes)) {
-				data.routes = data.routes.filter((route) => {
-					// Keep route if ANY of its stops are within max_distance
-					return (
-						route.itineraries &&
-						route.itineraries.some((itinerary) => {
-							if (!itinerary.closest_stop) return false;
-							const dist = haversine(
-								parseFloat(lat),
-								parseFloat(lon),
-								itinerary.closest_stop.stop_lat,
-								itinerary.closest_stop.stop_lon
-							);
-							return dist <= distance;
-						})
-					);
-				});
-			}
-
 			// Store in cache if enabled
 			if (CACHE_ENABLED) {
 				// Analyze response to determine appropriate TTL
