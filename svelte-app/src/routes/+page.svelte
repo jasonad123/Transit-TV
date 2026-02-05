@@ -675,7 +675,7 @@
 
 			// Create new observer
 			resizeObserver = new ResizeObserver(() => {
-				if (shouldApplyAutoScale && !isCalculatingScale) {
+				if (shouldApplyAutoScale && !isCalculatingScale && !isTransitioning) {
 					calculateContentScale(false, false);
 				}
 			});
