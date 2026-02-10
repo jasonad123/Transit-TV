@@ -21,6 +21,8 @@ on:
 
 env:
   IMAGE_NAME: jasonad123/transit-tv
+  IMAGE_USERNAME: jasonad123
+  IMAGE_IMGNAME: transit-tv
 
 jobs:
   build-and-push:
@@ -121,17 +123,17 @@ jobs:
           fi
 
       - name: Skip alpha and beta releases
-        if: steps.version.outputs.release_type == 'alpha' || steps.version.outputs.release_type == 'beta'
+        if: steps.version.outputs.release_type == 'alpha' || steps.version.outputs.release_type == 'beta' || steps.version.outputs.release_type == 'rc'
         run: |
           echo "Skipping Docker Hub publish for ${{ steps.version.outputs.release_type }} releases"
-          echo "Only RC and stable releases are published to Docker Hub"
+          echo "Only stable releases are published to Docker Hub"
           exit 0
 
       - name: Check if should continue
         id: should_continue
         run: |
           RELEASE_TYPE="${{ steps.version.outputs.release_type }}"
-          if [[ "$RELEASE_TYPE" == "alpha" || "$RELEASE_TYPE" == "beta" ]]; then
+          if [[ "$RELEASE_TYPE" == "alpha" || "$RELEASE_TYPE" == "beta" || "$RELEASE_TYPE" == "rc" ]]; then
             echo "continue=false" >> $GITHUB_OUTPUT
           else
             echo "continue=true" >> $GITHUB_OUTPUT
@@ -159,7 +161,7 @@ jobs:
             org.opencontainers.image.title=Transit-TV
             org.opencontainers.image.description=Transit TV is an app that uses the Transit App API to show arrival times for nearby public transit.
             org.opencontainers.image.authors=Transit-TV Contributors
-            org.opencontainers.image.url=https://hub.docker.com/r/${{ env.IMAGE_NAME }}
+            org.opencontainers.image.url=https://hub.docker.com/r/${{ env.IMAGE_USERNAME }}/${{ env.IMAGE_IMGNAME }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.created=${{ github.run_id }}
@@ -205,7 +207,7 @@ jobs:
         run: |
           echo "## Standard Docker Image Published to Docker Hub" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> Repository: [${{ env.IMAGE_NAME }}](https://hub.docker.com/r/${{ env.IMAGE_NAME }})" >> $GITHUB_STEP_SUMMARY
+          echo "> Repository: [${{ env.IMAGE_USERNAME }}/${{ env.IMAGE_IMGNAME }}](https://hub.docker.com/r/${{ env.IMAGE_USERNAME }}/${{ env.IMAGE_IMGNAME }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           RELEASE_TYPE="${{ steps.version.outputs.release_type }}"
@@ -233,5 +235,5 @@ jobs:
 
           echo "**Pull Command:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.IMAGE_USERNAME }}/${{ env.IMAGE_IMGNAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
