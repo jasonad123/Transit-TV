@@ -1,2 +1,5 @@
 onlyBuiltDependencies:
   - esbuild
+
+overrides:
+  svelte@>=5.46.0 <=5.46.3: '>=5.46.4'
