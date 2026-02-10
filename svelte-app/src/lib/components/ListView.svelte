@@ -533,6 +533,7 @@
 	@media (orientation: portrait) {
 		.alert-ticker {
 			height: clamp(5em, 8vh, 10em);
+		}
 	}
 
 	/* Increase alert ticker height when stop grouping is enabled */
@@ -588,4 +589,5 @@
 		margin: 0 0.2em;
 		vertical-align: middle;
 	}
+
 </style>
