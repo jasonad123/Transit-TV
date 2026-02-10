@@ -280,7 +280,7 @@
 		border: none;
 		border-radius: 0.4em;
 		overflow: hidden;
-		font-size: 1.5em;
+		font-size: 1.75em;
 		height: 100%;
 	}
 
@@ -399,7 +399,7 @@
 	.table-header .times-col,
 	.table-header .destination-col {
 		font-weight: 600;
-		font-size: 0.75em;
+		font-size: 1em;
 		color: var(--text-tertiary);
 	}
 
@@ -409,7 +409,7 @@
 		gap: 0.2em;
 		white-space: nowrap;
 		font-feature-settings: 'tnum';
-		font-size: 1.2em;
+		font-size: 1.25em;
 		font-weight: 700;
 	}
 

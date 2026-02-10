@@ -669,7 +669,7 @@
 	}
 
 	.card-destination {
-		font-size: 1.65em;
+		font-size: 1.75em;
 		padding-top: 0.1em;
 		font-weight: 600;
 		display: block;
@@ -699,7 +699,7 @@
 	}
 
 	.card-stop-location {
-		font-size: 1.25em;
+		font-size: 1.35em;
 		display: flex;
 		align-items: flex-start;
 		gap: 0.3em;
@@ -750,7 +750,7 @@
 	}
 
 	.time-card small {
-		font-size: 0.7em;
+		font-size: 0.8em;
 		margin-left: 0.2em;
 		font-weight: 400;
 		opacity: 0.8;
@@ -906,12 +906,12 @@
 
 	/* Increase alert ticker height when stop grouping is enabled */
 	.route-alert-container.grouped-alerts .route-alert-ticker {
-		height: clamp(5em, 19.5vh, 10em);
+		height: clamp(5em, 8vh, 10em);
 	}
 
 	@media (orientation: portrait) {
 		.route-alert-container.grouped-alerts .route-alert-ticker {
-			height: clamp(5em, 7vh, 15em);
+			height: clamp(5em, 8vh, 10em);
 		}
 	}
 
