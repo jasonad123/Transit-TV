@@ -893,27 +893,17 @@
 		padding: 0.5em;
 		overflow: hidden;
 		position: relative;
-		height: clamp(5em, 8vh, 10em);
+		height: clamp(5em, 6vh, 8em);
 		flex-shrink: 0;
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.route-alert-ticker {
-			height: clamp(5em, 8vh, 10em);
+			height: clamp(5em, 7vh, 8em);
 		}
 	}
 
-	/* Increase alert ticker height when stop grouping is enabled */
-	.route-alert-container.grouped-alerts .route-alert-ticker {
-		height: clamp(5em, 8vh, 10em);
-	}
-
-	@media (orientation: portrait) {
-		.route-alert-container.grouped-alerts .route-alert-ticker {
-			height: clamp(5em, 8vh, 10em);
-		}
-	}
 
 	@keyframes scroll-alert-vertical {
 		0% {
