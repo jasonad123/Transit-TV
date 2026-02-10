@@ -669,7 +669,7 @@
 	}
 
 	.card-destination {
-		font-size: 1.75em;
+		font-size: 1.85em;
 		padding-top: 0.1em;
 		font-weight: 600;
 		display: block;
@@ -699,7 +699,7 @@
 	}
 
 	.card-stop-location {
-		font-size: 1.35em;
+		font-size: 1.45em;
 		display: flex;
 		align-items: flex-start;
 		gap: 0.3em;
@@ -750,7 +750,7 @@
 	}
 
 	.time-card small {
-		font-size: 0.8em;
+		font-size: 1em;
 		margin-left: 0.2em;
 		font-weight: 400;
 		opacity: 0.8;
@@ -887,7 +887,7 @@
 	/* Alert ticker - vertical scroll */
 	.route-alert-ticker {
 		flex: 1;
-		font-size: 1.5em;
+		font-size: 1.65em;
 		font-weight: medium;
 		line-height: 1.4;
 		padding: 0.5em;

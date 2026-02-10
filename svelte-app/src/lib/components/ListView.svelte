@@ -280,7 +280,7 @@
 		border: none;
 		border-radius: 0.4em;
 		overflow: hidden;
-		font-size: 1.75em;
+		font-size: 1.85em;
 		height: 100%;
 	}
 
@@ -409,7 +409,7 @@
 		gap: 0.2em;
 		white-space: nowrap;
 		font-feature-settings: 'tnum';
-		font-size: 1.25em;
+		font-size: 1.35em;
 		font-weight: 700;
 	}
 
@@ -526,18 +526,18 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(5em, 10vh, 12em);
+		height: clamp(5em, 6vh, 8em);
 	}
 
 	/* Adjust alert height for portrait displays */
 	@media (orientation: portrait) {
 		.alert-ticker {
-			height: clamp(5em, 10vh, 12em);
+			height: clamp(5em, 7vh, 9em);
 		}
 	}
 
 	/* Increase alert ticker height when stop grouping is enabled */
-	.alert-ticker.grouped-alerts {
+	/* .alert-ticker.grouped-alerts {
 		height: clamp(5em, 10vh, 12em);
 	}
 
@@ -545,7 +545,7 @@
 		.alert-ticker.grouped-alerts {
 			height: clamp(5em, 8vh, 12em);
 		}
-	}
+	} */
 
 	.alert-section {
 		margin-top: 0;
@@ -555,7 +555,7 @@
 
 	.alert-content {
 		padding: 0.2em 0.5em;
-		font-size: 0.8em;
+		font-size: 1em;
 		line-height: 1.3;
 		animation: scroll-alert-vertical 180s linear infinite;
 		white-space: pre-wrap;
