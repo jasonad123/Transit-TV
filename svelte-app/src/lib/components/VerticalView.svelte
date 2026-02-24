@@ -207,7 +207,7 @@
 <div class="vertical-view" class:dark={isDarkMode}>
 	<!-- Scrollable routes area -->
 	<div class="routes-scroll" class:has-alerts={consolidatedAlerts.length > 0}>
-		{#each stopGroups as group, groupIndex}
+		{#each stopGroups as group, groupIndex (group.stopId)}
 			<div class="stop-group">
 				<div class="stop-header">
 					<span class="stop-name">{group.stopName}</span>
