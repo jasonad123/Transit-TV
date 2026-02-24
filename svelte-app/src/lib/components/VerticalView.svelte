@@ -479,7 +479,7 @@
 		width: 0.6em;
 		height: 0.6em;
 		flex-shrink: 0;
-		transform: translateY(-0.15em);
+		transform: translateY(-0.25em);
 		margin-right: 0.15em;
 	}
 
@@ -625,6 +625,7 @@
 		padding-left: 0.5em;
 		padding-right: 0.5em;
 		margin-left: -0.5em;
+		transform: translateY(-0.1em);
 	}
 
 	.alert-title {
@@ -637,7 +638,7 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(4em, 6vh, 8em);
+		height: clamp(6em, 7vh, 8em);
 	}
 
 	.alert-content {
