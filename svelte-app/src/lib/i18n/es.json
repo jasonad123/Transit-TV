@@ -94,7 +94,8 @@
 			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales), el modo Lista (mejor para grandes cantidades de rutas) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
+			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas",
+			"minimalAlertsDisabledInVerticalMode": "El modo Vertical usa su propia visualización de alertas"
 		},
 		"scaleMode": {
 			"auto": "Auto",

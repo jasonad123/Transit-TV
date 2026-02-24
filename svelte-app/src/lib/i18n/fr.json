@@ -94,7 +94,8 @@
 			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux), le mode Liste (meilleur pour de grandes quantités de lignes) ou le mode Vertical (tableau de départs portrait groupé par arrêt)."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
+			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes",
+			"minimalAlertsDisabledInVerticalMode": "Le mode Vertical utilise son propre affichage d'alertes"
 		},
 		"scaleMode": {
 			"auto": "Auto",

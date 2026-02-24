@@ -399,7 +399,7 @@
 	.table-header .times-col,
 	.table-header .destination-col {
 		font-weight: 600;
-		font-size: .8em;
+		font-size: 0.8em;
 		color: var(--text-tertiary);
 	}
 
