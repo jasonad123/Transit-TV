@@ -115,6 +115,23 @@ button {
 	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
 }
 
+/* VerticalView real-time wave styling */
+[data-theme='dark'] .vertical-view .realtime::before {
+	background-image: url('/assets/images/real_time_wave_small-w@2x.png') !important;
+}
+
+[data-theme='dark'] .vertical-view .realtime::after {
+	background-image: url('/assets/images/real_time_wave_big-w@2x.png') !important;
+}
+
+[data-theme='light'] .vertical-view .realtime::before {
+	background-image: url('/assets/images/real_time_wave_small@2x.png') !important;
+}
+
+[data-theme='light'] .vertical-view .realtime::after {
+	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
+}
+
 @media (min-width: 1300px) {
 	body {
 		font-size: 15px;

@@ -25,7 +25,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
-	viewMode: 'card' | 'compact' | 'list';
+	viewMode: 'card' | 'compact' | 'list' | 'vertical';
 	minimalAlerts: boolean;
 	scaleMode: 'auto' | 'manual';
 	autoScaleMinimum: number;

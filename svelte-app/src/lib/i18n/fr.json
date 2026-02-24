@@ -75,8 +75,9 @@
 			"scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d'arrêt en une seule carte (N'est pas prise en charge en mode Compact . Est activée par défaut en mode Liste.)",
+			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d'arrêt en une seule carte (N'est pas prise en charge en mode Compact. Est activée par défaut en mode Liste et Vertical.)",
 			"groupDisabledInCompactMode": "Cette option est désactivée en mode Compact",
+			"groupAlwaysOnInVerticalMode": "Le regroupement par arrêt est toujours activé en mode Vertical",
 			"filterTerminushelpText": "Aux stations terminus, afficher uniquement les directions opposées ou sortantes"
 		},
 		"routeDisplay": {
@@ -85,7 +86,8 @@
 			"card": "Carte",
 			"compact": "Compact",
 			"list": "Liste",
-			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux) ou le mode Liste (meilleur pour de grandes quantités de lignes)."
+			"vertical": "Vertical",
+			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux), le mode Liste (meilleur pour de grandes quantités de lignes) ou le mode Vertical (tableau de départs portrait groupé par arrêt)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
