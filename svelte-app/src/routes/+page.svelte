@@ -8,6 +8,7 @@
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import CompactView from '$lib/components/CompactView.svelte';
 	import ListView from '$lib/components/ListView.svelte';
+	import VerticalView from '$lib/components/VerticalView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
@@ -104,6 +105,11 @@
 
 	let displayRoutes = $derived.by(() => {
 		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
+
+		// Vertical mode: no splitting, pass all routes through directly
+		if ($config.viewMode === 'vertical') {
+			return routes.filter((r) => (r.itineraries || []).length > 0) as (Route & { _splitIndex?: number; _totalSplits?: number })[];
+		}
 
 		for (const route of routes) {
 			const itineraries = route.itineraries || [];
@@ -921,6 +927,18 @@
 			<div class="loading">{$_('routes.loading')}</div>
 		{:else if routes.length === 0}
 			<div class="no-routes">{$_('routes.noRoutes')}</div>
+		{:else if $config.viewMode === 'vertical'}
+			<section
+				id="routes"
+				bind:this={routesElement}
+				class="cols-1 vertical-mode"
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
+				effectiveScale < 1
+					? `${effectiveScale * 100}%`
+					: null}
+			>
+				<VerticalView routes={displayRoutes} showLongName={$config.showRouteLongName} />
+			</section>
 		{:else}
 			<section
 				id="routes"
@@ -1038,6 +1056,17 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: 0;
+	}
+
+	#routes.vertical-mode {
+		display: flex;
+		flex-direction: column;
+		overflow-y: hidden;
+		grid-template-columns: none;
+	}
+
+	#routes.vertical-mode > :global(*) {
+		width: 100%;
 	}
 
 	#routes {

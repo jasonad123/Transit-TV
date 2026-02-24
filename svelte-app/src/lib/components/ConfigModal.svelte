@@ -279,6 +279,21 @@
 								<iconify-icon icon="ix:table"></iconify-icon>
 								{$_('config.routeDisplay.list')}
 							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'vertical'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'vertical',
+										groupItinerariesByStop: true,
+										columns: 1
+									}))}
+							>
+								<iconify-icon icon="ix:list"></iconify-icon>
+								{$_('config.routeDisplay.vertical')}
+							</button>
 						</div>
 						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
 					</label>
@@ -499,7 +514,7 @@
 					<div class="toggle-container">
 						<Toggle
 							bind:checked={$config.groupItinerariesByStop}
-							disabled={$config.viewMode === 'compact'}
+							disabled={$config.viewMode === 'compact' || $config.viewMode === 'vertical'}
 						>
 							{#snippet label()}
 								<span>{$_('config.fields.groupItinerariesByStop')}</span>
@@ -508,6 +523,10 @@
 						{#if $config.viewMode === 'compact'}
 							<small class="toggle-help-text"
 								>{$_('config.stopManagement.groupDisabledInCompactMode')}</small
+							>
+						{:else if $config.viewMode === 'vertical'}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupAlwaysOnInVerticalMode')}</small
 							>
 						{:else}
 							<small class="toggle-help-text"
