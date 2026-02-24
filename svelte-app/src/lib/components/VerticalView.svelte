@@ -480,7 +480,7 @@
 		height: 0.6em;
 		flex-shrink: 0;
 		transform: translateY(-0.25em);
-		margin-right: 0.15em;
+		margin-right: 0.25em;
 	}
 
 	.route-alert-icon.severe {
@@ -514,7 +514,7 @@
 	.row-times {
 		display: flex;
 		align-items: center;
-		gap: 0.4em;
+		gap: 0.5em;
 		flex-shrink: 0;
 	}
 
@@ -594,7 +594,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.3em;
-		padding: 0.2em 0.5em;
+		padding: 0.3em 0.5em;
 		font-size: 0.7em;
 		font-weight: 600;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -638,7 +638,7 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(6em, 7vh, 8em);
+		height: clamp(6em, 5vh, 8em);
 	}
 
 	.alert-content {
