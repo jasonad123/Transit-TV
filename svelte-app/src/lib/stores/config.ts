@@ -12,6 +12,7 @@ export interface Config {
 	isEditing: boolean;
 	title: string;
 	routeOrder: string[];
+	stopOrder: string[];
 	hiddenRoutes: string[];
 	latLng: LatLng;
 	timeFormat: string;
@@ -38,6 +39,7 @@ const defaultConfig: Config = {
 	isEditing: true,
 	title: '',
 	routeOrder: [],
+	stopOrder: [],
 	hiddenRoutes: [],
 	latLng: {
 		latitude: 40.75426683398718,

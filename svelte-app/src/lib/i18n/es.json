@@ -141,7 +141,10 @@
 			"moveToTop": "Subir al principio",
 			"moveUp": "Subir",
 			"moveDown": "Bajar",
-			"hide": "Esconder la ruta"
+			"hide": "Esconder la ruta",
+			"moveStopToTop": "Mover parada al principio",
+			"moveStopUp": "Subir parada",
+			"moveStopDown": "Bajar parada"
 		}
 	},
 	"aria": {

@@ -147,7 +147,10 @@
 			"moveToTop": "Move to top",
 			"moveUp": "Move up",
 			"moveDown": "Move down",
-			"hide": "Hide route"
+			"hide": "Hide route",
+			"moveStopToTop": "Move stop to top",
+			"moveStopUp": "Move stop up",
+			"moveStopDown": "Move stop down"
 		}
 	},
 	"aria": {
