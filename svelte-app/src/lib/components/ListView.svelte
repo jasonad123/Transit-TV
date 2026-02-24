@@ -589,5 +589,4 @@
 		margin: 0 0.2em;
 		vertical-align: middle;
 	}
-
 </style>

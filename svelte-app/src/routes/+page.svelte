@@ -108,7 +108,10 @@
 
 		// Vertical mode: no splitting, pass all routes through directly
 		if ($config.viewMode === 'vertical') {
-			return routes.filter((r) => (r.itineraries || []).length > 0) as (Route & { _splitIndex?: number; _totalSplits?: number })[];
+			return routes.filter((r) => (r.itineraries || []).length > 0) as (Route & {
+				_splitIndex?: number;
+				_totalSplits?: number;
+			})[];
 		}
 
 		for (const route of routes) {
@@ -410,6 +413,57 @@
 			...c,
 			routeOrder: newOrder
 		}));
+		config.save();
+	}
+
+	function getCurrentStopOrder(routes: Route[]): string[] {
+		const stopIds = new Set<string>();
+		for (const route of routes) {
+			if (!route.itineraries) continue;
+			for (const itinerary of route.itineraries) {
+				const stopId =
+					itinerary.closest_stop?.parent_station_global_stop_id ||
+					itinerary.closest_stop?.global_stop_id ||
+					'unknown';
+				stopIds.add(stopId);
+			}
+		}
+
+		const saved = $config.stopOrder || [];
+		const ordered: string[] = [];
+		for (const id of saved) {
+			if (stopIds.has(id)) {
+				ordered.push(id);
+				stopIds.delete(id);
+			}
+		}
+		for (const id of stopIds) {
+			ordered.push(id);
+		}
+		return ordered;
+	}
+
+	function moveStop(stopId: string, direction: 'up' | 'down') {
+		const order = getCurrentStopOrder(routes);
+		const index = order.indexOf(stopId);
+		if (index === -1) return;
+
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= order.length) return;
+
+		[order[index], order[targetIndex]] = [order[targetIndex], order[index]];
+		config.update((c) => ({ ...c, stopOrder: order }));
+		config.save();
+	}
+
+	function moveStopToTop(stopId: string) {
+		const order = getCurrentStopOrder(routes);
+		const index = order.indexOf(stopId);
+		if (index <= 0) return;
+
+		order.splice(index, 1);
+		order.unshift(stopId);
+		config.update((c) => ({ ...c, stopOrder: order }));
 		config.save();
 	}
 
@@ -937,7 +991,12 @@
 					? `${effectiveScale * 100}%`
 					: null}
 			>
-				<VerticalView routes={displayRoutes} showLongName={$config.showRouteLongName} />
+				<VerticalView
+					routes={displayRoutes}
+					showLongName={$config.showRouteLongName}
+					onMoveStop={moveStop}
+					onMoveStopToTop={moveStopToTop}
+				/>
 			</section>
 		{:else}
 			<section

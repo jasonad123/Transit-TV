@@ -904,7 +904,6 @@
 		}
 	}
 
-
 	@keyframes scroll-alert-vertical {
 		0% {
 			transform: translateY(0);

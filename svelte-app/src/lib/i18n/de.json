@@ -141,7 +141,10 @@
 			"moveToTop": "Nach oben verschieben",
 			"moveUp": "Aufsteigen",
 			"moveDown": "Absteigen",
-			"hide": "Verstecken routen"
+			"hide": "Verstecken routen",
+			"moveStopToTop": "Haltestelle nach oben",
+			"moveStopUp": "Haltestelle aufsteigen",
+			"moveStopDown": "Haltestelle absteigen"
 		}
 	},
 	"aria": {

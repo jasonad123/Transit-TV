@@ -6,8 +6,19 @@
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
+	import { config } from '$lib/stores/config';
 
-	let { routes, showLongName = false }: { routes: Route[]; showLongName?: boolean } = $props();
+	let {
+		routes,
+		showLongName = false,
+		onMoveStop,
+		onMoveStopToTop
+	}: {
+		routes: Route[];
+		showLongName?: boolean;
+		onMoveStop?: (stopId: string, direction: 'up' | 'down') => void;
+		onMoveStopToTop?: (stopId: string) => void;
+	} = $props();
 
 	interface DepartureRow {
 		route: Route;
@@ -60,9 +71,7 @@
 				if (route.alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
 					alertSeverity = 'severe';
 					alertIcon = 'ix:warning-octagon-filled';
-				} else if (
-					route.alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')
-				) {
+				} else if (route.alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
 					alertSeverity = 'warning';
 					alertIcon = 'ix:warning-filled';
 				} else {
@@ -114,10 +123,18 @@
 			});
 		}
 
-		// Return groups in stable order (by stop ID) so positions don't shuffle on data updates
+		// Sort by saved stopOrder (unranked stops fall to end, sorted by ID)
+		const savedOrder = $config.stopOrder || [];
 		return Array.from(groups.values())
 			.filter((g) => g.rows.length > 0)
-			.sort((a, b) => a.stopId.localeCompare(b.stopId));
+			.sort((a, b) => {
+				const aIdx = savedOrder.indexOf(a.stopId);
+				const bIdx = savedOrder.indexOf(b.stopId);
+				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+				if (aIdx !== -1) return -1;
+				if (bIdx !== -1) return 1;
+				return a.stopId.localeCompare(b.stopId);
+			});
 	});
 
 	// Consolidated alerts from all routes, deduplicated, with route attribution
@@ -126,8 +143,7 @@
 
 		for (const route of routes) {
 			if (!route.alerts) continue;
-			const routeName =
-				route.route_short_name || route.route_long_name || route.global_route_id;
+			const routeName = route.route_short_name || route.route_long_name || route.global_route_id;
 			for (const alert of route.alerts) {
 				const key = `${alert.title || ''}::${alert.description || ''}`;
 				if (!alertMap.has(key)) {
@@ -170,17 +186,9 @@
 
 	let mostSevereLevel = $derived.by(() => {
 		if (!consolidatedAlerts.length) return 'info';
-		if (
-			consolidatedAlerts.some(
-				(a) => (a.alert.severity || 'Info').toLowerCase() === 'severe'
-			)
-		)
+		if (consolidatedAlerts.some((a) => (a.alert.severity || 'Info').toLowerCase() === 'severe'))
 			return 'severe';
-		if (
-			consolidatedAlerts.some(
-				(a) => (a.alert.severity || 'Info').toLowerCase() === 'warning'
-			)
-		)
+		if (consolidatedAlerts.some((a) => (a.alert.severity || 'Info').toLowerCase() === 'warning'))
 			return 'warning';
 		return 'info';
 	});
@@ -198,13 +206,48 @@
 		{#each stopGroups as group, groupIndex}
 			<div class="stop-group">
 				<div class="stop-header">
-					{group.stopName}
+					<span class="stop-name">{group.stopName}</span>
+					{#if onMoveStop || onMoveStopToTop}
+						<div class="stop-controls">
+							{#if groupIndex > 0 && onMoveStopToTop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStopToTop(group.stopId)}
+									title={$_('routes.controls.moveStopToTop')}
+								>
+									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if groupIndex > 0 && onMoveStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStop(group.stopId, 'up')}
+									title={$_('routes.controls.moveStopUp')}
+								>
+									<iconify-icon icon="ix:arrow-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if groupIndex < stopGroups.length - 1 && onMoveStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStop(group.stopId, 'down')}
+									title={$_('routes.controls.moveStopDown')}
+								>
+									<iconify-icon icon="ix:arrow-down"></iconify-icon>
+								</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
 				{#each group.rows as row}
 					<div
 						class="departure-row"
-						style="--route-color: #{row.route.route_color}; --route-text-color: #{row.route.route_text_color}"
+						style="--route-color: #{row.route.route_color}; --route-text-color: #{row.route
+							.route_text_color}"
 					>
 						<div class="row-badge">
 							<RouteIcon route={row.route} {showLongName} compact={true} />
@@ -224,10 +267,8 @@
 							{/if}
 							{#each row.departures as item}
 								<span class="time-badge" class:cancelled={item.is_cancelled}>
-									{getMinutesUntil(item.departure_time)}<span class="time-suffix"
-										>m</span
-									>{#if item.is_real_time}<i class="realtime"></i
-										>{/if}{#if item.is_last}*{/if}
+									{getMinutesUntil(item.departure_time)}<span class="time-suffix">m</span
+									>{#if item.is_real_time}<i class="realtime"></i>{/if}{#if item.is_last}*{/if}
 								</span>
 							{/each}
 						</div>
@@ -313,6 +354,49 @@
 		background: var(--bg-secondary);
 		color: var(--text-secondary);
 		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+		position: relative;
+	}
+
+	.stop-name {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.stop-controls {
+		display: flex;
+		gap: 0.25em;
+		opacity: 0;
+		transition: opacity 0.2s;
+		flex-shrink: 0;
+	}
+
+	.stop-group:hover .stop-controls {
+		opacity: 1;
+	}
+
+	.btn-stop-control {
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 0.15em 0.3em;
+		cursor: pointer;
+		transition: background 0.2s;
+		font-size: 0.85em;
+		line-height: 1;
+	}
+
+	.btn-stop-control:hover {
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-stop-control iconify-icon {
+		display: block;
+		width: 1.2em;
+		height: 1.2em;
 	}
 
 	.departure-row {

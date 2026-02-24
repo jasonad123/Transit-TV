@@ -141,7 +141,10 @@
 			"moveToTop": "Déplacer en haut",
 			"moveUp": "Déplacer vers le haut",
 			"moveDown": "Déplacer vers le bas",
-			"hide": "Masquer la ligne"
+			"hide": "Masquer la ligne",
+			"moveStopToTop": "Déplacer l'arrêt en haut",
+			"moveStopUp": "Déplacer l'arrêt vers le haut",
+			"moveStopDown": "Déplacer l'arrêt vers le bas"
 		}
 	},
 	"aria": {
