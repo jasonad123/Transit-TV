@@ -120,41 +120,49 @@
 			.sort((a, b) => a.stopId.localeCompare(b.stopId));
 	});
 
-	// Consolidated alerts from all routes, deduplicated
+	// Consolidated alerts from all routes, deduplicated, with route attribution
 	let consolidatedAlerts = $derived.by(() => {
-		const seen = new Set<string>();
-		const alerts: any[] = [];
+		const alertMap = new Map<string, { alert: any; routeNames: string[] }>();
 
 		for (const route of routes) {
 			if (!route.alerts) continue;
+			const routeName =
+				route.route_short_name || route.route_long_name || route.global_route_id;
 			for (const alert of route.alerts) {
 				const key = `${alert.title || ''}::${alert.description || ''}`;
-				if (!seen.has(key)) {
-					seen.add(key);
-					alerts.push(alert);
+				if (!alertMap.has(key)) {
+					alertMap.set(key, { alert, routeNames: [routeName] });
+				} else {
+					const entry = alertMap.get(key)!;
+					if (!entry.routeNames.includes(routeName)) {
+						entry.routeNames.push(routeName);
+					}
 				}
 			}
 		}
 
-		return alerts;
+		return Array.from(alertMap.values());
 	});
 
 	let alertText = $derived.by(() => {
 		if (!consolidatedAlerts.length) return '';
 
 		return consolidatedAlerts
-			.map((alert) => {
+			.map(({ alert, routeNames }) => {
+				const routeLabel = routeNames.join(', ');
 				const hasTitle = alert.title && alert.title.trim().length > 0;
 				const hasDescription = alert.description && alert.description.trim().length > 0;
 
+				const prefix = `[${routeLabel}] `;
+
 				if (hasTitle && hasDescription) {
-					return `${alert.title}\n\n${alert.description}`;
+					return `${prefix}${alert.title}\n\n${alert.description}`;
 				} else if (hasTitle) {
-					return alert.title;
+					return `${prefix}${alert.title}`;
 				} else if (hasDescription) {
-					return alert.description;
+					return `${prefix}${alert.description}`;
 				} else {
-					return $_('alerts.default');
+					return `${prefix}${$_('alerts.default')}`;
 				}
 			})
 			.join('\n\n---\n\n');
@@ -162,9 +170,17 @@
 
 	let mostSevereLevel = $derived.by(() => {
 		if (!consolidatedAlerts.length) return 'info';
-		if (consolidatedAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe'))
+		if (
+			consolidatedAlerts.some(
+				(a) => (a.alert.severity || 'Info').toLowerCase() === 'severe'
+			)
+		)
 			return 'severe';
-		if (consolidatedAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning'))
+		if (
+			consolidatedAlerts.some(
+				(a) => (a.alert.severity || 'Info').toLowerCase() === 'warning'
+			)
+		)
 			return 'warning';
 		return 'info';
 	});
