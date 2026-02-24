@@ -328,7 +328,7 @@
 	.vertical-view {
 		display: flex;
 		flex-direction: column;
-		font-size: 1.85em;
+		font-size: 2.5em;
 		height: 100%;
 	}
 
@@ -348,9 +348,9 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25em;
-		padding: 0.25em 0.6em;
-		font-size: 0.85em;
-		font-weight: 600;
+		padding: 0.35em 0.5em;
+		font-size: 0.75em;
+		font-weight: 700;
 		background: var(--bg-secondary);
 		color: var(--text-secondary);
 		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
@@ -403,7 +403,7 @@
 		display: grid;
 		grid-template-columns: auto 1fr auto;
 		gap: 0.5em;
-		padding: 0.3em 0.6em;
+		padding: 0.45em 0.5em;
 		align-items: center;
 		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
 	}
@@ -444,7 +444,7 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		font-weight: 600;
-		font-size: 0.8em;
+		font-size: 0.85em;
 		color: var(--text-primary);
 	}
 
@@ -464,7 +464,7 @@
 	.time-badge {
 		font-feature-settings: 'tnum';
 		font-weight: 700;
-		font-size: 0.9em;
+		font-size: 0.85em;
 		white-space: nowrap;
 		color: var(--text-primary);
 		position: relative;
@@ -523,8 +523,8 @@
 	}
 
 	.group-divider {
-		height: 2px;
-		background: var(--border-color, rgba(0, 0, 0, 0.08));
+		height: 3px;
+		background: var(--border-color, rgba(0, 0, 0, 0.1));
 	}
 
 	/* Alert section — pinned to bottom, never scrolls with routes */
@@ -537,8 +537,8 @@
 		display: flex;
 		align-items: center;
 		gap: 0.3em;
-		padding: 0.25em 0.5em;
-		font-size: 0.85em;
+		padding: 0.2em 0.5em;
+		font-size: 0.7em;
 		font-weight: 600;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		background-color: transparent;
@@ -585,7 +585,7 @@
 
 	.alert-content {
 		padding: 0.2em 0.5em;
-		font-size: 1em;
+		font-size: 0.75em;
 		line-height: 1.3;
 		animation: scroll-alert-vertical 180s linear infinite;
 		white-space: pre-wrap;
