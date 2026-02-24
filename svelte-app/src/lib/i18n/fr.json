@@ -68,6 +68,10 @@
 			"title": "Lignes masquées",
 			"helpText": "Cliquez pour afficher les lignes"
 		},
+		"hiddenStops": {
+			"title": "Arrêts masqués",
+			"helpText": "Cliquez pour afficher les arrêts"
+		},
 		"qrCode": {
 			"title": "Code QR",
 			"helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
@@ -144,7 +148,8 @@
 			"hide": "Masquer la ligne",
 			"moveStopToTop": "Déplacer l'arrêt en haut",
 			"moveStopUp": "Déplacer l'arrêt vers le haut",
-			"moveStopDown": "Déplacer l'arrêt vers le bas"
+			"moveStopDown": "Déplacer l'arrêt vers le bas",
+			"hideStop": "Masquer l'arrêt"
 		}
 	},
 	"aria": {
@@ -154,7 +159,8 @@
 		"moveRouteToTop": "Déplacer la ligne en haut",
 		"moveRouteUp": "Déplacer la ligne vers le haut",
 		"moveRouteDown": "Déplacer la ligne vers le bas",
-		"hideRoute": "Masquer la ligne"
+		"hideRoute": "Masquer la ligne",
+		"hideStop": "Masquer l'arrêt"
 	},
 	"alerts": {
 		"default": "Alerte de service",

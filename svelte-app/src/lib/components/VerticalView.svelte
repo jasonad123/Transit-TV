@@ -12,12 +12,16 @@
 		routes,
 		showLongName = false,
 		onMoveStop,
-		onMoveStopToTop
+		onMoveStopToTop,
+		onHideRoute,
+		onHideStop
 	}: {
 		routes: Route[];
 		showLongName?: boolean;
 		onMoveStop?: (stopId: string, direction: 'up' | 'down') => void;
 		onMoveStopToTop?: (stopId: string) => void;
+		onHideRoute?: (routeId: string) => void;
+		onHideStop?: (stopId: string) => void;
 	} = $props();
 
 	interface DepartureRow {
@@ -207,7 +211,7 @@
 			<div class="stop-group">
 				<div class="stop-header">
 					<span class="stop-name">{group.stopName}</span>
-					{#if onMoveStop || onMoveStopToTop}
+					{#if onMoveStop || onMoveStopToTop || onHideStop}
 						<div class="stop-controls">
 							{#if groupIndex > 0 && onMoveStopToTop}
 								<button
@@ -237,6 +241,16 @@
 									title={$_('routes.controls.moveStopDown')}
 								>
 									<iconify-icon icon="ix:arrow-down"></iconify-icon>
+								</button>
+							{/if}
+							{#if onHideStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onHideStop(group.stopId)}
+									title={$_('routes.controls.hideStop')}
+								>
+									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 								</button>
 							{/if}
 						</div>
@@ -272,6 +286,16 @@
 								</span>
 							{/each}
 						</div>
+						{#if onHideRoute}
+							<button
+								type="button"
+								class="btn-row-hide"
+								onclick={() => onHideRoute(row.route.global_route_id)}
+								title={$_('routes.controls.hide')}
+							>
+								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+							</button>
+						{/if}
 					</div>
 				{/each}
 			</div>
@@ -406,6 +430,39 @@
 		padding: 0.45em 0.5em;
 		align-items: center;
 		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+		position: relative;
+	}
+
+	.btn-row-hide {
+		position: absolute;
+		right: 0.3em;
+		top: 50%;
+		transform: translateY(-50%);
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 0.1em 0.25em;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.2s;
+		font-size: 0.7em;
+		line-height: 1;
+		z-index: 1;
+	}
+
+	.departure-row:hover .btn-row-hide {
+		opacity: 1;
+	}
+
+	.btn-row-hide:hover {
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-row-hide iconify-icon {
+		display: block;
+		width: 1.2em;
+		height: 1.2em;
 	}
 
 	.row-badge {

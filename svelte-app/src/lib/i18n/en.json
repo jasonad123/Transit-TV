@@ -68,6 +68,10 @@
 			"title": "Hidden routes",
 			"helpText": "Click to unhide routes"
 		},
+		"hiddenStops": {
+			"title": "Hidden stops",
+			"helpText": "Click to unhide stops"
+		},
 		"qrCode": {
 			"title": "QR Code",
 			"helpText": "Show a QR code that loads this location in Transit",
@@ -150,7 +154,8 @@
 			"hide": "Hide route",
 			"moveStopToTop": "Move stop to top",
 			"moveStopUp": "Move stop up",
-			"moveStopDown": "Move stop down"
+			"moveStopDown": "Move stop down",
+			"hideStop": "Hide stop"
 		}
 	},
 	"aria": {
@@ -160,7 +165,8 @@
 		"moveRouteToTop": "Move route to top",
 		"moveRouteUp": "Move route up",
 		"moveRouteDown": "Move route down",
-		"hideRoute": "Hide route"
+		"hideRoute": "Hide route",
+		"hideStop": "Hide stop"
 	},
 	"alerts": {
 		"default": "Service alert",

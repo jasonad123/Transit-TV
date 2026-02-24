@@ -274,8 +274,21 @@
 			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, currentConfig.maxDistance);
 			allRoutes = fetchedRoutes;
 
+			const hiddenStops = currentConfig.hiddenStops || [];
 			routes = fetchedRoutes
 				.filter((r) => !currentConfig.hiddenRoutes.includes(r.global_route_id))
+				.map((r) => {
+					if (hiddenStops.length === 0 || !r.itineraries) return r;
+					const filtered = r.itineraries.filter((it: any) => {
+						const stopId =
+							it.closest_stop?.parent_station_global_stop_id ||
+							it.closest_stop?.global_stop_id ||
+							'unknown';
+						return !hiddenStops.includes(stopId);
+					});
+					return { ...r, itineraries: filtered };
+				})
+				.filter((r) => !r.itineraries || r.itineraries.length > 0)
 				.sort((a, b) => {
 					const aIndex = currentConfig.routeOrder.indexOf(a.global_route_id);
 					const bIndex = currentConfig.routeOrder.indexOf(b.global_route_id);
@@ -487,6 +500,22 @@
 			// If hiding, just filter the current routes
 			routes = routes.filter((r) => r.global_route_id !== routeId);
 		}
+	}
+
+	async function toggleStopHidden(stopId: string) {
+		const wasHidden = $config.hiddenStops.includes(stopId);
+
+		config.update((c) => {
+			return {
+				...c,
+				hiddenStops: wasHidden
+					? c.hiddenStops.filter((id) => id !== stopId)
+					: [...c.hiddenStops, stopId]
+			};
+		});
+		config.save();
+
+		await loadNearby();
 	}
 
 	function calculateContentScale(forceRecalc = false, fastPath = false) {
@@ -961,6 +990,7 @@
 		{useCurrentLocation}
 		{handleLocationInputBlur}
 		{toggleRouteHidden}
+		{toggleStopHidden}
 		onsave={handleConfigSave}
 	/>
 
@@ -996,6 +1026,8 @@
 					showLongName={$config.showRouteLongName}
 					onMoveStop={moveStop}
 					onMoveStopToTop={moveStopToTop}
+					onHideRoute={toggleRouteHidden}
+					onHideStop={toggleStopHidden}
 				/>
 			</section>
 		{:else}

@@ -68,6 +68,10 @@
 			"title": "Rutas encubiertas",
 			"helpText": "Haz clic aquí para ocultar las rutas"
 		},
+		"hiddenStops": {
+			"title": "Paradas ocultas",
+			"helpText": "Haz clic para mostrar paradas"
+		},
 		"qrCode": {
 			"title": "Código QR",
 			"helpText": "Mostrar un código QR que cargue esta ubicación en Transit",
@@ -144,7 +148,8 @@
 			"hide": "Esconder la ruta",
 			"moveStopToTop": "Mover parada al principio",
 			"moveStopUp": "Subir parada",
-			"moveStopDown": "Bajar parada"
+			"moveStopDown": "Bajar parada",
+			"hideStop": "Ocultar parada"
 		}
 	},
 	"aria": {
@@ -154,7 +159,8 @@
 		"moveRouteToTop": "Subir al principio",
 		"moveRouteUp": "Subir",
 		"moveRouteDown": "Bajar",
-		"hideRoute": "Esconder la ruta"
+		"hideRoute": "Esconder la ruta",
+		"hideStop": "Ocultar parada"
 	},
 	"alerts": {
 		"default": "Avisos de servicio",
