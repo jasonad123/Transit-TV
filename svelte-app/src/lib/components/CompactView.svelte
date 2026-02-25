@@ -4,8 +4,8 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import RouteIcon from './RouteIcon.svelte';
-	import type { Route, ScheduleItem, Itinerary } from '$lib/services/nearby';
-	import { parseAlertContent, extractImageId, getAlertIcon } from '$lib/services/alerts';
+	import type { Route, Itinerary } from '$lib/services/nearby';
+	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { getRelativeLuminance } from '$lib/utils/colorUtils';
