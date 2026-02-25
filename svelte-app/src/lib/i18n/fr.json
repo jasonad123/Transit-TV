@@ -72,6 +72,10 @@
 			"title": "Arrêts masqués",
 			"helpText": "Cliquez pour afficher les arrêts"
 		},
+		"hiddenAgencies": {
+			"title": "Agences",
+			"helpText": "Cliquez pour afficher ou masquer une agence"
+		},
 		"qrCode": {
 			"title": "Code QR",
 			"helpText": "Afficher un code QR qui charge cet emplacement dans Transit",

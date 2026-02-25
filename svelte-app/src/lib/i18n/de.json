@@ -72,6 +72,10 @@
 			"title": "Ausgeblendete Haltestellen",
 			"helpText": "Klicken zum Einblenden"
 		},
+		"hiddenAgencies": {
+			"title": "Betreiber",
+			"helpText": "Klicken, um einen Betreiber ein- oder auszublenden"
+		},
 		"qrCode": {
 			"title": "QR-Code",
 			"helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",

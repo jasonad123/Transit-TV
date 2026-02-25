@@ -72,6 +72,10 @@
 			"title": "Hidden stops",
 			"helpText": "Click to unhide stops"
 		},
+		"hiddenAgencies": {
+			"title": "Agencies",
+			"helpText": "Click to show or hide an agency"
+		},
 		"qrCode": {
 			"title": "QR Code",
 			"helpText": "Show a QR code that loads this location in Transit",

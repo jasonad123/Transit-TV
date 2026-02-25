@@ -27,6 +27,7 @@
 		handleLocationInputBlur: () => void;
 		toggleRouteHidden: (routeId: string) => void;
 		toggleStopHidden: (stopId: string) => void;
+		toggleAgencyHidden: (networkName: string) => void;
 		onsave: () => void;
 	}
 
@@ -46,6 +47,7 @@
 		handleLocationInputBlur,
 		toggleRouteHidden,
 		toggleStopHidden,
+		toggleAgencyHidden,
 		onsave
 	}: Props = $props();
 
@@ -82,6 +84,14 @@
 			name: stopNameMap.get(id) || id
 		}))
 	);
+
+	let allAgencies = $derived.by(() => {
+		const seen = new Set<string>();
+		for (const route of allRoutes) {
+			if (route.route_network_name) seen.add(route.route_network_name);
+		}
+		return [...seen].sort();
+	});
 
 	function openLocationPicker() {
 		locationPickerOpen = true;
@@ -586,6 +596,32 @@
 						{/if}
 					</div>
 				</SolidSection>
+
+				<CollapsibleSection
+					title={$_('config.hiddenAgencies.title')}
+					helpText={$_('config.hiddenAgencies.helpText')}
+					initiallyOpen={true}
+				>
+					{#if allAgencies.length > 0}
+						<div class="route-management">
+							<div class="hidden-routes-list">
+								{#each allAgencies as agency}
+									{@const isHidden = ($config.hiddenAgencies || []).includes(agency)}
+									<button
+										type="button"
+										class="hidden-route-item"
+										onclick={() => toggleAgencyHidden(agency)}
+									>
+										<iconify-icon
+											icon={isHidden ? 'ix:eye-cancelled-filled' : 'ix:eye-filled'}
+										></iconify-icon>
+										<span>{agency}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</CollapsibleSection>
 
 				<CollapsibleSection
 					title={$_('config.hiddenRoutes.title')}

@@ -72,6 +72,10 @@
 			"title": "Paradas ocultas",
 			"helpText": "Haz clic para mostrar paradas"
 		},
+		"hiddenAgencies": {
+			"title": "Agencias",
+			"helpText": "Haz clic para mostrar u ocultar una agencia"
+		},
 		"qrCode": {
 			"title": "Código QR",
 			"helpText": "Mostrar un código QR que cargue esta ubicación en Transit",
