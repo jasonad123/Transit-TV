@@ -27,7 +27,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
-	viewMode: 'card' | 'compact' | 'list' | 'vertical';
+	viewMode: 'card' | 'board' | 'vertical';
 	minimalAlerts: boolean;
 	scaleMode: 'auto' | 'manual';
 	autoScaleMinimum: number;
@@ -114,6 +114,11 @@ function createConfigStore() {
 							parsed.manualColumnsMode = false;
 							configWasMigrated = true;
 						}
+						// Migrate old viewMode values: compact/list -> board
+						if (parsed.viewMode === 'compact' || parsed.viewMode === 'list') {
+							parsed.viewMode = 'board';
+							configWasMigrated = true;
+						}
 						set({
 							...defaultConfig,
 							...parsed,
@@ -170,6 +175,11 @@ function createConfigStore() {
 						if (unattendedConfig.scaleMode === 'auto' && unattendedConfig.columns !== 'auto') {
 							unattendedConfig.columns = 'auto';
 							unattendedConfig.manualColumnsMode = false;
+							unattendedConfigWasMigrated = true;
+						}
+						// Migrate old viewMode values: compact/list -> board
+						if (unattendedConfig.viewMode === 'compact' || unattendedConfig.viewMode === 'list') {
+							unattendedConfig.viewMode = 'board';
 							unattendedConfigWasMigrated = true;
 						}
 						set({

@@ -282,30 +282,16 @@
 							<button
 								type="button"
 								class="btn-option"
-								class:active={$config.viewMode === 'compact'}
+								class:active={$config.viewMode === 'board'}
 								onclick={() =>
 									config.update((c) => ({
 										...c,
-										viewMode: 'compact',
-										groupItinerariesByStop: false
-									}))}
-							>
-								<iconify-icon icon="ix:frames"></iconify-icon>
-								{$_('config.routeDisplay.compact')}
-							</button>
-							<button
-								type="button"
-								class="btn-option"
-								class:active={$config.viewMode === 'list'}
-								onclick={() =>
-									config.update((c) => ({
-										...c,
-										viewMode: 'list',
+										viewMode: 'board',
 										groupItinerariesByStop: true
 									}))}
 							>
 								<iconify-icon icon="ix:table"></iconify-icon>
-								{$_('config.routeDisplay.list')}
+								{$_('config.routeDisplay.board')}
 							</button>
 							<button
 								type="button"
@@ -542,15 +528,15 @@
 					<div class="toggle-container">
 						<Toggle
 							bind:checked={$config.groupItinerariesByStop}
-							disabled={$config.viewMode === 'compact' || $config.viewMode === 'vertical'}
+							disabled={$config.viewMode === 'board' || $config.viewMode === 'vertical'}
 						>
 							{#snippet label()}
 								<span>{$_('config.fields.groupItinerariesByStop')}</span>
 							{/snippet}
 						</Toggle>
-						{#if $config.viewMode === 'compact'}
+						{#if $config.viewMode === 'board'}
 							<small class="toggle-help-text"
-								>{$_('config.stopManagement.groupDisabledInCompactMode')}</small
+								>{$_('config.stopManagement.groupAlwaysOnInBoardMode')}</small
 							>
 						{:else if $config.viewMode === 'vertical'}
 							<small class="toggle-help-text"
