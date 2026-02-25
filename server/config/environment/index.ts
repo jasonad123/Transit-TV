@@ -99,6 +99,26 @@ function validateLanguage(lang: string): AllowedLanguage {
 	return 'en';
 }
 
+type AllowedViewMode = 'card' | 'board' | 'vertical';
+
+/**
+ * Validates and returns a safe view mode value
+ */
+function validateViewMode(viewMode: string): AllowedViewMode {
+	const allowed: AllowedViewMode[] = ['card', 'board', 'vertical'];
+	if ((allowed as string[]).includes(viewMode)) {
+		return viewMode as AllowedViewMode;
+	}
+	console.warn(
+		'Invalid UNATTENDED_VIEW_MODE value: ' +
+			viewMode +
+			'. Must be one of: ' +
+			allowed.join(', ') +
+			'. Using default: card'
+	);
+	return 'card';
+}
+
 type AllowedTheme = 'light' | 'dark' | 'auto';
 
 /**
@@ -201,6 +221,7 @@ export interface Config {
 		showQRCode: boolean;
 		maxDistance: AllowedMaxDistance;
 		customLogo: string | null;
+		viewMode: AllowedViewMode;
 		groupItinerariesByStop: boolean;
 		filterRedundantTerminus: boolean;
 		showRouteLongName: boolean;
@@ -257,6 +278,7 @@ const config: Config = {
 		showQRCode: parseBoolean(process.env.UNATTENDED_SHOW_QR_CODE),
 		maxDistance: validateMaxDistance(parseInt(process.env.UNATTENDED_MAX_DISTANCE || '') || 500),
 		customLogo: process.env.UNATTENDED_CUSTOM_LOGO || null,
+		viewMode: validateViewMode(process.env.UNATTENDED_VIEW_MODE || 'card'),
 		groupItinerariesByStop: parseBoolean(process.env.UNATTENDED_GROUP_ITINERARIES),
 		filterRedundantTerminus: parseBoolean(process.env.UNATTENDED_FILTER_TERMINUS),
 		showRouteLongName: parseBoolean(process.env.UNATTENDED_SHOW_ROUTE_NAMES)
