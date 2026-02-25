@@ -6,6 +6,7 @@ import config from './config/environment/index.js';
 import logger from './config/logger.js';
 import imageRoutes from './api/image/index.js';
 import transitRoutes from './api/routes/index.js';
+import vehiclesRoutes from './api/vehicles/index.js';
 import configRoutes from './api/config/index.js';
 
 const pkgPath = path.join(__dirname, '../package.json');
@@ -21,10 +22,10 @@ interface SvelteKitModule {
 
 export default function setupRoutes(app: Application): void {
 	// Insert routes below
-	app.use('/api/images', require('./api/image'));
-	app.use('/api/routes', require('./api/routes'));
-	app.use('/api/vehicles', require('./api/vehicles'));
-	app.use('/api/config', require('./api/config'));
+	app.use('/api/images', imageRoutes);
+	app.use('/api/routes', transitRoutes);
+	app.use('/api/vehicles', vehiclesRoutes);
+	app.use('/api/config', configRoutes);
 
 	// Health check endpoint for monitoring and orchestration
 	// Always allow CORS for health endpoint to support dev mode version fetching
