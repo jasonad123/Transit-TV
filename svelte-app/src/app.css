@@ -115,20 +115,24 @@ button {
 	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
 }
 
-/* VerticalView real-time wave styling */
-[data-theme='dark'] .vertical-view .realtime::before {
+/* VerticalView / BoardView real-time wave styling */
+[data-theme='dark'] .vertical-view .realtime::before,
+[data-theme='dark'] .board-view .realtime::before {
 	background-image: url('/assets/images/real_time_wave_small-w@2x.png') !important;
 }
 
-[data-theme='dark'] .vertical-view .realtime::after {
+[data-theme='dark'] .vertical-view .realtime::after,
+[data-theme='dark'] .board-view .realtime::after {
 	background-image: url('/assets/images/real_time_wave_big-w@2x.png') !important;
 }
 
-[data-theme='light'] .vertical-view .realtime::before {
+[data-theme='light'] .vertical-view .realtime::before,
+[data-theme='light'] .board-view .realtime::before {
 	background-image: url('/assets/images/real_time_wave_small@2x.png') !important;
 }
 
-[data-theme='light'] .vertical-view .realtime::after {
+[data-theme='light'] .vertical-view .realtime::after,
+[data-theme='light'] .board-view .realtime::after {
 	background-image: url('/assets/images/real_time_wave_big@2x.png') !important;
 }
 

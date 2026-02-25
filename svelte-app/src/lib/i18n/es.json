@@ -79,8 +79,8 @@
 			"scanPrompt2": "Escanea para abrir en la aplicación Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (No es compatible con el modo Compacto. Esta habilitada de forma predeterminada en los modos Lista y Vertical.)",
-			"groupDisabledInCompactMode": "Esta opción está desactivada en modo Compacto.",
+			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (Habilitada de forma predeterminada en los modos Tablero y Vertical.)",
+			"groupAlwaysOnInBoardMode": "La agrupación por parada siempre está activada en modo Tablero",
 			"groupAlwaysOnInVerticalMode": "La agrupación por parada siempre está activada en modo Vertical",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
@@ -88,10 +88,9 @@
 			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización.",
 			"viewMode": "Modo de vista",
 			"card": "Tarjeta",
-			"compact": "Compacto",
-			"list": "Lista",
+			"board": "Tablero",
 			"vertical": "Vertical",
-			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales), el modo Lista (mejor para grandes cantidades de rutas) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
+			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado, vista horizontal centrada en rutas), el modo Tablero (tablero horizontal agrupado por parada para visualización cercana) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas",

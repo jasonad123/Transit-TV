@@ -6,7 +6,6 @@
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
-	import CompactView from '$lib/components/CompactView.svelte';
 	import ListView from '$lib/components/ListView.svelte';
 	import VerticalView from '$lib/components/VerticalView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
@@ -106,8 +105,8 @@
 	let displayRoutes = $derived.by(() => {
 		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
 
-		// Vertical mode: no splitting, pass all routes through directly
-		if ($config.viewMode === 'vertical') {
+		// Vertical and board modes: no splitting, pass all routes through directly
+		if ($config.viewMode === 'vertical' || $config.viewMode === 'board') {
 			return routes.filter((r) => (r.itineraries || []).length > 0) as (Route & {
 				_splitIndex?: number;
 				_totalSplits?: number;
@@ -1030,6 +1029,25 @@
 					onHideStop={toggleStopHidden}
 				/>
 			</section>
+		{:else if $config.viewMode === 'board'}
+			<section
+				id="routes"
+				bind:this={routesElement}
+				class="board-mode"
+				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
+				effectiveScale < 1
+					? `${effectiveScale * 100}%`
+					: null}
+			>
+				<ListView
+					routes={displayRoutes}
+					showLongName={$config.showRouteLongName}
+					onMoveStop={moveStop}
+					onMoveStopToTop={moveStopToTop}
+					onHideRoute={toggleRouteHidden}
+					onHideStop={toggleStopHidden}
+				/>
+			</section>
 		{:else}
 			<section
 				id="routes"
@@ -1046,16 +1064,11 @@
 				class:cols-6={$config.columns === 6}
 				class:cols-7={$config.columns === 7}
 				class:cols-8={$config.columns === 8}
-				class:compact-view={$config.viewMode === 'compact'}
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
 						{#if $config.viewMode === 'card'}
 							<RouteItem {route} showLongName={$config.showRouteLongName} />
-						{:else if $config.viewMode === 'compact'}
-							<CompactView {route} showLongName={$config.showRouteLongName} />
-						{:else if $config.viewMode === 'list'}
-							<ListView {route} showLongName={$config.showRouteLongName} />
 						{/if}
 						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
 							<div class="route-split-badge">
@@ -1158,6 +1171,18 @@
 
 	#routes.vertical-mode > :global(*) {
 		width: 100%;
+	}
+
+	#routes.board-mode {
+		display: flex;
+		flex-direction: column;
+		overflow-y: hidden;
+		grid-template-columns: none;
+	}
+
+	#routes.board-mode > :global(*) {
+		width: 100%;
+		height: 100%;
 	}
 
 	#routes {
@@ -1284,19 +1309,6 @@
 		box-sizing: border-box;
 		position: relative;
 		padding: 0.3em 0.4em;
-		min-width: 0; /* Allow grid items to shrink below content size */
-	}
-
-	#routes.compact-view {
-		display: grid;
-		gap: 0;
-	}
-
-	#routes.compact-view .route-wrapper {
-		display: flex;
-		flex-direction: column;
-		box-sizing: border-box;
-		padding: 0;
 		min-width: 0; /* Allow grid items to shrink below content size */
 	}
 

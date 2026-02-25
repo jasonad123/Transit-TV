@@ -79,8 +79,8 @@
 			"scanPrompt2": "Scan the code to open in Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (Not supported in Compact mode. Enabled by default in List and Vertical modes.)",
-			"groupDisabledInCompactMode": "This option is disabled in Compact mode",
+			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (Enabled by default in Board and Vertical modes.)",
+			"groupAlwaysOnInBoardMode": "Stop grouping is always enabled in Board mode",
 			"groupAlwaysOnInVerticalMode": "Stop grouping is always enabled in Vertical mode",
 			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
 		},
@@ -88,10 +88,9 @@
 			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name.",
 			"viewMode": "View mode",
 			"card": "Card",
-			"compact": "Compact",
-			"list": "List",
+			"board": "Board",
 			"vertical": "Vertical",
-			"viewModeHelpText": "Select between Card mode (default), Compact mode (better for vertical displays), List mode (better for large numbers of routes), or Vertical mode (portrait departure board grouped by stop)."
+			"viewModeHelpText": "Select between Card mode (default, route-centric landscape view), Board mode (stop-grouped landscape board for closer viewing), or Vertical mode (portrait departure board grouped by stop)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count",

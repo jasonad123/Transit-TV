@@ -79,8 +79,8 @@
 			"scanPrompt2": "Scannez pour ouvrir dans l'application Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d'arrêt en une seule carte (N'est pas prise en charge en mode Compact. Est activée par défaut en mode Liste et Vertical.)",
-			"groupDisabledInCompactMode": "Cette option est désactivée en mode Compact",
+			"groupItinerarieshelpText": "Combiner les destinations ayant le même nom d'arrêt en une seule carte (Activée par défaut en mode Tableau et Vertical.)",
+			"groupAlwaysOnInBoardMode": "Le regroupement par arrêt est toujours activé en mode Tableau",
 			"groupAlwaysOnInVerticalMode": "Le regroupement par arrêt est toujours activé en mode Vertical",
 			"filterTerminushelpText": "Aux stations terminus, afficher uniquement les directions opposées ou sortantes"
 		},
@@ -88,10 +88,9 @@
 			"showRouteLongNameHelpText": "Afficher les noms de couleur de ligne (ex: 'Ligne Rouge') à côté des icônes de ligne lorsqu'il n'y a pas de texte adjacent.",
 			"viewMode": "Mode d'affichage",
 			"card": "Carte",
-			"compact": "Compact",
-			"list": "Liste",
+			"board": "Tableau",
 			"vertical": "Vertical",
-			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux), le mode Liste (meilleur pour de grandes quantités de lignes) ou le mode Vertical (tableau de départs portrait groupé par arrêt)."
+			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut, vue paysage centree sur les lignes), le mode Tableau (tableau paysage groupe par arret pour visualisation rapprochee) ou le mode Vertical (tableau de departs portrait groupe par arret)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes",

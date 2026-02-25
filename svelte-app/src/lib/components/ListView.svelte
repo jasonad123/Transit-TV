@@ -1,26 +1,45 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { config } from '$lib/stores/config';
 	import RouteIcon from './RouteIcon.svelte';
 	import type { Route } from '$lib/services/nearby';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
-	import { getRelativeLuminance } from '$lib/utils/colorUtils';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
+	import { config } from '$lib/stores/config';
 
-	let { route, showLongName = false }: { route: Route; showLongName?: boolean } = $props();
+	let {
+		routes,
+		showLongName = false,
+		onMoveStop,
+		onMoveStopToTop,
+		onHideRoute,
+		onHideStop
+	}: {
+		routes: Route[];
+		showLongName?: boolean;
+		onMoveStop?: (stopId: string, direction: 'up' | 'down') => void;
+		onMoveStopToTop?: (stopId: string) => void;
+		onHideRoute?: (routeId: string) => void;
+		onHideStop?: (stopId: string) => void;
+	} = $props();
 
-	interface ItineraryGroup {
-		stopId: string;
-		stopName: string;
-		itineraries: any[];
+	interface DepartureRow {
+		route: Route;
+		itinerary: any;
+		departures: any[];
+		nextDeparture: number;
+		alertSeverity: 'none' | 'info' | 'warning' | 'severe';
+		alertIcon: string;
 	}
 
-	let useBlackText = $derived(route.route_text_color === '000000');
+	interface StopGroup {
+		stopId: string;
+		stopName: string;
+		rows: DepartureRow[];
+	}
+
 	let isDarkMode = $state(false);
-	let hasLightColor = $derived(getRelativeLuminance(route.route_color) > 0.3);
-	let cellStyle = $derived(`background: #${route.route_color}; color: #${route.route_text_color}`);
 	let themeObserver: MutationObserver | null = null;
 
 	if (typeof document !== 'undefined') {
@@ -42,127 +61,143 @@
 		}
 	});
 
-	// Itinerary grouping logic (copied from RouteItem)
-	function groupItinerariesByStop(): ItineraryGroup[] {
-		if (!route.itineraries) return [];
+	// Grid layout driven by columns config
+	let gridColumns = $derived(
+		$config.columns === 'auto'
+			? 'repeat(auto-fit, minmax(20em, 1fr))'
+			: `repeat(${$config.columns}, 1fr)`
+	);
 
-		const groups = new Map<string, ItineraryGroup>();
+	// Cross-route stop grouping (adapted from VerticalView)
+	let stopGroups = $derived.by(() => {
+		const groups = new Map<string, StopGroup>();
 
-		route.itineraries.forEach((itinerary) => {
-			const stopId =
-				itinerary.closest_stop?.parent_station_global_stop_id ||
-				itinerary.closest_stop?.global_stop_id ||
-				'unknown';
-			const stopName = itinerary.closest_stop?.stop_name || 'Unknown stop';
+		for (const route of routes) {
+			if (!route.itineraries) continue;
 
-			if (!groups.has(stopId)) {
-				groups.set(stopId, {
-					stopId,
-					stopName,
-					itineraries: []
+			let alertSeverity: 'none' | 'info' | 'warning' | 'severe' = 'none';
+			let alertIcon = '';
+			if (route.alerts?.length) {
+				if (route.alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+					alertSeverity = 'severe';
+					alertIcon = 'ix:warning-octagon-filled';
+				} else if (route.alerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+					alertSeverity = 'warning';
+					alertIcon = 'ix:warning-filled';
+				} else {
+					alertSeverity = 'info';
+					alertIcon = 'ix:about-filled';
+				}
+			}
+
+			for (const itinerary of route.itineraries) {
+				const stopId =
+					itinerary.closest_stop?.parent_station_global_stop_id ||
+					itinerary.closest_stop?.global_stop_id ||
+					'unknown';
+				const stopName = itinerary.closest_stop?.stop_name || 'Unknown stop';
+
+				if (!groups.has(stopId)) {
+					groups.set(stopId, { stopId, stopName, rows: [] });
+				}
+
+				const filteredDepartures =
+					itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 2) || [];
+
+				if (filteredDepartures.length === 0) continue;
+
+				const nextDep = filteredDepartures[0]?.departure_time ?? Infinity;
+
+				groups.get(stopId)!.rows.push({
+					route,
+					itinerary,
+					departures: filteredDepartures,
+					nextDeparture: nextDep,
+					alertSeverity,
+					alertIcon
 				});
 			}
-
-			groups.get(stopId)!.itineraries.push(itinerary);
-		});
-
-		return Array.from(groups.values());
-	}
-
-	let itineraryGroups = $derived.by(() => {
-		const start = performance.now();
-		const result = $config.groupItinerariesByStop
-			? groupItinerariesByStop()
-			: route.itineraries?.map((itinerary) => ({
-					stopId: itinerary.closest_stop?.global_stop_id || 'unknown',
-					stopName: itinerary.closest_stop?.stop_name || 'Unknown stop',
-					itineraries: [itinerary]
-				})) || [];
-		const end = performance.now();
-		if (end - start > 10) {
-			console.log(
-				`[ListView] itineraryGroups calc took ${end - start}ms, grouped=${$config.groupItinerariesByStop}`
-			);
-		}
-		return result;
-	});
-
-	// Alert handling (copied from RouteItem)
-	// PERFORMANCE FIX: Cache stop IDs to avoid creating new Set on every alert check
-	let localStopIds = $derived.by(() => {
-		const stopIds = new Set<string>();
-		route.itineraries?.forEach((itinerary) => {
-			if (itinerary.closest_stop?.global_stop_id) {
-				stopIds.add(itinerary.closest_stop.global_stop_id);
-			}
-		});
-		return stopIds;
-	});
-
-	function isAlertRelevantToRoute(alert: any): boolean {
-		if (!alert.informed_entities || alert.informed_entities.length === 0) {
-			return true;
 		}
 
-		return alert.informed_entities.some((entity: any) => {
-			const hasRouteId = !!entity.global_route_id;
-			const hasStopId = !!entity.global_stop_id;
+		// Sort rows within each group by route then by departure
+		for (const group of groups.values()) {
+			group.rows.sort((a, b) => {
+				if (a.route.global_route_id !== b.route.global_route_id) {
+					return a.route.global_route_id.localeCompare(b.route.global_route_id);
+				}
+				return a.nextDeparture - b.nextDeparture;
+			});
+		}
 
-			if (!hasRouteId && !hasStopId) {
-				return true;
-			}
-
-			const routeMatches = !hasRouteId || entity.global_route_id === route.global_route_id;
-			const stopMatches = !hasStopId || localStopIds.has(entity.global_stop_id);
-
-			return routeMatches && stopMatches;
-		});
-	}
-
-	// PERFORMANCE FIX: Cache filtered alerts instead of calling filter multiple times
-	let relevantAlerts = $derived.by(() => {
-		if (!route.alerts?.length) return [];
-		return route.alerts.filter(isAlertRelevantToRoute);
+		// Sort groups by saved stopOrder
+		const savedOrder = $config.stopOrder || [];
+		return Array.from(groups.values())
+			.filter((g) => g.rows.length > 0)
+			.sort((a, b) => {
+				const aIdx = savedOrder.indexOf(a.stopId);
+				const bIdx = savedOrder.indexOf(b.stopId);
+				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+				if (aIdx !== -1) return -1;
+				if (bIdx !== -1) return 1;
+				return a.stopId.localeCompare(b.stopId);
+			});
 	});
 
-	// PERFORMANCE FIX: Cache alert text to avoid regenerating on every render
+	// Consolidated alerts from all routes, deduplicated (same as VerticalView)
+	let consolidatedAlerts = $derived.by(() => {
+		const alertMap = new Map<string, { alert: any; routeNames: string[] }>();
+
+		for (const route of routes) {
+			if (!route.alerts) continue;
+			const routeName = route.route_short_name || route.route_long_name || route.global_route_id;
+			for (const alert of route.alerts) {
+				const key = `${alert.title || ''}::${alert.description || ''}`;
+				if (!alertMap.has(key)) {
+					alertMap.set(key, { alert, routeNames: [routeName] });
+				} else {
+					const entry = alertMap.get(key)!;
+					if (!entry.routeNames.includes(routeName)) {
+						entry.routeNames.push(routeName);
+					}
+				}
+			}
+		}
+
+		return Array.from(alertMap.values());
+	});
+
 	let alertText = $derived.by(() => {
-		if (!relevantAlerts.length) return '';
+		if (!consolidatedAlerts.length) return '';
 
-		return relevantAlerts
-			.map((alert) => {
+		return consolidatedAlerts
+			.map(({ alert, routeNames }) => {
+				const routeLabel = routeNames.join(', ');
 				const hasTitle = alert.title && alert.title.trim().length > 0;
 				const hasDescription = alert.description && alert.description.trim().length > 0;
+				const prefix = `[${routeLabel}] `;
 
 				if (hasTitle && hasDescription) {
-					return `${alert.title}\n\n${alert.description}`;
+					return `${prefix}${alert.title}\n\n${alert.description}`;
 				} else if (hasTitle) {
-					return alert.title;
+					return `${prefix}${alert.title}`;
 				} else if (hasDescription) {
-					return alert.description;
+					return `${prefix}${alert.description}`;
 				} else {
-					return $_('alerts.default');
+					return `${prefix}${$_('alerts.default')}`;
 				}
 			})
 			.join('\n\n---\n\n');
 	});
 
-	let relevantAlertCount = $derived(relevantAlerts.length);
-
-	// PERFORMANCE FIX: Cache severity level instead of recomputing 4x per template render
 	let mostSevereLevel = $derived.by(() => {
-		if (!relevantAlerts.length) return 'info';
-
-		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'severe')) {
+		if (!consolidatedAlerts.length) return 'info';
+		if (consolidatedAlerts.some((a) => (a.alert.severity || 'Info').toLowerCase() === 'severe'))
 			return 'severe';
-		}
-		if (relevantAlerts.some((a) => (a.severity || 'Info').toLowerCase() === 'warning')) {
+		if (consolidatedAlerts.some((a) => (a.alert.severity || 'Info').toLowerCase() === 'warning'))
 			return 'warning';
-		}
 		return 'info';
 	});
 
-	// PERFORMANCE FIX: Cache icon based on severity level
 	let mostSevereIcon = $derived.by(() => {
 		if (mostSevereLevel === 'severe') return 'ix:warning-octagon-filled';
 		if (mostSevereLevel === 'warning') return 'ix:warning-filled';
@@ -170,70 +205,107 @@
 	});
 </script>
 
-<div
-	class="list-view"
-	class:white={useBlackText && !isDarkMode}
-	class:light-in-dark={isDarkMode && hasLightColor}
-	style="color: #{route.route_color}"
->
-	<!-- Route header -->
-	<h2 class="list-header">
-		<RouteIcon {route} {showLongName} compact={true} />
-	</h2>
-
-	<!-- Itinerary groups (stops and departures) -->
-	{#if itineraryGroups.length > 0}
-		{#each itineraryGroups as group, groupIndex}
-			<!-- Stop name header -->
-			<div class="stop-header">
-				<iconify-icon icon="ix:location-filled"></iconify-icon>
-				{group.stopName}
-			</div>
-
-			<!-- Destinations table -->
-			<div class="table-container">
-				<div class="table-header">
-					<div class="destination-col">{$_('table.destination')}</div>
-					<div class="times-col">{$_('table.arrivesIn')} (min)</div>
+<div class="board-view" class:dark={isDarkMode} class:has-alerts={consolidatedAlerts.length > 0}>
+	<!-- Stop panels grid -->
+	<div class="panels-area" style:grid-template-columns={gridColumns}>
+		{#each stopGroups as group, groupIndex (group.stopId)}
+			<div class="stop-panel">
+				<div class="stop-header">
+					<iconify-icon icon="ix:location-filled"></iconify-icon>
+					<span class="stop-name">{group.stopName}</span>
+					{#if onMoveStop || onMoveStopToTop || onHideStop}
+						<div class="stop-controls">
+							{#if groupIndex > 0 && onMoveStopToTop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStopToTop(group.stopId)}
+									title={$_('routes.controls.moveStopToTop')}
+								>
+									<iconify-icon icon="ix:double-chevron-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if groupIndex > 0 && onMoveStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStop(group.stopId, 'up')}
+									title={$_('routes.controls.moveStopUp')}
+								>
+									<iconify-icon icon="ix:arrow-up"></iconify-icon>
+								</button>
+							{/if}
+							{#if groupIndex < stopGroups.length - 1 && onMoveStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onMoveStop(group.stopId, 'down')}
+									title={$_('routes.controls.moveStopDown')}
+								>
+									<iconify-icon icon="ix:arrow-down"></iconify-icon>
+								</button>
+							{/if}
+							{#if onHideStop}
+								<button
+									type="button"
+									class="btn-stop-control"
+									onclick={() => onHideStop(group.stopId)}
+									title={$_('routes.controls.hideStop')}
+								>
+									<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+								</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
-				{#each group.itineraries as itinerary}
+				{#each group.rows as row (row.route.global_route_id + '_' + (row.itinerary.merged_headsign || ''))}
 					<div
-						class="destination-row"
-						style="--route-color: #{route.route_color}; --route-text-color: #{route.route_text_color}"
+						class="departure-row"
+						style="--route-color: #{row.route.route_color}; --route-text-color: #{row.route
+							.route_text_color}"
 					>
-						<div class="destination-col">
-							{#if itinerary.branch_code}<span class="branch-code">({itinerary.branch_code})</span
-								>{/if}{itinerary.merged_headsign}
+						<div class="row-badge">
+							<RouteIcon route={row.route} {showLongName} compact={true} />
 						</div>
-						<div class="times-col">
-							<div class="times-list">
-								{#each itinerary.schedule_items
-									?.filter(shouldShowDeparture)
-									.slice(0, 3) || [] as item, itemIndex}
-									<span class="time-item" class:cancelled={item.is_cancelled}>
-										{getMinutesUntil(item.departure_time)}{#if item.is_last}*{/if}
-									</span>
-									{#if itemIndex < (itinerary.schedule_items
-											?.filter(shouldShowDeparture)
-											.slice(0, 3).length || 0) - 1}
-										<span class="separator">,</span>
-									{/if}
-								{/each}
-							</div>
+						<div class="row-destination">
+							{#if row.itinerary.branch_code}<span class="branch-code"
+									>({row.itinerary.branch_code})</span
+								>{/if}{row.itinerary.merged_headsign}
 						</div>
+						<div class="row-times">
+							{#if row.alertSeverity !== 'none'}
+								<iconify-icon
+									icon={row.alertIcon}
+									class="route-alert-icon {row.alertSeverity}"
+									title={$_('alerts.title')}
+								></iconify-icon>
+							{/if}
+							{#each row.departures as item (item.departure_time)}
+								<span class="time-badge" class:cancelled={item.is_cancelled}>
+									{getMinutesUntil(item.departure_time)}<span class="time-suffix">m</span
+									>{#if item.is_real_time}<i class="realtime"></i>{/if}{#if item.is_last}*{/if}
+								</span>
+							{/each}
+						</div>
+						{#if onHideRoute}
+							<button
+								type="button"
+								class="btn-row-hide"
+								onclick={() => onHideRoute(row.route.global_route_id)}
+								title={$_('routes.controls.hide')}
+							>
+								<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+							</button>
+						{/if}
 					</div>
 				{/each}
 			</div>
-
-			{#if groupIndex < itineraryGroups.length - 1}
-				<div class="group-divider"></div>
-			{/if}
 		{/each}
-	{/if}
+	</div>
 
-	<!-- Alerts section -->
-	{#if relevantAlerts.length > 0}
+	<!-- Pinned alerts area (always visible at bottom) -->
+	{#if consolidatedAlerts.length > 0}
 		<div class="alert-section">
 			<div
 				class="alert-header"
@@ -244,14 +316,16 @@
 				<iconify-icon icon={mostSevereIcon}></iconify-icon>
 				<span class="alert-title">
 					{$_('alerts.title')}
+					({consolidatedAlerts.length})
 				</span>
 			</div>
 
-			<div class="alert-ticker" class:grouped-alerts={$config.groupItinerariesByStop}>
+			{#if !$config.minimalAlerts}
+			<div class="alert-ticker">
 				<div class="alert-content">
-					{#each [0, 1] as _}
+					{#each [0, 1] as _, i (i)}
 						<div class="alert-text">
-							{#each parseAlertContent(alertText) as content}
+							{#each parseAlertContent(alertText) as content, ci (ci)}
 								{#if content.type === 'text'}
 									{content.value}
 								{:else if content.type === 'image'}
@@ -263,186 +337,247 @@
 								{/if}
 							{/each}
 						</div>
-						{#if relevantAlertCount > 1 || (relevantAlertCount === 1 && alertText.length > 100)}
+						{#if consolidatedAlerts.length > 1 || (consolidatedAlerts.length === 1 && alertText.length > 100)}
 							<div class="separator-line">---</div>
 						{/if}
 					{/each}
 				</div>
 			</div>
+		{/if}
 		</div>
 	{/if}
 </div>
 
 <style>
-	.list-view {
+	.board-view {
 		display: flex;
 		flex-direction: column;
-		border: none;
-		border-radius: 0.4em;
-		overflow: hidden;
-		font-size: 1.85em;
 		height: 100%;
-	}
-
-	h2.list-header {
-		padding: 0.25em 0em 0.2em 0.2em;
-		background: transparent;
+		width: 100%;
 		font-size: 2em;
-		line-height: 0.9;
-		opacity: 0.9;
+		box-sizing: border-box;
 	}
 
-	.list-view.white h2.list-header {
-		border-color: rgba(0, 0, 0, 0.1);
+	/* Stop panels grid — takes all remaining space above alerts */
+	.panels-area {
+		flex: 1;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+		align-content: start;
+		overflow-y: auto;
+		min-height: 0;
 	}
 
-	h2 {
-		position: relative;
-		padding-left: 0.15em;
-		padding-bottom: -0.2em;
-		padding-top: 0.25em;
+	.stop-panel {
 		display: flex;
-		align-items: center;
-		flex-wrap: nowrap;
-		gap: 0;
-		line-height: 0.82em;
-		flex-shrink: 0;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		margin: 0;
+		flex-direction: column;
+		min-width: 0;
+		border-right: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+		box-sizing: border-box;
 	}
 
 	.stop-header {
 		display: flex;
 		align-items: center;
 		gap: 0.3em;
-		padding: 0.3em 0.6em;
-		font-size: 0.8em;
-		font-weight: 400;
-		background: transparent;
-		border-bottom: none;
-	}
-
-	.list-view.white .stop-header {
-		border-color: rgba(0, 0, 0, 0.08);
+		padding: 0.4em 0.5em;
+		font-size: 0.7em;
+		font-weight: 700;
+		background: var(--bg-secondary);
+		color: var(--text-secondary);
+		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
 	}
 
 	.stop-header iconify-icon {
-		width: 0.8em;
-		height: 0.8em;
 		flex-shrink: 0;
-		transform: translateY(-0.2em);
-		fill: currentColor;
+		width: 0.85em;
+		height: 0.85em;
+		transform: translateY(-0.1em);
 	}
 
-	.table-container {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.table-header {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 0.8em;
-		padding: 0.4em 0.6em;
-		font-size: 0.7em;
-		font-weight: 700;
-		background: rgba(255, 255, 255, 0.08);
-		border-bottom: none;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-	}
-
-	.list-view.white .table-header {
-		background: rgba(0, 0, 0, 0.08) !important;
-	}
-
-	.list-view.light-in-dark .table-header {
-		background: rgba(255, 255, 255, 0.08) !important;
-	}
-
-	.destination-row {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 0.8em;
-		padding: 0.4em 0.6em;
-		font-size: 0.8em;
-		align-items: center;
-	}
-
-	.list-view.white .destination-row {
-		border-color: rgba(0, 0, 0, 0.05);
-	}
-
-	.destination-col {
+	.stop-name {
+		flex: 1;
 		min-width: 0;
-		display: block;
-		overflow-wrap: break-word;
-		font-weight: 600;
-		color: var(--text-tertiary);
-	}
-
-	.destination-col .branch-code {
-		color: var(--route-color);
-		font-weight: 900;
-		font-size: 1em;
-		margin-right: 0.35em;
-		vertical-align: baseline;
-	}
-
-	.times-col {
-		flex-shrink: 0;
-		text-align: right;
-		color: var(--text-primary);
-	}
-
-	.table-header .times-col,
-	.table-header .destination-col {
-		font-weight: 600;
-		font-size: 0.8em;
-		color: var(--text-tertiary);
-	}
-
-	.times-list {
-		display: flex;
-		align-items: center;
-		gap: 0.2em;
+		overflow: visible;
+		text-overflow: clip;
 		white-space: nowrap;
-		font-feature-settings: 'tnum';
-		font-size: 1.35em;
-		font-weight: 700;
 	}
 
-	.time-item {
-		display: inline-flex;
+	.stop-controls {
+		display: flex;
+		gap: 0.25em;
+		opacity: 0;
+		transition: opacity 0.2s;
+		flex-shrink: 0;
+	}
+
+	.stop-panel:hover .stop-controls {
+		opacity: 1;
+	}
+
+	.btn-stop-control {
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 0.15em 0.3em;
+		cursor: pointer;
+		transition: background 0.2s;
+		font-size: 0.85em;
+		line-height: 1;
+	}
+
+	.btn-stop-control:hover {
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-stop-control iconify-icon {
+		display: block;
+		width: 1.2em;
+		height: 1.2em;
+	}
+
+	.btn-row-hide {
+		position: absolute;
+		right: 0.3em;
+		top: 50%;
+		transform: translateY(-50%);
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 0.1em 0.25em;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.2s;
+		font-size: 0.7em;
+		line-height: 1;
+		z-index: 1;
+	}
+
+	.departure-row:hover .btn-row-hide {
+		opacity: 1;
+	}
+
+	.btn-row-hide:hover {
+		background: rgba(255, 255, 255, 1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-row-hide iconify-icon {
+		display: block;
+		width: 1.2em;
+		height: 1.2em;
+	}
+
+	.departure-row {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		gap: 0.5em;
+		padding: 0.45em 0.5em;
 		align-items: center;
-		gap: 0.15em;
+		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
 		position: relative;
 	}
 
-	.time-item.cancelled {
+	.row-badge {
+		display: flex;
+		align-items: center;
+		font-size: 1em;
+		line-height: 1;
+		color: var(--route-color);
+	}
+
+	.route-alert-icon {
+		display: inline-block;
+		width: 0.6em;
+		height: 0.6em;
+		flex-shrink: 0;
+		transform: translateY(-0.25em);
+		margin-right: 0.25em;
+	}
+
+	.route-alert-icon.severe {
+		color: #e30613;
+	}
+
+	.route-alert-icon.warning {
+		color: #ffa700;
+	}
+
+	.route-alert-icon.info {
+		color: var(--text-secondary);
+	}
+
+	.row-destination {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-weight: 600;
+		font-size: 0.85em;
+		color: var(--text-primary);
+	}
+
+	.branch-code {
+		color: var(--route-color);
+		font-weight: 900;
+		margin-right: 0.35em;
+	}
+
+	.row-times {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		flex-shrink: 0;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
+
+	.time-badge {
+		font-feature-settings: 'tnum';
+		font-weight: 700;
+		font-size: 0.85em;
+		white-space: nowrap;
+		color: var(--text-primary);
+		position: relative;
+	}
+
+	.time-badge.cancelled {
 		text-decoration: line-through;
 		opacity: 0.6;
 	}
 
-	.time-item::before,
-	.time-item::after {
+	.time-suffix {
+		font-weight: 500;
+		font-size: 0.8em;
+		opacity: 0.7;
+	}
+
+	/* Real-time indicator — theme-aware PNGs set in app.css */
+	.realtime {
+		width: 0.28em;
+		height: 0.28em;
+		position: absolute;
+		top: -4px;
+		right: -6px;
+	}
+
+	.realtime::before,
+	.realtime::after {
 		content: '';
 		display: block;
-		width: 7px;
-		height: 7px;
+		width: 9px;
+		height: 9px;
 		position: absolute;
-		top: -2px;
-		right: -6px;
 		background-size: 100%;
 	}
 
-	/* Wave animation - styling controlled by global [data-theme] rules in app.css */
-	.time-item::before {
+	.realtime::before {
 		animation: realtimeAnim 1.4s linear 0s infinite alternate;
 	}
 
-	.time-item::after {
+	.realtime::after {
 		animation: realtimeAnim 1.4s linear 0.3s infinite alternate;
 	}
 
@@ -458,30 +593,18 @@
 		}
 	}
 
-	.separator {
-		opacity: 0.5;
-		font-size: 0.8em;
-	}
-
-	.group-divider {
-		display: none;
-	}
-
+	/* Alert section — pinned to bottom */
 	.alert-section {
-		margin-top: 0;
-		border-top: none;
-	}
-
-	.list-view.white .alert-section {
-		border-color: rgba(0, 0, 0, 0.15);
+		flex-shrink: 0;
+		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
 	.alert-header {
 		display: flex;
 		align-items: center;
 		gap: 0.3em;
-		padding: 0.25em 0.5em;
-		font-size: 0.85em;
+		padding: 0.3em 0.5em;
+		font-size: 0.7em;
 		font-weight: 600;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		background-color: transparent;
@@ -508,12 +631,10 @@
 		width: 0.9em;
 		height: 0.9em;
 		flex-shrink: 0;
-		transform: translateY(-0.1em);
-		position: relative;
-		z-index: 1;
 		padding-left: 0.5em;
 		padding-right: 0.5em;
 		margin-left: -0.5em;
+		transform: translateY(-0.1em);
 	}
 
 	.alert-title {
@@ -525,50 +646,25 @@
 	.alert-ticker {
 		overflow: hidden;
 		position: relative;
-		flex-shrink: 0;
-		height: clamp(5em, 8vh, 10em);
-	}
-
-	/* Adjust alert height for portrait displays */
-	@media (orientation: portrait) {
-		.alert-ticker {
-			height: clamp(5em, 8vh, 10em);
-		}
-	}
-
-	/* Increase alert ticker height when stop grouping is enabled */
-	.alert-ticker.grouped-alerts {
-		height: clamp(5em, 8vh, 10em);
-	}
-
-	@media (orientation: portrait) {
-		.alert-ticker.grouped-alerts {
-			height: clamp(5em, 8vh, 10em);
-		}
-	}
-
-	.alert-section {
-		margin-top: 0;
-		border-top: none;
-		flex-shrink: 0;
+		height: clamp(6em, 5vh, 8em);
 	}
 
 	.alert-content {
 		padding: 0.2em 0.5em;
-		font-size: 0.8em;
+		font-size: 0.75em;
 		line-height: 1.3;
-		animation: scroll-alert-vertical 180s linear infinite;
+		animation: scroll-alert 180s linear infinite;
 		white-space: pre-wrap;
 		word-wrap: break-word;
 		color: var(--text-tertiary);
 	}
 
-	@keyframes scroll-alert-vertical {
+	@keyframes scroll-alert {
 		0% {
 			transform: translateY(0);
 		}
 		100% {
-			transform: translateY(-100%);
+			transform: translateY(-50%);
 		}
 	}
 

@@ -79,8 +79,8 @@
 			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Im Kompaktmodus nicht unterstützt aber im Listen- und Vertikalmodus standardmäßig aktiviert.)",
-			"groupDisabledInCompactMode": "Diese Option ist im Kompaktmodus deaktiviert",
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Im Tafel- und Vertikalmodus standardmäßig aktiviert.)",
+			"groupAlwaysOnInBoardMode": "Haltestellengruppierung ist im Tafelmodus immer aktiviert",
 			"groupAlwaysOnInVerticalMode": "Haltestellengruppierung ist im Vertikalmodus immer aktiviert",
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
@@ -88,10 +88,9 @@
 			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden.",
 			"viewMode": "Anzeigemodus",
 			"card": "Karte",
-			"compact": "Kompakt",
-			"list": "Liste",
+			"board": "Tafel",
 			"vertical": "Vertikal",
-			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard), Kompaktmodus (besser für vertikale Anzeigen), Listenmodus (besser für viele Routen) oder Vertikalmodus (Hochformat-Abfahrtstafel nach Haltestelle gruppiert)."
+			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard, routenzentrierte Querformatansicht), Tafelmodus (nach Haltestelle gruppierte Querformat-Abfahrtstafel für Nahbetrachtung) oder Vertikalmodus (Hochformat-Abfahrtstafel nach Haltestelle gruppiert)."
 		},
 		"alerts": {
 			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen.",
