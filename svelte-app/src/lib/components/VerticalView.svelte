@@ -318,10 +318,8 @@
 				class:info={mostSevereLevel === 'info'}
 			>
 				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span class="alert-title">
-					{$_('alerts.title')}
-					({consolidatedAlerts.length})
-				</span>
+				<span class="alert-title">{$_('alerts.title')}</span>
+				<span class="alert-count-badge">{consolidatedAlerts.length}</span>
 			</div>
 
 			<div class="alert-ticker">
@@ -423,6 +421,7 @@
 		display: block;
 		width: 1.2em;
 		height: 1.2em;
+		transform: translateY(0.05em);
 	}
 
 	.departure-row {
@@ -465,6 +464,7 @@
 		display: block;
 		width: 1.2em;
 		height: 1.2em;
+		transform: translateY(0.05em);
 	}
 
 	.row-badge {
@@ -650,6 +650,34 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		flex: 1;
+	}
+
+	.alert-count-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--border-color);
+		color: inherit;
+		border-radius: 40rem;
+		padding: 2px 0.5em;
+		font-size: 0.9em;
+		font-weight: 800;
+		line-height: 1;
+		min-width: 1.35em;
+		flex-shrink: 0;
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
+		box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.alert-header.severe .alert-count-badge {
+		background: color-mix(in srgb, #e30613, white 30%);
+		color: #fff;
+	}
+
+	.alert-header.warning .alert-count-badge {
+		background: color-mix(in srgb, #ffa700, white 30%);
+		color: #000;
 	}
 
 	.alert-ticker {
