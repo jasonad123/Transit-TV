@@ -1023,6 +1023,7 @@
 				<VerticalView
 					routes={displayRoutes}
 					showLongName={$config.showRouteLongName}
+					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}
 					onMoveStopToTop={moveStopToTop}
 					onHideRoute={toggleRouteHidden}
@@ -1042,6 +1043,7 @@
 				<ListView
 					routes={displayRoutes}
 					showLongName={$config.showRouteLongName}
+					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}
 					onMoveStopToTop={moveStopToTop}
 					onHideRoute={toggleRouteHidden}
