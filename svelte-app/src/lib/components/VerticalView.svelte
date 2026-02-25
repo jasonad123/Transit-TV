@@ -6,10 +6,10 @@
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
-	import { config } from '$lib/stores/config';
 
 	let {
 		routes,
+		stopOrder = [],
 		showLongName = false,
 		showQRCode = false,
 		onMoveStop,
@@ -18,6 +18,7 @@
 		onHideStop
 	}: {
 		routes: Route[];
+		stopOrder?: string[];
 		showLongName?: boolean;
 		showQRCode?: boolean;
 		onMoveStop?: (stopId: string, direction: 'up' | 'down') => void;
@@ -130,15 +131,17 @@
 		}
 
 		// Sort by saved stopOrder (unranked stops fall to end, sorted by ID)
-		const savedOrder = $config.stopOrder || [];
 		return Array.from(groups.values())
 			.filter((g) => g.rows.length > 0)
 			.sort((a, b) => {
-				const aIdx = savedOrder.indexOf(a.stopId);
-				const bIdx = savedOrder.indexOf(b.stopId);
+				const aIdx = stopOrder.indexOf(a.stopId);
+				const bIdx = stopOrder.indexOf(b.stopId);
 				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 				if (aIdx !== -1) return -1;
 				if (bIdx !== -1) return 1;
+				const aRail = a.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
+				const bRail = b.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
+				if (aRail !== bRail) return aRail ? -1 : 1;
 				return a.stopId.localeCompare(b.stopId);
 			});
 	});

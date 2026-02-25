@@ -274,8 +274,10 @@
 			allRoutes = fetchedRoutes;
 
 			const hiddenStops = currentConfig.hiddenStops || [];
+			const hiddenAgencies = currentConfig.hiddenAgencies || [];
 			routes = fetchedRoutes
 				.filter((r) => !currentConfig.hiddenRoutes.includes(r.global_route_id))
+				.filter((r) => !hiddenAgencies.includes(r.route_network_name ?? ''))
 				.map((r) => {
 					if (hiddenStops.length === 0 || !r.itineraries) return r;
 					const filtered = r.itineraries.filter((it: any) => {
@@ -514,6 +516,18 @@
 		});
 		config.save();
 
+		await loadNearby();
+	}
+
+	async function toggleAgencyHidden(networkName: string) {
+		const wasHidden = ($config.hiddenAgencies || []).includes(networkName);
+		config.update((c) => ({
+			...c,
+			hiddenAgencies: wasHidden
+				? (c.hiddenAgencies || []).filter((n) => n !== networkName)
+				: [...(c.hiddenAgencies || []), networkName]
+		}));
+		config.save();
 		await loadNearby();
 	}
 
@@ -990,6 +1004,7 @@
 		{handleLocationInputBlur}
 		{toggleRouteHidden}
 		{toggleStopHidden}
+		{toggleAgencyHidden}
 		onsave={handleConfigSave}
 	/>
 
@@ -1022,6 +1037,7 @@
 			>
 				<VerticalView
 					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}
@@ -1042,6 +1058,7 @@
 			>
 				<ListView
 					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}

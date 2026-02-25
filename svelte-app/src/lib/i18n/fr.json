@@ -52,7 +52,8 @@
 			"manualColumnControl": "Commande manuelle de la colonne",
 			"automaticColumnControl": "Utilisation de la disposition automatique des colonnes",
 			"word": "{count, plural, one {1 colonne} other {{count} colonnes}}",
-			"columnWarning": "Les colonnes peuvent paraître trop étroites à cette largeur d'écran. ({nomColWidth}px par colonne)"
+			"columnWarning": "Les colonnes peuvent paraître trop étroites à cette largeur d'écran. ({nomColWidth}px par colonne)",
+			"disabledInVerticalMode": "Les controles de colonne ne sont pas utilisés en mode Vertical"
 		},
 		"theme": {
 			"light": "Clair",
@@ -71,6 +72,10 @@
 		"hiddenStops": {
 			"title": "Arrêts masqués",
 			"helpText": "Cliquez pour afficher les arrêts"
+		},
+		"hiddenAgencies": {
+			"title": "Agences",
+			"helpText": "Cliquez pour afficher ou masquer une agence"
 		},
 		"qrCode": {
 			"title": "Code QR",
