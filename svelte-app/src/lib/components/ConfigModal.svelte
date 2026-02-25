@@ -217,13 +217,15 @@
 					<div class="toggle-container">
 						<Toggle
 							bind:checked={$config.manualColumnsMode}
-							disabled={$config.scaleMode === 'auto'}
+							disabled={$config.scaleMode === 'auto' || $config.viewMode === 'vertical'}
 						>
 							{#snippet label()}
 								<span>{$_('config.columns.manualColumnControl')}</span>
 							{/snippet}
 						</Toggle>
-						{#if $config.scaleMode === 'auto'}
+						{#if $config.viewMode === 'vertical'}
+							<small class="toggle-help-text">{$_('config.columns.disabledInVerticalMode')}</small>
+						{:else if $config.scaleMode === 'auto'}
 							<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
 						{/if}
 					</div>
@@ -312,6 +314,7 @@
 										...c,
 										viewMode: 'vertical',
 										groupItinerariesByStop: true,
+										manualColumnsMode: false,
 										columns: 1
 									}))}
 							>

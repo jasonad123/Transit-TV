@@ -1037,6 +1037,7 @@
 			>
 				<VerticalView
 					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}
@@ -1057,6 +1058,7 @@
 			>
 				<ListView
 					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
 					onMoveStop={moveStop}
