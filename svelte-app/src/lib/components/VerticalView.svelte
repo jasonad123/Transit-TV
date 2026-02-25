@@ -11,6 +11,7 @@
 	let {
 		routes,
 		showLongName = false,
+		showQRCode = false,
 		onMoveStop,
 		onMoveStopToTop,
 		onHideRoute,
@@ -18,6 +19,7 @@
 	}: {
 		routes: Route[];
 		showLongName?: boolean;
+		showQRCode?: boolean;
 		onMoveStop?: (stopId: string, direction: 'up' | 'down') => void;
 		onMoveStopToTop?: (stopId: string) => void;
 		onHideRoute?: (routeId: string) => void;
@@ -308,7 +310,7 @@
 
 	<!-- Pinned alerts area (always visible at bottom) -->
 	{#if consolidatedAlerts.length > 0}
-		<div class="alert-section">
+		<div class="alert-section" class:qr-protected={showQRCode}>
 			<div
 				class="alert-header"
 				class:severe={mostSevereLevel === 'severe'}
@@ -590,25 +592,31 @@
 		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
+	.alert-section.qr-protected {
+		padding-right: 26%;
+	}
+
 	.alert-header {
 		display: flex;
 		align-items: center;
 		gap: 0.3em;
-		padding: 0.3em 0.5em;
-		font-size: 0.7em;
-		font-weight: 600;
+		padding: 0.4em 0.5em;
+		font-size: 0.75em;
+		font-weight: 700;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 		background-color: transparent;
-		color: var(--text-primary);
+		color: var(--text-secondary);
 	}
 
 	.alert-header.severe {
-		color: #e30613;
+		background-color: #e30613;
+		color: #fff;
 		border-color: #e30613;
 	}
 
 	.alert-header.warning {
-		color: #ffa700;
+		background-color: #ffa700;
+		color: #000;
 		border-color: #ffa700;
 	}
 
@@ -619,13 +627,23 @@
 
 	.alert-header iconify-icon {
 		display: block;
-		width: 0.9em;
-		height: 0.9em;
+		width: 1em;
+		height: 1em;
 		flex-shrink: 0;
+		transform: translateY(0.05em);
+		position: relative;
+		z-index: 1;
 		padding-left: 0.5em;
 		padding-right: 0.5em;
 		margin-left: -0.5em;
-		transform: translateY(-0.1em);
+	}
+
+	.alert-header.severe iconify-icon {
+		background: linear-gradient(to right, #e30613 0%, #e30613 70%, transparent 100%);
+	}
+
+	.alert-header.warning iconify-icon {
+		background: linear-gradient(to right, #ffa700 0%, #ffa700 70%, transparent 100%);
 	}
 
 	.alert-title {
