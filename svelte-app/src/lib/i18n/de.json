@@ -31,7 +31,6 @@
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
-			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
 			"scaleMode": "Inhaltsskalierung",
 			"autoScaleMinimum": "Minimale automatische Skalierung",
 			"manualScale": "Feste Skalierung"
@@ -97,10 +96,6 @@
 			"vertical": "Vertikal",
 			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard, routenzentrierte Querformatansicht), Tafelmodus (nach Haltestelle gruppierte Querformat-Abfahrtstafel für Nahbetrachtung) oder Vertikalmodus (Hochformat-Abfahrtstafel nach Haltestelle gruppiert)."
 		},
-		"alerts": {
-			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen.",
-			"minimalAlertsDisabledInVerticalMode": "Der Vertikalmodus verwendet eine eigene Warnungsanzeige"
-		},
 		"scaleMode": {
 			"auto": "Auto",
 			"manual": "Manuell",
@@ -159,6 +154,7 @@
 	},
 	"aria": {
 		"transitApp": "Transit App",
+		"customLogo": "Logo der Organisation",
 		"settings": "Einstellungen",
 		"moveRouteToTop": "Nach oben verschieben",
 		"moveRouteUp": "Aufsteigen",
