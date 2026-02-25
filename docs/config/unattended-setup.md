@@ -17,7 +17,7 @@ If you deploy Transit TV manually using Docker Compose, you can either set it in
 ```yaml
 services:
   transit-tv:
-    image: ghcr.io/jasonad123/transit-tv:latest
+    image: jasonad123/transit-tv:latest
     # ...
     environment:
       # ...Other environment variables
@@ -33,7 +33,7 @@ or you can add it to a linked `.env` file.
 services:
   # Usage: docker compose up -d
   transit-tv:
-    image: ghcr.io/jasonad123/transit-tv:latest
+    image: jasonad123/transit-tv:latest
     # ...
     environment:
     # ...
@@ -118,7 +118,7 @@ Number of columns of departure cards to display.
 Options available are:
 
 - auto (select best number of columns based on screen width)
-- 1, 2, 3, 4, 5
+- 1, 2, 3, 4, 5, 6, 7, 8
 
 The default is **auto** if not set.
 
@@ -151,7 +151,7 @@ If using Docker Compose, you can do this by mounting it to the static assets dir
 ```yaml
 services:
   transit-tv:
-    image: ghcr.io/jasonad123/transit-tv:latest
+    image: jasonad123/transit-tv:latest
     # ...
     environment:
       # ...Other environment variables
