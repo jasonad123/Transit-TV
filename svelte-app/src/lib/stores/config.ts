@@ -15,6 +15,7 @@ export interface Config {
 	stopOrder: string[];
 	hiddenRoutes: string[];
 	hiddenStops: string[];
+	hiddenAgencies: string[];
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
@@ -43,6 +44,7 @@ const defaultConfig: Config = {
 	stopOrder: [],
 	hiddenRoutes: [],
 	hiddenStops: [],
+	hiddenAgencies: [],
 	latLng: {
 		latitude: 40.75426683398718,
 		longitude: -73.98672703719805

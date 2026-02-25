@@ -52,7 +52,8 @@
 			"manualColumnControl": "Manual column control",
 			"automaticColumnControl": "Using automatic column layout",
 			"word": "{count, plural, one {1 column} other {{count} columns}}",
-			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)"
+			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)",
+			"disabledInVerticalMode": "Column controls are not used in Vertical mode"
 		},
 		"theme": {
 			"light": "Light",
@@ -71,6 +72,10 @@
 		"hiddenStops": {
 			"title": "Hidden stops",
 			"helpText": "Click to unhide stops"
+		},
+		"hiddenAgencies": {
+			"title": "Agencies",
+			"helpText": "Click to show or hide an agency"
 		},
 		"qrCode": {
 			"title": "QR Code",

@@ -52,7 +52,8 @@
 			"manualColumnControl": "Manuelle Spaltensteuerung",
 			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
 			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}",
-			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)"
+			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)",
+			"disabledInVerticalMode": "Spaltensteuerung wird im Vertikalmodus nicht verwendet"
 		},
 		"theme": {
 			"light": "Hell",
@@ -71,6 +72,10 @@
 		"hiddenStops": {
 			"title": "Ausgeblendete Haltestellen",
 			"helpText": "Klicken zum Einblenden"
+		},
+		"hiddenAgencies": {
+			"title": "Betreiber",
+			"helpText": "Klicken, um einen Betreiber ein- oder auszublenden"
 		},
 		"qrCode": {
 			"title": "QR-Code",
