@@ -68,6 +68,10 @@
 			"title": "Versteckte Routen",
 			"helpText": "Zum Einblenden klicken"
 		},
+		"hiddenStops": {
+			"title": "Ausgeblendete Haltestellen",
+			"helpText": "Klicken zum Einblenden"
+		},
 		"qrCode": {
 			"title": "QR-Code",
 			"helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
@@ -90,7 +94,8 @@
 			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard), Kompaktmodus (besser für vertikale Anzeigen), Listenmodus (besser für viele Routen) oder Vertikalmodus (Hochformat-Abfahrtstafel nach Haltestelle gruppiert)."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
+			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen.",
+			"minimalAlertsDisabledInVerticalMode": "Der Vertikalmodus verwendet eine eigene Warnungsanzeige"
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -144,7 +149,8 @@
 			"hide": "Verstecken routen",
 			"moveStopToTop": "Haltestelle nach oben",
 			"moveStopUp": "Haltestelle aufsteigen",
-			"moveStopDown": "Haltestelle absteigen"
+			"moveStopDown": "Haltestelle absteigen",
+			"hideStop": "Haltestelle ausblenden"
 		}
 	},
 	"aria": {
@@ -153,7 +159,8 @@
 		"moveRouteToTop": "Nach oben verschieben",
 		"moveRouteUp": "Aufsteigen",
 		"moveRouteDown": "Absteigen",
-		"hideRoute": "Verstecken routen"
+		"hideRoute": "Verstecken routen",
+		"hideStop": "Haltestelle ausblenden"
 	},
 	"alerts": {
 		"default": "Störungsinformation",

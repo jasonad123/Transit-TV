@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { getCookie, setCookie } from '$lib/utils/cookies';
 
@@ -14,6 +14,7 @@ export interface Config {
 	routeOrder: string[];
 	stopOrder: string[];
 	hiddenRoutes: string[];
+	hiddenStops: string[];
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
@@ -41,6 +42,7 @@ const defaultConfig: Config = {
 	routeOrder: [],
 	stopOrder: [],
 	hiddenRoutes: [],
+	hiddenStops: [],
 	latLng: {
 		latitude: 40.75426683398718,
 		longitude: -73.98672703719805
@@ -193,26 +195,27 @@ function createConfigStore() {
 		save() {
 			if (!browser) return;
 
-			update((current) => {
-				const toSave = { ...current };
-				delete (toSave as Partial<Config>).isEditing;
+			// Read current value without triggering a store set/notify cycle.
+			// Previously this used update() which called set() with the same
+			// reference, causing a spurious store notification that could
+			// interfere with pending reactive updates (e.g. stop reordering).
+			const current = get({ subscribe });
+			const toSave = { ...current };
+			delete (toSave as Partial<Config>).isEditing;
 
+			try {
+				// Use cookies for better kiosk mode persistence
+				setCookie('config', JSON.stringify(toSave));
+			} catch (e) {
+				console.error('Error saving config to cookies:', e);
+				// Fall back to localStorage
 				try {
-					// Use cookies for better kiosk mode persistence
-					setCookie('config', JSON.stringify(toSave));
-				} catch (e) {
-					console.error('Error saving config to cookies:', e);
-					// Fall back to localStorage
-					try {
-						localStorage.setItem('config', JSON.stringify(toSave));
-						console.log('Saved to localStorage as fallback');
-					} catch (localStorageError) {
-						console.error('Both cookie and localStorage save failed:', localStorageError);
-					}
+					localStorage.setItem('config', JSON.stringify(toSave));
+					console.log('Saved to localStorage as fallback');
+				} catch (localStorageError) {
+					console.error('Both cookie and localStorage save failed:', localStorageError);
 				}
-
-				return current;
-			});
+			}
 		},
 
 		get latLngStr() {
