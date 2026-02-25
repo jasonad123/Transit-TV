@@ -583,21 +583,6 @@
 							>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
 						>
 					</div>
-
-					<div class="toggle-container">
-						<Toggle bind:checked={$config.minimalAlerts} disabled={$config.viewMode === 'vertical'}>
-							{#snippet label()}
-								<span>{$_('config.fields.minimalAlerts')}</span>
-							{/snippet}
-						</Toggle>
-						{#if $config.viewMode === 'vertical'}
-							<small class="toggle-help-text"
-								>{$_('config.alerts.minimalAlertsDisabledInVerticalMode')}</small
-							>
-						{:else}
-							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
-						{/if}
-					</div>
 				</SolidSection>
 
 				<CollapsibleSection

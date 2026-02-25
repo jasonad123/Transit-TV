@@ -31,7 +31,6 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas",
 			"scaleMode": "Escala del contenido",
 			"autoScaleMinimum": "Escala automática mínima",
 			"manualScale": "Escala fija"
@@ -96,10 +95,6 @@
 			"board": "Tablero",
 			"vertical": "Vertical",
 			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado, vista horizontal centrada en rutas), el modo Tablero (tablero horizontal agrupado por parada para visualización cercana) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
-		},
-		"alerts": {
-			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas",
-			"minimalAlertsDisabledInVerticalMode": "El modo Vertical usa su propia visualización de alertas"
 		},
 		"scaleMode": {
 			"auto": "Auto",

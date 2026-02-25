@@ -324,30 +324,28 @@
 				<span class="alert-count-badge">{consolidatedAlerts.length}</span>
 			</div>
 
-			{#if !$config.minimalAlerts}
-				<div class="alert-ticker">
-					<div class="alert-content">
-						{#each [0, 1] as _, i (i)}
-							<div class="alert-text">
-								{#each parseAlertContent(alertText) as content, ci (ci)}
-									{#if content.type === 'text'}
-										{content.value}
-									{:else if content.type === 'image'}
-										<img
-											src="/api/images/{extractImageId(content.value)}"
-											alt="transit icon"
-											class="alert-image"
-										/>
-									{/if}
-								{/each}
-							</div>
-							{#if consolidatedAlerts.length > 1 || (consolidatedAlerts.length === 1 && alertText.length > 100)}
-								<div class="separator-line">---</div>
-							{/if}
-						{/each}
-					</div>
+			<div class="alert-ticker">
+				<div class="alert-content">
+					{#each [0, 1] as _, i (i)}
+						<div class="alert-text">
+							{#each parseAlertContent(alertText) as content, ci (ci)}
+								{#if content.type === 'text'}
+									{content.value}
+								{:else if content.type === 'image'}
+									<img
+										src="/api/images/{extractImageId(content.value)}"
+										alt="transit icon"
+										class="alert-image"
+									/>
+								{/if}
+							{/each}
+						</div>
+						{#if consolidatedAlerts.length > 1 || (consolidatedAlerts.length === 1 && alertText.length > 100)}
+							<div class="separator-line">---</div>
+						{/if}
+					{/each}
 				</div>
-			{/if}
+			</div>
 		</div>
 	{/if}
 </div>
