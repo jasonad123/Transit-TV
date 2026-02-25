@@ -122,6 +122,10 @@ Options available are:
 
 The default is **auto** if not set.
 
+#### Note for version 1.5.0 and above
+
+Column controls are disabled by default in Vertical mode.
+
 ### UNATTENDED_THEME
 
 Theme for background. This will also adjust the shade of green used in the header if the header colour isn't adjusted manually.
@@ -178,6 +182,10 @@ Group departures/destinations that serve the same parent station on a single car
 Options available are _true_ or _false_, which leaves departures ungrouped.
 
 The default is **false** if not set.
+
+#### Note for version 1.5.0 and above
+
+Stop grouping/grouped itineraries are enabled by default in the Board mode and Vertical mode.
 
 ### UNATTENDED_FILTER_TERMINUS (v1.3.0 or greater)
 
