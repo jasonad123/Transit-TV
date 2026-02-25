@@ -10,7 +10,7 @@ Regardless of deployment method, you'll need an API key from Transit:
 
 - Request a key from the [Transit API page](https://transitapp.com/partners/apis)
   - **For testing or very limited use**: The default free tier **should be adequate**
-  - **For production deployments**: You'll need a paid tier
+  - **For production deployments**: You'll need a paid tier API key
 
 **Transit partners**: If your agency subscribes to Transit Royale or has other relationships with Transit, contact your account representative for API access information.
 
@@ -85,8 +85,9 @@ Transit TV works with any Docker-compatible PaaS platform. Currently it has only
 1. **Create account** on your chosen platform
 2. **Create new service** from Docker image
 3. **Configure Docker image**:
-   - Repository: `ghcr.io/jasonad123/transit-tv`
-   - Tag: `latest` (for stable), `hardened-latest` (for stable hardened image), or specific version tag
+   - Docker Hub: `jasonad123/transit-tv`
+     - Alternative: GitHub repository: `ghcr.io/jasonad123/transit-tv` (this is also the *only* option for pre-release images)
+   - Tag: `latest` (for stable) or specific version tag
 4. **Set environment variables**:
    ```bash
    TRANSIT_API_KEY=your_api_key_here
@@ -149,9 +150,6 @@ app = "your-transit-tv"
 
 **Best for**: Organizations with existing infrastructure, on-premise requirements, or cost optimization
 
-> [!TIP]
-> Which image should I use? As of version 1.3.2, this project offers two types of Docker images - _standard_ images built on Node.js 24 on Alpine Linux and _hardened_ images built using Docker's new [hardened images](https://www.docker.com/products/hardened-images/) - also based on Node.js 24 and Alpine Linux. For most users the standard images should work just fine, but if your organization has stricter security requirements, consider using the _hardened_ image.
-
 #### Prerequisites
 
 - Server/VM with Docker installed
@@ -199,8 +197,11 @@ app = "your-transit-tv"
 3. **Pull and run the Docker image**:
 
    ```bash
-   # Pull the latest image
-   docker pull ghcr.io/jasonad123/transit-tv:latest
+   # Pull the latest image from Docker Hub
+   docker pull jasonad123/transit-tv:latest
+
+   # OR pull the latest image from GitHub
+   # docker pull ghcr.io/jasonad123/transit-tv:latest
 
    # Run the container
    docker run -d \
@@ -208,7 +209,7 @@ app = "your-transit-tv"
      --restart unless-stopped \
      -p 8080:8080 \
      --env-file .env \
-     ghcr.io/jasonad123/transit-tv:latest
+     jasonad123/transit-tv:latest
    ```
 
 4. **Verify deployment**:
@@ -234,7 +235,7 @@ For easier management, use Docker Compose:
    ```yaml
    services:
      transit-tv:
-       image: ghcr.io/jasonad123/transit-tv:latest
+       image: jasonad123/transit-tv:latest
        container_name: transit-tv
        restart: unless-stopped
        ports:
@@ -299,7 +300,7 @@ server {
 
 #### Reverse proxy alternatives
 
-Transit TV has been tested to work behind both **Cloudflare Tunnels** and Tailscale (both natively and behind Tailscale Funnels). If your organization uses either of these programs, consider these as reverse proxy alternatives that don't
+Transit TV has been tested to work behind both **Cloudflare Tunnels** and **Tailscale** (both natively and behind Tailscale Funnels). If your organization uses either of these programs, consider these as reverse proxy alternatives that don't
 require opening ports.
 
 ### Option 4: Direct Node.js Deployment (Development Only)
@@ -347,14 +348,14 @@ docker compose up -d
 
 ```bash
 # Pull latest image
-docker pull ghcr.io/jasonad123/transit-tv:latest
+docker pull jasonad123/transit-tv:latest
 
 # Stop and remove old container
 docker stop transit-tv
 docker rm transit-tv
 
 # Start new container (using same command as initial deployment)
-docker run -d --name transit-tv --restart unless-stopped -p 8080:8080 --env-file .env ghcr.io/jasonad123/transit-tv:latest
+docker run -d --name transit-tv --restart unless-stopped -p 8080:8080 --env-file .env jasonad123/transit-tv:latest
 ```
 
 ## Monitoring and Maintenance

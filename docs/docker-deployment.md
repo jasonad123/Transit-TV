@@ -3,14 +3,14 @@
 This documentation walks through how to deploy Transit TV using Docker and using the project's Dockerfiles.
 
 > [!TIP]
-> For most users, you should be fine to just use the prebuilt Docker images available on the [project's package page](https://github.com/jasonad123/Transit-TV/pkgs/container/transit-tv). These instructions are for individuals/organizations who prefer to build and/or need to build from Dockerfiles on their own.
+> For most users, you should be fine to just use the prebuilt Docker images available on [Docker Hub](https://hub.docker.com/r/jasonad123/transit-tv) or the [project's package page](https://github.com/jasonad123/Transit-TV/pkgs/container/transit-tv). These instructions are for individuals/organizations who prefer to build and/or need to build from Dockerfiles on their own.
 
 ## Included Dockerfiles
 
 This project has four Dockerfiles:
 
 - [Dockerfile](/Dockerfile) - the primary Dockerfile with BuildKit cache mounts (this is how we build all standard images)
-- [Dockerfile.dhi](/Dockerfile.dhi) - exactly the same as Dockerfile but uses [Docker hardened images](https://hub.docker.com/hardened-images/catalog) as its base (this is how we build our hardened images)
+- [Dockerfile.dhi](/Dockerfile.dhi) - exactly the same as Dockerfile but uses [Docker hardened images](https://hub.docker.com/hardened-images/catalog) as its base
 - [Dockerfile.railway](/Dockerfile.railway) - a Dockerfile optimized for Railway's build process, by removing cache mounts.
 - [Dockerfile.legacy](/docker-legacy/Dockerfile.legacy) - the "original" Dockerfile for this project, used on Docker builds before v1.3.2
 
