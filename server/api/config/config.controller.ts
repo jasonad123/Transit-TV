@@ -82,6 +82,7 @@ export function getUnattendedConfig(req: Request, res: Response): Response {
 		showQRCode: config.unattendedSetup.showQRCode,
 		maxDistance: config.unattendedSetup.maxDistance,
 		customLogo: config.unattendedSetup.customLogo,
+		viewMode: config.unattendedSetup.viewMode,
 		groupItinerariesByStop: config.unattendedSetup.groupItinerariesByStop,
 		filterRedundantTerminus: config.unattendedSetup.filterRedundantTerminus,
 		showRouteLongName: config.unattendedSetup.showRouteLongName
