@@ -26,6 +26,7 @@
 		useCurrentLocation: () => void;
 		handleLocationInputBlur: () => void;
 		toggleRouteHidden: (routeId: string) => void;
+		toggleStopHidden: (stopId: string) => void;
 		onsave: () => void;
 	}
 
@@ -44,6 +45,7 @@
 		useCurrentLocation,
 		handleLocationInputBlur,
 		toggleRouteHidden,
+		toggleStopHidden,
 		onsave
 	}: Props = $props();
 
@@ -53,6 +55,32 @@
 	// Memoize filtered hidden routes for performance
 	let hiddenRoutesList = $derived(
 		allRoutes.filter((r) => $config.hiddenRoutes.includes(r.global_route_id))
+	);
+
+	// Build stop name map from all routes' itineraries
+	let stopNameMap = $derived.by(() => {
+		const map = new Map<string, string>();
+		for (const route of allRoutes) {
+			if (!route.itineraries) continue;
+			for (const it of route.itineraries) {
+				const stopId =
+					it.closest_stop?.parent_station_global_stop_id ||
+					it.closest_stop?.global_stop_id ||
+					'unknown';
+				const stopName = it.closest_stop?.stop_name || 'Unknown stop';
+				if (!map.has(stopId)) {
+					map.set(stopId, stopName);
+				}
+			}
+		}
+		return map;
+	});
+
+	let hiddenStopsList = $derived(
+		($config.hiddenStops || []).map((id) => ({
+			id,
+			name: stopNameMap.get(id) || id
+		}))
 	);
 
 	function openLocationPicker() {
@@ -558,12 +586,18 @@
 					</div>
 
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.minimalAlerts}>
+						<Toggle bind:checked={$config.minimalAlerts} disabled={$config.viewMode === 'vertical'}>
 							{#snippet label()}
 								<span>{$_('config.fields.minimalAlerts')}</span>
 							{/snippet}
 						</Toggle>
-						<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
+						{#if $config.viewMode === 'vertical'}
+							<small class="toggle-help-text"
+								>{$_('config.alerts.minimalAlertsDisabledInVerticalMode')}</small
+							>
+						{:else}
+							<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
+						{/if}
 					</div>
 				</SolidSection>
 
@@ -583,6 +617,29 @@
 									>
 										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 										<span>{route.route_short_name || route.route_long_name}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</CollapsibleSection>
+
+				<CollapsibleSection
+					title={$_('config.hiddenStops.title')}
+					helpText={$_('config.hiddenStops.helpText')}
+					initiallyOpen={false}
+				>
+					{#if ($config.hiddenStops || []).length > 0}
+						<div class="route-management">
+							<div class="hidden-routes-list">
+								{#each hiddenStopsList as stop}
+									<button
+										type="button"
+										class="hidden-route-item"
+										onclick={() => toggleStopHidden(stop.id)}
+									>
+										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+										<span>{stop.name}</span>
 									</button>
 								{/each}
 							</div>

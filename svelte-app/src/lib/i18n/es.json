@@ -68,6 +68,10 @@
 			"title": "Rutas encubiertas",
 			"helpText": "Haz clic aquí para ocultar las rutas"
 		},
+		"hiddenStops": {
+			"title": "Paradas ocultas",
+			"helpText": "Haz clic para mostrar paradas"
+		},
 		"qrCode": {
 			"title": "Código QR",
 			"helpText": "Mostrar un código QR que cargue esta ubicación en Transit",
@@ -90,7 +94,8 @@
 			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado), el modo Compacto (mejor para pantallas verticales), el modo Lista (mejor para grandes cantidades de rutas) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
+			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas",
+			"minimalAlertsDisabledInVerticalMode": "El modo Vertical usa su propia visualización de alertas"
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -144,7 +149,8 @@
 			"hide": "Esconder la ruta",
 			"moveStopToTop": "Mover parada al principio",
 			"moveStopUp": "Subir parada",
-			"moveStopDown": "Bajar parada"
+			"moveStopDown": "Bajar parada",
+			"hideStop": "Ocultar parada"
 		}
 	},
 	"aria": {
@@ -154,7 +160,8 @@
 		"moveRouteToTop": "Subir al principio",
 		"moveRouteUp": "Subir",
 		"moveRouteDown": "Bajar",
-		"hideRoute": "Esconder la ruta"
+		"hideRoute": "Esconder la ruta",
+		"hideStop": "Ocultar parada"
 	},
 	"alerts": {
 		"default": "Avisos de servicio",

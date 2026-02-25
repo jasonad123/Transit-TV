@@ -317,7 +317,7 @@
 		align-items: center;
 		gap: 0.3em;
 		padding: 0.3em 0.6em;
-		font-size: 1em;
+		font-size: 0.8em;
 		font-weight: 400;
 		background: transparent;
 		border-bottom: none;
@@ -345,7 +345,7 @@
 		grid-template-columns: 1fr auto;
 		gap: 0.8em;
 		padding: 0.4em 0.6em;
-		font-size: 0.8em;
+		font-size: 0.7em;
 		font-weight: 700;
 		background: rgba(255, 255, 255, 0.08);
 		border-bottom: none;
@@ -399,7 +399,7 @@
 	.table-header .times-col,
 	.table-header .destination-col {
 		font-weight: 600;
-		font-size: 1em;
+		font-size: 0.8em;
 		color: var(--text-tertiary);
 	}
 
@@ -554,7 +554,7 @@
 
 	.alert-content {
 		padding: 0.2em 0.5em;
-		font-size: 1em;
+		font-size: 0.8em;
 		line-height: 1.3;
 		animation: scroll-alert-vertical 180s linear infinite;
 		white-space: pre-wrap;

@@ -68,6 +68,10 @@
 			"title": "Lignes masquées",
 			"helpText": "Cliquez pour afficher les lignes"
 		},
+		"hiddenStops": {
+			"title": "Arrêts masqués",
+			"helpText": "Cliquez pour afficher les arrêts"
+		},
 		"qrCode": {
 			"title": "Code QR",
 			"helpText": "Afficher un code QR qui charge cet emplacement dans Transit",
@@ -90,7 +94,8 @@
 			"viewModeHelpText": "Sélectionnez entre le mode Carte (par défaut), le mode Compact (meilleur pour les affichages verticaux), le mode Liste (meilleur pour de grandes quantités de lignes) ou le mode Vertical (tableau de départs portrait groupé par arrêt)."
 		},
 		"alerts": {
-			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes"
+			"minimalAlertsHelpText": "Masquer le texte complet de l'alerte et afficher seulement le titre avec le nombre d'alertes",
+			"minimalAlertsDisabledInVerticalMode": "Le mode Vertical utilise son propre affichage d'alertes"
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -144,7 +149,8 @@
 			"hide": "Masquer la ligne",
 			"moveStopToTop": "Déplacer l'arrêt en haut",
 			"moveStopUp": "Déplacer l'arrêt vers le haut",
-			"moveStopDown": "Déplacer l'arrêt vers le bas"
+			"moveStopDown": "Déplacer l'arrêt vers le bas",
+			"hideStop": "Masquer l'arrêt"
 		}
 	},
 	"aria": {
@@ -154,7 +160,8 @@
 		"moveRouteToTop": "Déplacer la ligne en haut",
 		"moveRouteUp": "Déplacer la ligne vers le haut",
 		"moveRouteDown": "Déplacer la ligne vers le bas",
-		"hideRoute": "Masquer la ligne"
+		"hideRoute": "Masquer la ligne",
+		"hideStop": "Masquer l'arrêt"
 	},
 	"alerts": {
 		"default": "Alerte de service",
