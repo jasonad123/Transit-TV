@@ -11,7 +11,7 @@
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
-	import { isHighPriorityMode, haversineDistance } from '$lib/utils/sortingUtils';
+	import { isHighPriorityMode, haversineDistance, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
@@ -297,9 +297,6 @@
 					if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 					if (aIdx !== -1) return -1;
 					if (bIdx !== -1) return 1;
-					const aHigh = isHighPriorityMode(a.mode_name);
-					const bHigh = isHighPriorityMode(b.mode_name);
-					if (aHigh !== bHigh) return aHigh ? -1 : 1;
 					const { latitude: uLat, longitude: uLon } = currentConfig.latLng;
 					const getRouteDist = (route: Route) => {
 						if (!route.itineraries) return Infinity;
@@ -314,6 +311,9 @@
 					};
 					const aDist = getRouteDist(a);
 					const bDist = getRouteDist(b);
+					const aHigh = isHighPriorityMode(a.mode_name) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
+					const bHigh = isHighPriorityMode(b.mode_name) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+					if (aHigh !== bHigh) return aHigh ? -1 : 1;
 					if (aDist !== bDist) return aDist - bDist;
 					return a.global_route_id.localeCompare(b.global_route_id);
 				});

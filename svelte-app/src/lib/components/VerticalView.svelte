@@ -7,7 +7,7 @@
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
-	import { isHighPriorityMode, haversineDistance } from '$lib/utils/sortingUtils';
+	import { isHighPriorityMode, haversineDistance, mergeProximateStopGroups, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
 
 	let {
 		routes,
@@ -122,8 +122,11 @@
 			}
 		}
 
+		// Merge groups whose stops are within 50m (handles co-located stops without shared parent stations)
+		const mergedGroups = mergeProximateStopGroups<StopGroup>(groups, stopOrder);
+
 		// Sort rows within each group: route → direction → departure
-		for (const group of groups.values()) {
+		for (const group of mergedGroups.values()) {
 			group.rows.sort((a, b) => {
 				if (a.route.global_route_id !== b.route.global_route_id) {
 					return a.route.global_route_id.localeCompare(b.route.global_route_id);
@@ -146,7 +149,7 @@
 			return Infinity;
 		};
 
-		return Array.from(groups.values())
+		return Array.from(mergedGroups.values())
 			.filter((g) => g.rows.length > 0)
 			.sort((a, b) => {
 				const aIdx = stopOrder.indexOf(a.stopId);
@@ -154,11 +157,11 @@
 				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 				if (aIdx !== -1) return -1;
 				if (bIdx !== -1) return 1;
-				const aHigh = a.rows.some((r) => isHighPriorityMode(r.route.mode_name));
-				const bHigh = b.rows.some((r) => isHighPriorityMode(r.route.mode_name));
-				if (aHigh !== bHigh) return aHigh ? -1 : 1;
 				const aDist = getStopDist(a);
 				const bDist = getStopDist(b);
+				const aHigh = a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const bHigh = b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+				if (aHigh !== bHigh) return aHigh ? -1 : 1;
 				if (aDist !== bDist) return aDist - bDist;
 				return a.stopId.localeCompare(b.stopId);
 			});
