@@ -345,8 +345,8 @@
 			</div>
 
 			<div class="alert-ticker">
-				<div class="alert-content">
-					{#each [0, 1] as _, i (i)}
+				{#key alertText}
+					<div class="alert-content">
 						<div class="alert-text">
 							{#each parseAlertContent(alertText) as content, ci (ci)}
 								{#if content.type === 'text'}
@@ -360,11 +360,8 @@
 								{/if}
 							{/each}
 						</div>
-						{#if consolidatedAlerts.length > 1 || (consolidatedAlerts.length === 1 && alertText.length > 100)}
-							<div class="separator-line">---</div>
-						{/if}
-					{/each}
-				</div>
+					</div>
+				{/key}
 			</div>
 		</div>
 	{/if}
@@ -725,6 +722,10 @@
 		white-space: pre-wrap;
 		word-wrap: break-word;
 		color: var(--text-tertiary);
+		will-change: transform;
+		transform: translateZ(0);
+		backface-visibility: hidden;
+		contain: layout paint;
 	}
 
 	@keyframes scroll-alert {
@@ -732,7 +733,7 @@
 			transform: translateY(0);
 		}
 		100% {
-			transform: translateY(-50%);
+			transform: translateY(-100%);
 		}
 	}
 
@@ -740,12 +741,6 @@
 		margin-bottom: 0.2em;
 	}
 
-	.separator-line {
-		opacity: 0.3;
-		text-align: center;
-		margin: 0.2em 0;
-		font-size: 0.7em;
-	}
 
 	.alert-image {
 		height: 1em;
