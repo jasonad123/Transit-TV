@@ -149,8 +149,8 @@ function transformV4ToV3Format(v4Response: V4Response): V3Response {
  * @param {Object} data - The API response data
  * @returns {boolean} - True if any route has at least one alert
  */
-function hasActiveAlerts(data) {
-	const routes = data?.routes;
+function hasActiveAlerts(data: unknown) {
+	const routes = (data as Record<string, unknown>)?.routes;
 	if (!Array.isArray(routes)) return false;
 	return routes.some((route) => Array.isArray(route.alerts) && route.alerts.length > 0);
 }
