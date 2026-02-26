@@ -596,6 +596,7 @@
 					clone.style.top = '-9999px';
 					clone.style.left = '-9999px';
 					clone.style.fontSize = '100%';
+				clone.style.setProperty('--effective-scale', '1');
 					clone.style.visibility = 'hidden';
 
 					// Copy the computed grid layout to ensure clone measures correctly
@@ -1053,10 +1054,7 @@
 				id="routes"
 				bind:this={routesElement}
 				class="cols-1 vertical-mode"
-				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
-				effectiveScale < 1
-					? `${effectiveScale * 100}%`
-					: null}
+				style:--effective-scale={effectiveScale}
 			>
 				<VerticalView
 					routes={displayRoutes}
@@ -1074,10 +1072,7 @@
 				id="routes"
 				bind:this={routesElement}
 				class="board-mode"
-				style:font-size={($config.scaleMode === 'manual' || shouldApplyAutoScale) &&
-				effectiveScale < 1
-					? `${effectiveScale * 100}%`
-					: null}
+				style:--effective-scale={effectiveScale}
 			>
 				<ListView
 					routes={displayRoutes}

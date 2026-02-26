@@ -463,6 +463,7 @@
 		align-content: start;
 		overflow-y: auto;
 		min-height: 0;
+		font-size: calc(1em * var(--effective-scale, 1));
 	}
 
 	.stop-panel {
@@ -663,7 +664,7 @@
 	.row-times {
 		display: flex;
 		align-items: center;
-		gap: 0.5em;
+		gap: 0.65em;
 		flex-shrink: 0;
 		flex-wrap: wrap;
 		justify-content: flex-end;
@@ -694,16 +695,16 @@
 		width: 0.32em;
 		height: 0.32em;
 		position: absolute;
-		top: -4px;
-		right: -6px;
+		top: -0.25em;
+		right: -0.15em;
 	}
 
 	.realtime::before,
 	.realtime::after {
 		content: '';
 		display: block;
-		width: 11px;
-		height: 11px;
+		width: 0.5em;
+		height: 0.5em;
 		position: absolute;
 		background-size: 100%;
 	}

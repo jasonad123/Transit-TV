@@ -476,6 +476,7 @@
 		flex: 1;
 		overflow-y: auto;
 		min-height: 0;
+		font-size: calc(1em * var(--effective-scale, 1));
 	}
 
 	.stop-group {
@@ -609,8 +610,8 @@
 
 	.route-alert-icon {
 		display: inline-block;
-		width: 0.7em;
-		height: 0.7em;
+		width: 0.5em;
+		height: 0.5em;
 		flex-shrink: 0;
 		transform: translateY(-0.25em);
 		margin-right: 0.25em;
@@ -710,16 +711,16 @@
 		width: 0.32em;
 		height: 0.32em;
 		position: absolute;
-		top: -4px;
-		right: -6px;
+		top: -0.25em;
+		right: -0.15em;
 	}
 
 	.realtime::before,
 	.realtime::after {
 		content: '';
 		display: block;
-		width: 12px;
-		height: 12px;
+		width: 0.5em;
+		height: 0.5em;
 		position: absolute;
 		background-size: 100%;
 	}
