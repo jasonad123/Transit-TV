@@ -7,6 +7,13 @@
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		mergeProximateStopGroups,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
+	import QRCode from '$lib/components/QRCode.svelte';
 
 	let {
 		routes,
@@ -123,18 +130,34 @@
 			}
 		}
 
-		// Sort rows within each group by route then by departure
-		for (const group of groups.values()) {
+		// Merge groups whose stops are within 50m (handles co-located stops without shared parent stations)
+		const mergedGroups = mergeProximateStopGroups<StopGroup>(groups, stopOrder);
+
+		// Sort rows within each group: route → direction → departure
+		for (const group of mergedGroups.values()) {
 			group.rows.sort((a, b) => {
 				if (a.route.global_route_id !== b.route.global_route_id) {
 					return a.route.global_route_id.localeCompare(b.route.global_route_id);
 				}
+				const aDirId = a.itinerary.direction_id ?? 0;
+				const bDirId = b.itinerary.direction_id ?? 0;
+				if (aDirId !== bDirId) return aDirId - bDirId;
 				return a.nextDeparture - b.nextDeparture;
 			});
 		}
 
-		// Sort groups by saved stopOrder
-		return Array.from(groups.values())
+		// Sort groups: stopOrder overrides → nearby high-priority mode → distance → stop ID
+		const userLat = $config.latLng.latitude;
+		const userLon = $config.latLng.longitude;
+		const getStopDist = (group: StopGroup) => {
+			const stop = group.rows[0]?.itinerary.closest_stop;
+			if (stop?.stop_lat != null && stop?.stop_lon != null) {
+				return haversineDistance(userLat, userLon, stop.stop_lat, stop.stop_lon);
+			}
+			return Infinity;
+		};
+
+		return Array.from(mergedGroups.values())
 			.filter((g) => g.rows.length > 0)
 			.sort((a, b) => {
 				const aIdx = stopOrder.indexOf(a.stopId);
@@ -142,9 +165,16 @@
 				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 				if (aIdx !== -1) return -1;
 				if (bIdx !== -1) return 1;
-				const aRail = a.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
-				const bRail = b.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
-				if (aRail !== bRail) return aRail ? -1 : 1;
+				const aDist = getStopDist(a);
+				const bDist = getStopDist(b);
+				const aHigh =
+					a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					aDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const bHigh =
+					b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					bDist <= PRIORITY_MODE_ELEVATION_METERS;
+				if (aHigh !== bHigh) return aHigh ? -1 : 1;
+				if (aDist !== bDist) return aDist - bDist;
 				return a.stopId.localeCompare(b.stopId);
 			});
 	});
@@ -310,42 +340,60 @@
 		{/each}
 	</div>
 
-	<!-- Pinned alerts area (always visible at bottom) -->
-	{#if consolidatedAlerts.length > 0}
-		<div class="alert-section" class:qr-protected={showQRCode}>
-			<div
-				class="alert-header"
-				class:severe={mostSevereLevel === 'severe'}
-				class:warning={mostSevereLevel === 'warning'}
-				class:info={mostSevereLevel === 'info'}
-			>
-				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span class="alert-title">{$_('alerts.title')}</span>
-				<span class="alert-count-badge">{consolidatedAlerts.length}</span>
-			</div>
+	<!-- Pinned bottom bar (alerts + optional QR slot) -->
+	{#if consolidatedAlerts.length > 0 || showQRCode}
+		<div class="bottom-bar">
+			{#if consolidatedAlerts.length > 0}
+				<div class="alert-section">
+					<div
+						class="alert-header"
+						class:severe={mostSevereLevel === 'severe'}
+						class:warning={mostSevereLevel === 'warning'}
+						class:info={mostSevereLevel === 'info'}
+					>
+						<iconify-icon icon={mostSevereIcon}></iconify-icon>
+						<span class="alert-title">{$_('alerts.title')}</span>
+						<span class="alert-count-badge">{consolidatedAlerts.length}</span>
+					</div>
 
-			<div class="alert-ticker">
-				<div class="alert-content">
-					{#each [0, 1] as _, i (i)}
-						<div class="alert-text">
-							{#each parseAlertContent(alertText) as content, ci (ci)}
-								{#if content.type === 'text'}
-									{content.value}
-								{:else if content.type === 'image'}
-									<img
-										src="/api/images/{extractImageId(content.value)}"
-										alt="transit icon"
-										class="alert-image"
-									/>
-								{/if}
-							{/each}
-						</div>
-						{#if consolidatedAlerts.length > 1 || (consolidatedAlerts.length === 1 && alertText.length > 100)}
-							<div class="separator-line">---</div>
-						{/if}
-					{/each}
+					<div class="alert-ticker">
+						{#key alertText}
+							<div class="alert-content">
+								<div class="alert-text">
+									{#each parseAlertContent(alertText) as content, ci (ci)}
+										{#if content.type === 'text'}
+											{content.value}
+										{:else if content.type === 'image'}
+											<img
+												src="/api/images/{extractImageId(content.value)}"
+												alt="transit icon"
+												class="alert-image"
+											/>
+										{/if}
+									{/each}
+								</div>
+							</div>
+						{/key}
+					</div>
 				</div>
-			</div>
+			{:else if showQRCode}
+				<div class="alert-section no-alerts">
+					<span class="no-alerts-text">{$_('alerts.none')}</span>
+				</div>
+			{/if}
+			{#if showQRCode}
+				<div class="qr-slot">
+					<p class="qr-label">
+						<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
+						<span class="qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
+					</p>
+					<QRCode
+						latitude={$config.latLng.latitude}
+						longitude={$config.latLng.longitude}
+						size={100}
+					/>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -597,14 +645,77 @@
 		}
 	}
 
-	/* Alert section — pinned to bottom */
-	.alert-section {
+	/* Bottom bar — holds alert section and optional QR slot */
+	.bottom-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
 		flex-shrink: 0;
 		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
-	.alert-section.qr-protected {
-		padding-right: 26%;
+	/* Alert section — fills remaining space */
+	.alert-section {
+		flex: 1;
+	}
+
+	.alert-section.no-alerts {
+		display: flex;
+		align-items: center;
+		padding: 0 0.75em;
+	}
+
+	.no-alerts-text {
+		font-size: 0.6em;
+		color: var(--text-secondary);
+		opacity: 0.6;
+		font-style: italic;
+	}
+
+	.qr-slot {
+		background: var(--bg-header);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0.5em 0.75em;
+		gap: 0.75em;
+		min-width: 0;
+		margin-left: auto;
+	}
+
+	.qr-slot :global(svg) {
+		display: block;
+		background: white;
+		padding: 0.4em;
+		border-radius: 4px;
+		flex-shrink: 0;
+	}
+
+	.qr-slot :global(svg path),
+	.qr-slot :global(svg rect),
+	.qr-slot :global(svg circle),
+	.qr-slot :global(svg polygon) {
+		fill: var(--bg-header) !important;
+	}
+
+	.qr-slot .qr-label {
+		margin: 0;
+		color: white;
+		font-size: 0.65em;
+		line-height: 1.5;
+		letter-spacing: 0.02em;
+		opacity: 0.95;
+		flex: 1;
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	.qr-slot .qr-label-1 {
+		font-weight: 400;
+	}
+
+	.qr-slot .qr-label-2 {
+		font-weight: bold;
 	}
 
 	.alert-header {
@@ -705,6 +816,10 @@
 		white-space: pre-wrap;
 		word-wrap: break-word;
 		color: var(--text-tertiary);
+		will-change: transform;
+		transform: translateZ(0);
+		backface-visibility: hidden;
+		contain: layout paint;
 	}
 
 	@keyframes scroll-alert {
@@ -712,19 +827,12 @@
 			transform: translateY(0);
 		}
 		100% {
-			transform: translateY(-50%);
+			transform: translateY(-100%);
 		}
 	}
 
 	.alert-text {
 		margin-bottom: 0.2em;
-	}
-
-	.separator-line {
-		opacity: 0.3;
-		text-align: center;
-		margin: 0.2em 0;
-		font-size: 0.7em;
 	}
 
 	.alert-image {

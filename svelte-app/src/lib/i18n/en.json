@@ -170,7 +170,8 @@
 	},
 	"alerts": {
 		"default": "Service alert",
-		"title": "Alerts"
+		"title": "Alerts",
+		"none": "No active alerts"
 	},
 	"departures": {
 		"last": "last"

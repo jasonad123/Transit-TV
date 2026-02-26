@@ -93,6 +93,19 @@ function transformV4ToV3Format(v4Response) {
 }
 
 /**
+ * Checks whether any route in the response has active alerts.
+ * Used to assign a shorter cache TTL so new/resolved alerts are visible
+ * within the next polling cycle instead of waiting up to 120s.
+ * @param {Object} data - The API response data
+ * @returns {boolean} - True if any route has at least one alert
+ */
+function hasActiveAlerts(data) {
+	const routes = data?.routes;
+	if (!Array.isArray(routes)) return false;
+	return routes.some((route) => Array.isArray(route.alerts) && route.alerts.length > 0);
+}
+
+/**
  * Analyzes Transit API response to detect if it contains real-time predictions
  * @param {Object} data - The API response data
  * @returns {boolean} - True if any schedule items have is_real_time: true
@@ -331,9 +344,11 @@ exports.nearby = async function (req, res) {
 
 			// Store in cache if enabled
 			if (CACHE_ENABLED) {
-				// Analyze response to determine appropriate TTL
+				// Responses with active alerts also use the short TTL so new/resolved
+				// alerts surface on the next poll instead of waiting up to 120s.
 				const isRealTime = hasRealTimeData(data);
-				const cacheTTL = isRealTime ? REALTIME_CACHE_TTL : STATIC_CACHE_TTL;
+				const cacheTTL =
+					isRealTime || hasActiveAlerts(data) ? REALTIME_CACHE_TTL : STATIC_CACHE_TTL;
 				const freshness = isRealTime ? 'fresh-realtime' : 'fresh-schedule';
 
 				requestCache.set(cacheKey, {

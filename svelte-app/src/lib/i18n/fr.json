@@ -164,7 +164,8 @@
 	},
 	"alerts": {
 		"default": "Alerte de service",
-		"title": "Alertes"
+		"title": "Alertes",
+		"none": "Aucune alerte active"
 	},
 	"departures": {
 		"last": "dernier"

@@ -1078,9 +1078,7 @@
 					class="alert-header-text"
 					class:scrolling={isAlertHeaderOverflowing}
 					use:bindAlertHeaderElement
-					>{$_('alerts.title')} - {[alertRouteName, alertModeName]
-						.filter(Boolean)
-						.join(' ')}</span
+					>{$_('alerts.title')} - {[alertRouteName, alertModeName].filter(Boolean).join(' ')}</span
 				>
 				<span class="alert-count-badge">{relevantAlertCount}</span>
 			</div>
@@ -1652,7 +1650,6 @@
 		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
 		box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 	}
-
 
 	.route-alert-header.severe .alert-count-badge {
 		background: color-mix(in srgb, #e30613, white 30%) 0%;

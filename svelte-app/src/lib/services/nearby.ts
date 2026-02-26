@@ -32,6 +32,8 @@ export interface Itinerary {
 	closest_stop?: {
 		stop_name: string;
 		global_stop_id?: string;
+		stop_lat?: number;
+		stop_lon?: number;
 		parent_station?: {
 			global_stop_id?: string;
 		};
