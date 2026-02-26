@@ -65,11 +65,60 @@
 		});
 	}
 
+	// Overflow detection for stock-ticker scrolling on destinations (reuses RouteItem pattern)
+	let destinationElements: Map<string, HTMLElement> = new Map();
+	let overflowingDestinations = $state<Set<string>>(new Set());
+	let overflowObserver: ResizeObserver | null = null;
+
+	function getOverflowObserver() {
+		if (!overflowObserver) {
+			overflowObserver = new ResizeObserver((entries) => {
+				for (const entry of entries) {
+					const el = entry.target as HTMLElement;
+					const destKey = el.dataset.destKey;
+					if (destKey != null) {
+						const isOverflowing = el.scrollWidth > el.offsetWidth;
+						const newSet = new Set(overflowingDestinations);
+						if (isOverflowing) newSet.add(destKey);
+						else newSet.delete(destKey);
+						overflowingDestinations = newSet;
+					}
+				}
+			});
+		}
+		return overflowObserver;
+	}
+
+	function bindDestinationElement(node: HTMLElement, key: string) {
+		node.dataset.destKey = key;
+		destinationElements.set(key, node);
+		getOverflowObserver().observe(node);
+		setTimeout(() => {
+			const isOverflowing = node.scrollWidth > node.offsetWidth;
+			const newSet = new Set(overflowingDestinations);
+			if (isOverflowing) newSet.add(key);
+			else newSet.delete(key);
+			overflowingDestinations = newSet;
+		}, 150);
+		return {
+			destroy() {
+				destinationElements.delete(key);
+				overflowObserver?.unobserve(node);
+			}
+		};
+	}
+
 	onDestroy(() => {
 		if (themeObserver) {
 			themeObserver.disconnect();
 			themeObserver = null;
 		}
+		if (overflowObserver) {
+			overflowObserver.disconnect();
+			overflowObserver = null;
+		}
+		destinationElements.clear();
+		overflowingDestinations = new Set();
 	});
 
 	// Cross-route stop grouping
@@ -111,7 +160,7 @@
 				}
 
 				const filteredDepartures =
-					itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [];
+					itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 2) || [];
 
 				if (filteredDepartures.length === 0) continue;
 
@@ -294,6 +343,7 @@
 				</div>
 
 				{#each group.rows as row}
+					{@const destKey = `${row.route.global_route_id}-${row.itinerary.direction_id ?? 0}-${row.itinerary.branch_code || ''}`}
 					<div
 						class="departure-row"
 						style="--route-color: #{row.route.route_color}; --route-text-color: #{row.route
@@ -303,9 +353,11 @@
 							<RouteIcon route={row.route} {showLongName} compact={true} />
 						</div>
 						<div class="row-destination">
-							{#if row.itinerary.branch_code}<span class="branch-code"
-									>({row.itinerary.branch_code})</span
-								>{/if}{row.itinerary.merged_headsign}
+							{#if row.itinerary.branch_code}<span class="branch-code-badge">{row.itinerary.branch_code}</span>{/if}<span
+								class="destination-text"
+								class:scrolling={overflowingDestinations.has(destKey)}
+								use:bindDestinationElement={destKey}
+							>{row.itinerary.merged_headsign}</span>
 						</div>
 						<div class="row-times">
 							{#if row.alertSeverity !== 'none'}
@@ -420,12 +472,14 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25em;
-		padding: 0.35em 0.5em;
-		font-size: 0.75em;
+		padding: 0.2em 0.6em 0.15em;
+		font-size: 1em;
 		font-weight: 700;
+		letter-spacing: 0.02em;
+		line-height: 1.2;
 		background: var(--bg-secondary);
 		color: var(--text-secondary);
-		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+		border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 		position: relative;
 	}
 
@@ -475,10 +529,10 @@
 	.departure-row {
 		display: grid;
 		grid-template-columns: auto 1fr auto;
-		gap: 0.5em;
-		padding: 0.45em 0.5em;
+		gap: 0.6em;
+		padding: 0.55em 0.6em;
 		align-items: center;
-		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+		border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
 		position: relative;
 	}
 
@@ -519,15 +573,15 @@
 		display: flex;
 		align-items: center;
 		gap: 0.2em;
-		font-size: 1em;
+		font-size: 1.1em;
 		line-height: 1;
 		color: var(--route-color);
 	}
 
 	.route-alert-icon {
 		display: inline-block;
-		width: 0.6em;
-		height: 0.6em;
+		width: 0.7em;
+		height: 0.7em;
 		flex-shrink: 0;
 		transform: translateY(-0.25em);
 		margin-right: 0.25em;
@@ -546,32 +600,66 @@
 	}
 
 	.row-destination {
+		display: flex;
+		align-items: center;
 		min-width: 0;
 		overflow: hidden;
-		text-overflow: ellipsis;
 		white-space: nowrap;
-		font-weight: 600;
-		font-size: 0.85em;
+		font-weight: 700;
+		font-size: 1em;
 		color: var(--text-primary);
 	}
 
-	.row-destination .branch-code {
-		color: var(--route-color);
-		font-weight: 900;
-		margin-right: 0.35em;
+	.row-destination .branch-code-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: color-mix(in srgb, var(--route-color), white 30%);
+		color: inherit;
+		border-radius: 40rem;
+		padding: 3px 0.4em;
+		font-size: 0.85em;
+		font-weight: 800;
+		line-height: 1;
+		min-width: 1.2em;
+		flex-shrink: 0;
+		font-family: 'Red Hat Display Variable', Arial, Helvetica, sans-serif;
+		box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+		margin-right: 0.3em;
+		position: relative;
+		z-index: 1;
+	}
+
+	.row-destination .destination-text {
+		display: inline-block;
+		white-space: nowrap;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.row-destination .destination-text.scrolling {
+		animation: scroll-text-horizontal 30s linear infinite;
+		will-change: transform;
+		overflow: visible;
+	}
+
+	.row-destination .destination-text:not(.scrolling) {
+		will-change: auto;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.row-times {
 		display: flex;
 		align-items: center;
-		gap: 0.5em;
+		gap: 0.65em;
 		flex-shrink: 0;
 	}
 
 	.time-badge {
 		font-feature-settings: 'tnum';
-		font-weight: 700;
-		font-size: 0.85em;
+		font-weight: 800;
+		font-size: 1em;
 		white-space: nowrap;
 		color: var(--text-primary);
 		position: relative;
@@ -583,15 +671,15 @@
 	}
 
 	.time-suffix {
-		font-weight: 500;
-		font-size: 0.8em;
-		opacity: 0.7;
+		font-weight: 400;
+		font-size: 0.65em;
+		opacity: 0.55;
 	}
 
 	/* Real-time indicator — PNG waves matching other views */
 	.realtime {
-		width: 0.28em;
-		height: 0.28em;
+		width: 0.32em;
+		height: 0.32em;
 		position: absolute;
 		top: -4px;
 		right: -6px;
@@ -601,8 +689,8 @@
 	.realtime::after {
 		content: '';
 		display: block;
-		width: 9px;
-		height: 9px;
+		width: 12px;
+		height: 12px;
 		position: absolute;
 		background-size: 100%;
 	}
@@ -629,9 +717,18 @@
 		}
 	}
 
+	@keyframes scroll-text-horizontal {
+		0% {
+			transform: translateX(0);
+		}
+		100% {
+			transform: translateX(-100%);
+		}
+	}
+
 	.group-divider {
-		height: 3px;
-		background: var(--border-color, rgba(0, 0, 0, 0.1));
+		height: 5px;
+		background: var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
 	/* Bottom bar — holds alert section and optional QR slot */
@@ -640,7 +737,7 @@
 		flex-direction: row;
 		align-items: stretch;
 		flex-shrink: 0;
-		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
+		border-top: 3px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
 	/* Alert section — fills remaining space beside QR slot */
@@ -789,7 +886,7 @@
 		overflow: hidden;
 		position: relative;
 		flex-shrink: 0;
-		height: clamp(6em, 5vh, 8em);
+		height: clamp(5em, 5vh, 7em);
 	}
 
 	.alert-content {
