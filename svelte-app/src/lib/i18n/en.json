@@ -168,6 +168,11 @@
 		"hideRoute": "Hide route",
 		"hideStop": "Hide stop"
 	},
+	"stops": {
+		"distance": {
+			"away": "{distance} away"
+		}
+	},
 	"alerts": {
 		"default": "Service alert",
 		"title": "Alerts",
