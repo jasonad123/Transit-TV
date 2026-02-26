@@ -48,6 +48,7 @@
 		stopId: string;
 		stopName: string;
 		rows: DepartureRow[];
+		distance: number;
 	}
 
 	let isDarkMode = $state(false);
@@ -121,6 +122,12 @@
 		overflowingDestinations = new Set();
 	});
 
+	function formatDistance(meters: number): string {
+		if (!isFinite(meters)) return '';
+		if (meters < 1000) return `${Math.round(meters)}m`;
+		return `${(meters / 1000).toFixed(1)}km`;
+	}
+
 	// Cross-route stop grouping
 	let stopGroups = $derived.by(() => {
 		const groups = new Map<string, StopGroup>();
@@ -155,7 +162,8 @@
 					groups.set(stopId, {
 						stopId,
 						stopName,
-						rows: []
+						rows: [],
+						distance: Infinity
 					});
 				}
 
@@ -204,24 +212,28 @@
 			return Infinity;
 		};
 
-		return Array.from(mergedGroups.values())
-			.filter((g) => g.rows.length > 0)
-			.sort((a, b) => {
+		const sorted = Array.from(mergedGroups.values())
+			.filter((g) => g.rows.length > 0);
+
+		// Pre-compute distances for sorting and display
+		for (const group of sorted) {
+			group.distance = getStopDist(group);
+		}
+
+		return sorted.sort((a, b) => {
 				const aIdx = stopOrder.indexOf(a.stopId);
 				const bIdx = stopOrder.indexOf(b.stopId);
 				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 				if (aIdx !== -1) return -1;
 				if (bIdx !== -1) return 1;
-				const aDist = getStopDist(a);
-				const bDist = getStopDist(b);
 				const aHigh =
 					a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
-					aDist <= PRIORITY_MODE_ELEVATION_METERS;
+					a.distance <= PRIORITY_MODE_ELEVATION_METERS;
 				const bHigh =
 					b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
-					bDist <= PRIORITY_MODE_ELEVATION_METERS;
+					b.distance <= PRIORITY_MODE_ELEVATION_METERS;
 				if (aHigh !== bHigh) return aHigh ? -1 : 1;
-				if (aDist !== bDist) return aDist - bDist;
+				if (a.distance !== b.distance) return a.distance - b.distance;
 				return a.stopId.localeCompare(b.stopId);
 			});
 	});
@@ -296,6 +308,9 @@
 			<div class="stop-group">
 				<div class="stop-header">
 					<span class="stop-name">{group.stopName}</span>
+					{#if isFinite(group.distance)}
+						<span class="stop-distance">{$_('stops.distance.away', { values: { distance: formatDistance(group.distance) } })}</span>
+					{/if}
 					{#if onMoveStop || onMoveStopToTop || onHideStop}
 						<div class="stop-controls">
 							{#if groupIndex > 0 && onMoveStopToTop}
@@ -491,12 +506,26 @@
 		white-space: nowrap;
 	}
 
+	.stop-distance {
+		flex-shrink: 0;
+		font-size: 0.75em;
+		font-weight: 500;
+		font-style: italic;
+		color: var(--text-tertiary);
+		white-space: nowrap;
+	}
+
 	.stop-controls {
 		display: flex;
 		gap: 0.25em;
 		opacity: 0;
 		transition: opacity 0.2s;
 		flex-shrink: 0;
+		position: absolute;
+		right: 0.3em;
+		background: var(--bg-secondary);
+		padding-left: 0.3em;
+		z-index: 1;
 	}
 
 	.stop-group:hover .stop-controls {

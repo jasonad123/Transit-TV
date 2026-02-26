@@ -162,6 +162,11 @@
 		"hideRoute": "Masquer la ligne",
 		"hideStop": "Masquer l'arrêt"
 	},
+	"stops": {
+		"distance": {
+			"away": "à {distance}"
+		}
+	},
 	"alerts": {
 		"default": "Alerte de service",
 		"title": "Alertes",

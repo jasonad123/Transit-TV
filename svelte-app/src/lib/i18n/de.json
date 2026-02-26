@@ -162,6 +162,11 @@
 		"hideRoute": "Verstecken routen",
 		"hideStop": "Haltestelle ausblenden"
 	},
+	"stops": {
+		"distance": {
+			"away": "{distance} entfernt"
+		}
+	},
 	"alerts": {
 		"default": "Störungsinformation",
 		"title": "Störungen",
