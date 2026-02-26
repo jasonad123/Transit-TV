@@ -347,7 +347,8 @@ exports.nearby = async function (req, res) {
 				// Responses with active alerts also use the short TTL so new/resolved
 				// alerts surface on the next poll instead of waiting up to 120s.
 				const isRealTime = hasRealTimeData(data);
-				const cacheTTL = isRealTime || hasActiveAlerts(data) ? REALTIME_CACHE_TTL : STATIC_CACHE_TTL;
+				const cacheTTL =
+					isRealTime || hasActiveAlerts(data) ? REALTIME_CACHE_TTL : STATIC_CACHE_TTL;
 				const freshness = isRealTime ? 'fresh-realtime' : 'fresh-schedule';
 
 				requestCache.set(cacheKey, {

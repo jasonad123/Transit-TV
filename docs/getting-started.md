@@ -86,7 +86,7 @@ Transit TV works with any Docker-compatible PaaS platform. Currently it has only
 2. **Create new service** from Docker image
 3. **Configure Docker image**:
    - Docker Hub: `jasonad123/transit-tv`
-     - Alternative: GitHub repository: `ghcr.io/jasonad123/transit-tv` (this is also the *only* option for pre-release images)
+     - Alternative: GitHub repository: `ghcr.io/jasonad123/transit-tv` (this is also the _only_ option for pre-release images)
    - Tag: `latest` (for stable) or specific version tag
 4. **Set environment variables**:
    ```bash

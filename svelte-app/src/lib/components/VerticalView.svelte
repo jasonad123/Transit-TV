@@ -7,7 +7,12 @@
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
-	import { isHighPriorityMode, haversineDistance, mergeProximateStopGroups, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		mergeProximateStopGroups,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let {
@@ -160,8 +165,12 @@
 				if (bIdx !== -1) return 1;
 				const aDist = getStopDist(a);
 				const bDist = getStopDist(b);
-				const aHigh = a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
-				const bHigh = b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const aHigh =
+					a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					aDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const bHigh =
+					b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					bDist <= PRIORITY_MODE_ELEVATION_METERS;
 				if (aHigh !== bHigh) return aHigh ? -1 : 1;
 				if (aDist !== bDist) return aDist - bDist;
 				return a.stopId.localeCompare(b.stopId);
@@ -371,7 +380,7 @@
 				</div>
 			{/if}
 			{#if showQRCode}
-				<div class="qr-slot">
+				<div class="qr-slot" class:solo={consolidatedAlerts.length === 0}>
 					<p class="qr-label">
 						<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
 						<span class="qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
@@ -634,9 +643,9 @@
 		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
-	/* Alert section — fills 2/3 of bottom bar */
+	/* Alert section — fills remaining space beside QR slot */
 	.alert-section {
-		flex: 2;
+		flex: 1;
 		min-width: 0;
 	}
 
@@ -647,8 +656,14 @@
 		align-items: center;
 		padding: 0.5em 0.75em;
 		gap: 0.75em;
-		flex: 1;
+		flex: 0 0 33%;
 		min-width: 0;
+		margin-left: auto;
+	}
+
+	.qr-slot.solo {
+		flex: 1;
+		margin-left: 0;
 	}
 
 	.qr-slot :global(svg) {
@@ -803,7 +818,6 @@
 	.alert-text {
 		margin-bottom: 0.2em;
 	}
-
 
 	.alert-image {
 		height: 1em;

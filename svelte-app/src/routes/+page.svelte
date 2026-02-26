@@ -11,7 +11,11 @@
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
-	import { isHighPriorityMode, haversineDistance, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);

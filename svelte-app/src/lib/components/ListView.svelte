@@ -7,7 +7,12 @@
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
-	import { isHighPriorityMode, haversineDistance, mergeProximateStopGroups, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		mergeProximateStopGroups,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
 	import QRCode from '$lib/components/QRCode.svelte';
 
 	let {
@@ -162,8 +167,12 @@
 				if (bIdx !== -1) return 1;
 				const aDist = getStopDist(a);
 				const bDist = getStopDist(b);
-				const aHigh = a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
-				const bHigh = b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const aHigh =
+					a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					aDist <= PRIORITY_MODE_ELEVATION_METERS;
+				const bHigh =
+					b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+					bDist <= PRIORITY_MODE_ELEVATION_METERS;
 				if (aHigh !== bHigh) return aHigh ? -1 : 1;
 				if (aDist !== bDist) return aDist - bDist;
 				return a.stopId.localeCompare(b.stopId);
@@ -366,6 +375,10 @@
 							</div>
 						{/key}
 					</div>
+				</div>
+			{:else if showQRCode}
+				<div class="alert-section no-alerts">
+					<span class="no-alerts-text">{$_('alerts.none')}</span>
 				</div>
 			{/if}
 			{#if showQRCode}
@@ -646,6 +659,19 @@
 		flex: 1;
 	}
 
+	.alert-section.no-alerts {
+		display: flex;
+		align-items: center;
+		padding: 0 0.75em;
+	}
+
+	.no-alerts-text {
+		font-size: 0.6em;
+		color: var(--text-secondary);
+		opacity: 0.6;
+		font-style: italic;
+	}
+
 	.qr-slot {
 		background: var(--bg-header);
 		display: flex;
@@ -654,6 +680,7 @@
 		padding: 0.5em 0.75em;
 		gap: 0.75em;
 		min-width: 0;
+		margin-left: auto;
 	}
 
 	.qr-slot :global(svg) {
@@ -807,7 +834,6 @@
 	.alert-text {
 		margin-bottom: 0.2em;
 	}
-
 
 	.alert-image {
 		height: 1em;
