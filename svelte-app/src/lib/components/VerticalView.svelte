@@ -2,7 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import RouteIcon from './RouteIcon.svelte';
-	import type { Route } from '$lib/services/nearby';
+	import type { Route, Itinerary, ScheduleItem } from '$lib/services/nearby';
 	import { getMinutesUntil } from '$lib/utils/timeUtils';
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
@@ -37,8 +37,8 @@
 
 	interface DepartureRow {
 		route: Route;
-		itinerary: any;
-		departures: any[];
+		itinerary: Itinerary;
+		departures: ScheduleItem[];
 		nextDeparture: number;
 		alertSeverity: 'none' | 'info' | 'warning' | 'severe';
 		alertIcon: string;

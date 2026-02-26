@@ -38,8 +38,9 @@ interface StopGroupLike {
 }
 
 /**
- * Merges stop groups whose first row's stop coords are within PROXIMITY_MERGE_METERS.
- * Handles co-located stops that lack a shared parent_station_global_stop_id.
+ * Merges stop groups that share the same stopName and whose first row's stop coords
+ * are within PROXIMITY_MERGE_METERS. Only same-named stops are candidates for merging,
+ * which handles co-located stops that lack a shared parent_station_global_stop_id.
  * The canonical stopId for each merged group is chosen to preserve stopOrder overrides.
  */
 export function mergeProximateStopGroups<G extends StopGroupLike>(

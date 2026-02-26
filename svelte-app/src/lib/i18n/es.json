@@ -3,13 +3,6 @@
 		"title": "Transit TV",
 		"nearbyRoutes": "Líneas cercanas"
 	},
-	"table": {
-		"destination": "Destino",
-		"due": "Due",
-		"mins": "min",
-		"arrivesIn": "Llega a",
-		"loadingDepartures": "Cargando salidas..."
-	},
 	"config": {
 		"title": "Configurar Transit TV",
 		"sections": {

@@ -228,7 +228,7 @@
 		const newInterval = Math.min(currentPollingInterval * BACKOFF_MULTIPLIER, MAX_POLLING_INTERVAL);
 		if (newInterval !== currentPollingInterval) {
 			currentPollingInterval = newInterval;
-			console.log(`Increasing polling interval to ${currentPollingInterval}ms due to errors`);
+			// Polling interval increased due to errors
 			resetPollingInterval();
 		}
 	}
@@ -237,7 +237,7 @@
 		consecutiveErrors = 0;
 		if (currentPollingInterval !== MIN_POLLING_INTERVAL) {
 			currentPollingInterval = MIN_POLLING_INTERVAL;
-			console.log(`Resetting polling interval to ${currentPollingInterval}ms`);
+			// Polling interval reset to normal
 			resetPollingInterval();
 		}
 	}
@@ -685,7 +685,7 @@
 				appVersion = healthData.version || '1.5.0';
 			}
 		} catch (err) {
-			console.log('Could not fetch version, using fallback');
+			// Version fetch failed, using fallback
 		}
 
 		// Only load routes if screen is wide enough
@@ -1109,9 +1109,7 @@
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						{#if $config.viewMode === 'card'}
-							<RouteItem {route} showLongName={$config.showRouteLongName} />
-						{/if}
+						<RouteItem {route} showLongName={$config.showRouteLongName} />
 						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
 							<div class="route-split-badge">
 								{route._splitIndex + 1}/{route._totalSplits}
