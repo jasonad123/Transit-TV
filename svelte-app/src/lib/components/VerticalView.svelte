@@ -8,6 +8,7 @@
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
 	import { isHighPriorityMode, haversineDistance, mergeProximateStopGroups, PRIORITY_MODE_ELEVATION_METERS } from '$lib/utils/sortingUtils';
+	import QRCode from '$lib/components/QRCode.svelte';
 
 	let {
 		routes,
@@ -332,39 +333,56 @@
 		{/each}
 	</div>
 
-	<!-- Pinned alerts area (always visible at bottom) -->
-	{#if consolidatedAlerts.length > 0}
-		<div class="alert-section" class:qr-protected={showQRCode}>
-			<div
-				class="alert-header"
-				class:severe={mostSevereLevel === 'severe'}
-				class:warning={mostSevereLevel === 'warning'}
-				class:info={mostSevereLevel === 'info'}
-			>
-				<iconify-icon icon={mostSevereIcon}></iconify-icon>
-				<span class="alert-title">{$_('alerts.title')}</span>
-				<span class="alert-count-badge">{consolidatedAlerts.length}</span>
-			</div>
-
-			<div class="alert-ticker">
-				{#key alertText}
-					<div class="alert-content">
-						<div class="alert-text">
-							{#each parseAlertContent(alertText) as content}
-								{#if content.type === 'text'}
-									{content.value}
-								{:else if content.type === 'image'}
-									<img
-										src="/api/images/{extractImageId(content.value)}"
-										alt="transit icon"
-										class="alert-image"
-									/>
-								{/if}
-							{/each}
-						</div>
+	<!-- Pinned bottom bar (alerts + optional QR slot) -->
+	{#if consolidatedAlerts.length > 0 || showQRCode}
+		<div class="bottom-bar">
+			{#if consolidatedAlerts.length > 0}
+				<div class="alert-section">
+					<div
+						class="alert-header"
+						class:severe={mostSevereLevel === 'severe'}
+						class:warning={mostSevereLevel === 'warning'}
+						class:info={mostSevereLevel === 'info'}
+					>
+						<iconify-icon icon={mostSevereIcon}></iconify-icon>
+						<span class="alert-title">{$_('alerts.title')}</span>
+						<span class="alert-count-badge">{consolidatedAlerts.length}</span>
 					</div>
-				{/key}
-			</div>
+
+					<div class="alert-ticker">
+						{#key alertText}
+							<div class="alert-content">
+								<div class="alert-text">
+									{#each parseAlertContent(alertText) as content}
+										{#if content.type === 'text'}
+											{content.value}
+										{:else if content.type === 'image'}
+											<img
+												src="/api/images/{extractImageId(content.value)}"
+												alt="transit icon"
+												class="alert-image"
+											/>
+										{/if}
+									{/each}
+								</div>
+							</div>
+						{/key}
+					</div>
+				</div>
+			{/if}
+			{#if showQRCode}
+				<div class="qr-slot">
+					<p class="qr-label">
+						<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
+						<span class="qr-label-2">{$_('config.qrCode.scanPrompt2')}</span>
+					</p>
+					<QRCode
+						latitude={$config.latLng.latitude}
+						longitude={$config.latLng.longitude}
+						size={100}
+					/>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -607,14 +625,65 @@
 		background: var(--border-color, rgba(0, 0, 0, 0.1));
 	}
 
-	/* Alert section — pinned to bottom, never scrolls with routes */
-	.alert-section {
+	/* Bottom bar — holds alert section and optional QR slot */
+	.bottom-bar {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
 		flex-shrink: 0;
 		border-top: 2px solid var(--border-color, rgba(0, 0, 0, 0.15));
 	}
 
-	.alert-section.qr-protected {
-		padding-right: 26%;
+	/* Alert section — fills 2/3 of bottom bar */
+	.alert-section {
+		flex: 2;
+		min-width: 0;
+	}
+
+	.qr-slot {
+		background: var(--bg-header);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0.5em 0.75em;
+		gap: 0.75em;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.qr-slot :global(svg) {
+		display: block;
+		background: white;
+		padding: 0.4em;
+		border-radius: 8px;
+		flex-shrink: 0;
+	}
+
+	.qr-slot :global(svg path),
+	.qr-slot :global(svg rect),
+	.qr-slot :global(svg circle),
+	.qr-slot :global(svg polygon) {
+		fill: var(--bg-header) !important;
+	}
+
+	.qr-slot .qr-label {
+		margin: 0;
+		color: white;
+		font-size: 0.65em;
+		line-height: 1.5;
+		letter-spacing: 0.02em;
+		opacity: 0.95;
+		flex: 1;
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	.qr-slot .qr-label-1 {
+		font-weight: 400;
+	}
+
+	.qr-slot .qr-label-2 {
+		font-weight: bold;
 	}
 
 	.alert-header {

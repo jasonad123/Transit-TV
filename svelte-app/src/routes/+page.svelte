@@ -1163,7 +1163,7 @@
 		{/if}
 	</div>
 
-	{#if $config.showQRCode && !$config.isEditing}
+	{#if $config.showQRCode && !$config.isEditing && $config.viewMode !== 'board' && $config.viewMode !== 'vertical'}
 		<div class="floating-qr">
 			<p class="qr-label">
 				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
