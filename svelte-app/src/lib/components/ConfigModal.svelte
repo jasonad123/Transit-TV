@@ -600,8 +600,7 @@
 										class="hidden-route-item"
 										onclick={() => toggleAgencyHidden(agency)}
 									>
-										<iconify-icon
-											icon={isHidden ? 'ix:eye-cancelled-filled' : 'ix:eye-filled'}
+										<iconify-icon icon={isHidden ? 'ix:eye-cancelled-filled' : 'ix:eye-filled'}
 										></iconify-icon>
 										<span>{agency}</span>
 									</button>

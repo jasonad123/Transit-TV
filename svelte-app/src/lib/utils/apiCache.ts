@@ -44,6 +44,18 @@ function hasRealTimeData(data: any): boolean {
 	return false;
 }
 
+/**
+ * Checks whether any route in the response has active alerts.
+ * Responses with alerts use the short TTL so new/resolved alerts
+ * are reflected within the next polling cycle rather than waiting
+ * up to 120s for the schedule-data cache to expire.
+ */
+function hasActiveAlerts(data: any): boolean {
+	const routes = data?.routes || data;
+	if (!Array.isArray(routes)) return false;
+	return routes.some((route: any) => Array.isArray(route.alerts) && route.alerts.length > 0);
+}
+
 class ApiCache {
 	private cache = new Map<string, CacheEntry<any>>();
 	private pendingRequests = new Map<string, PendingRequest<any>>();
@@ -106,12 +118,19 @@ class ApiCache {
 		// Make new request
 		const promise = fetcher().then(
 			(data) => {
-				// Analyze response to determine appropriate TTL
+				// Analyze response to determine appropriate TTL.
+				// Responses with active alerts also use the short TTL so new/resolved
+				// alerts surface on the next poll instead of waiting up to 120s.
 				const isRealTime = hasRealTimeData(data);
 				const freshness = isRealTime ? 'realtime' : 'schedule';
 
 				// Use explicit TTL if provided, otherwise use dual-TTL based on content
-				const cacheTTL = ttl !== undefined ? ttl : isRealTime ? this.realtimeTTL : this.scheduleTTL;
+				const cacheTTL =
+					ttl !== undefined
+						? ttl
+						: isRealTime || hasActiveAlerts(data)
+							? this.realtimeTTL
+							: this.scheduleTTL;
 
 				// Cache the result with appropriate TTL and freshness metadata
 				this.set(key, data, cacheTTL, freshness);

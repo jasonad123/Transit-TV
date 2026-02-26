@@ -11,6 +11,11 @@
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
@@ -291,12 +296,30 @@
 				})
 				.filter((r) => !r.itineraries || r.itineraries.length > 0)
 				.sort((a, b) => {
-					const aIndex = currentConfig.routeOrder.indexOf(a.global_route_id);
-					const bIndex = currentConfig.routeOrder.indexOf(b.global_route_id);
-					if (aIndex === -1 && bIndex === -1) return 0;
-					if (aIndex === -1) return 1;
-					if (bIndex === -1) return -1;
-					return aIndex - bIndex;
+					const aIdx = currentConfig.routeOrder.indexOf(a.global_route_id);
+					const bIdx = currentConfig.routeOrder.indexOf(b.global_route_id);
+					if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+					if (aIdx !== -1) return -1;
+					if (bIdx !== -1) return 1;
+					const { latitude: uLat, longitude: uLon } = currentConfig.latLng;
+					const getRouteDist = (route: Route) => {
+						if (!route.itineraries) return Infinity;
+						return Math.min(
+							...route.itineraries.map((it) => {
+								const s = it.closest_stop;
+								return s?.stop_lat != null && s?.stop_lon != null
+									? haversineDistance(uLat, uLon, s.stop_lat, s.stop_lon)
+									: Infinity;
+							})
+						);
+					};
+					const aDist = getRouteDist(a);
+					const bDist = getRouteDist(b);
+					const aHigh = isHighPriorityMode(a.mode_name) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
+					const bHigh = isHighPriorityMode(b.mode_name) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+					if (aHigh !== bHigh) return aHigh ? -1 : 1;
+					if (aDist !== bDist) return aDist - bDist;
+					return a.global_route_id.localeCompare(b.global_route_id);
 				});
 
 			loading = false;
@@ -1144,7 +1167,7 @@
 		{/if}
 	</div>
 
-	{#if $config.showQRCode && !$config.isEditing}
+	{#if $config.showQRCode && !$config.isEditing && $config.viewMode !== 'board' && $config.viewMode !== 'vertical'}
 		<div class="floating-qr">
 			<p class="qr-label">
 				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
