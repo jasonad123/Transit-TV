@@ -7,6 +7,7 @@
 	import { shouldShowDeparture } from '$lib/utils/departureFilters';
 	import { parseAlertContent, extractImageId } from '$lib/services/alerts';
 	import { config } from '$lib/stores/config';
+	import { isHighPriorityMode, haversineDistance } from '$lib/utils/sortingUtils';
 
 	let {
 		routes,
@@ -123,17 +124,30 @@
 			}
 		}
 
-		// Sort rows within each group by route then by departure
+		// Sort rows within each group: route → direction → departure
 		for (const group of groups.values()) {
 			group.rows.sort((a, b) => {
 				if (a.route.global_route_id !== b.route.global_route_id) {
 					return a.route.global_route_id.localeCompare(b.route.global_route_id);
 				}
+				const aDirId = a.itinerary.direction_id ?? 0;
+				const bDirId = b.itinerary.direction_id ?? 0;
+				if (aDirId !== bDirId) return aDirId - bDirId;
 				return a.nextDeparture - b.nextDeparture;
 			});
 		}
 
-		// Sort groups by saved stopOrder
+		// Sort groups: stopOrder overrides → high-priority mode → distance → stop ID
+		const userLat = $config.latLng.latitude;
+		const userLon = $config.latLng.longitude;
+		const getStopDist = (group: StopGroup) => {
+			const stop = group.rows[0]?.itinerary.closest_stop;
+			if (stop?.stop_lat != null && stop?.stop_lon != null) {
+				return haversineDistance(userLat, userLon, stop.stop_lat, stop.stop_lon);
+			}
+			return Infinity;
+		};
+
 		return Array.from(groups.values())
 			.filter((g) => g.rows.length > 0)
 			.sort((a, b) => {
@@ -142,9 +156,12 @@
 				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
 				if (aIdx !== -1) return -1;
 				if (bIdx !== -1) return 1;
-				const aRail = a.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
-				const bRail = b.rows.some((r) => { const m = r.route.mode_name?.toLowerCase(); return m && m !== 'bus' && m !== 'ferry'; });
-				if (aRail !== bRail) return aRail ? -1 : 1;
+				const aHigh = a.rows.some((r) => isHighPriorityMode(r.route.mode_name));
+				const bHigh = b.rows.some((r) => isHighPriorityMode(r.route.mode_name));
+				if (aHigh !== bHigh) return aHigh ? -1 : 1;
+				const aDist = getStopDist(a);
+				const bDist = getStopDist(b);
+				if (aDist !== bDist) return aDist - bDist;
 				return a.stopId.localeCompare(b.stopId);
 			});
 	});
