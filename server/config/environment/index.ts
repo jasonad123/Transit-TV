@@ -225,7 +225,6 @@ export interface Config {
 		groupItinerariesByStop: boolean;
 		filterRedundantTerminus: boolean;
 		showRouteLongName: boolean;
-		minimalAlerts: boolean;
 	};
 	security: {
 		cors: {
