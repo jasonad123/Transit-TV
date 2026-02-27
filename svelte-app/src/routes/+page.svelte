@@ -724,9 +724,13 @@
 		}
 	});
 
-	// Enforce auto columns when auto-scale is enabled
+	// Enforce auto columns when auto-scale is enabled (not applicable in vertical mode)
 	$effect(() => {
-		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+		if (
+			$config.scaleMode === 'auto' &&
+			$config.viewMode !== 'vertical' &&
+			($config.columns !== 'auto' || $config.manualColumnsMode)
+		) {
 			config.update((c) => ({
 				...c,
 				columns: 'auto',
