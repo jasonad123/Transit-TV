@@ -168,7 +168,7 @@
 				}
 
 				const filteredDepartures =
-					itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 2) || [];
+					itinerary.schedule_items?.filter(shouldShowDeparture).slice(0, 3) || [];
 
 				if (filteredDepartures.length === 0) continue;
 
@@ -384,7 +384,7 @@
 							{/if}
 							{#each row.departures as item}
 								<span class="time-badge" class:cancelled={item.is_cancelled}>
-									{getMinutesUntil(item.departure_time)}<span class="time-suffix">m</span
+									{getMinutesUntil(item.departure_time)}<span class="time-suffix">min</span
 									>{#if item.is_real_time}<i class="realtime"></i>{/if}{#if item.is_last}*{/if}
 								</span>
 							{/each}

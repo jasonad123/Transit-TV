@@ -366,7 +366,7 @@
 							{/if}
 							{#each row.departures as item (item.departure_time)}
 								<span class="time-badge" class:cancelled={item.is_cancelled}>
-									{getMinutesUntil(item.departure_time)}<span class="time-suffix">m</span
+									{getMinutesUntil(item.departure_time)}<span class="time-suffix">min</span
 									>{#if item.is_real_time}<i class="realtime"></i>{/if}{#if item.is_last}*{/if}
 								</span>
 							{/each}
