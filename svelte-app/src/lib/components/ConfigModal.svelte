@@ -26,6 +26,8 @@
 		useCurrentLocation: () => void;
 		handleLocationInputBlur: () => void;
 		toggleRouteHidden: (routeId: string) => void;
+		toggleStopHidden: (stopId: string) => void;
+		toggleAgencyHidden: (networkName: string) => void;
 		onsave: () => void;
 	}
 
@@ -44,6 +46,8 @@
 		useCurrentLocation,
 		handleLocationInputBlur,
 		toggleRouteHidden,
+		toggleStopHidden,
+		toggleAgencyHidden,
 		onsave
 	}: Props = $props();
 
@@ -54,6 +58,40 @@
 	let hiddenRoutesList = $derived(
 		allRoutes.filter((r) => $config.hiddenRoutes.includes(r.global_route_id))
 	);
+
+	// Build stop name map from all routes' itineraries
+	let stopNameMap = $derived.by(() => {
+		const map = new Map<string, string>();
+		for (const route of allRoutes) {
+			if (!route.itineraries) continue;
+			for (const it of route.itineraries) {
+				const stopId =
+					it.closest_stop?.parent_station_global_stop_id ||
+					it.closest_stop?.global_stop_id ||
+					'unknown';
+				const stopName = it.closest_stop?.stop_name || 'Unknown stop';
+				if (!map.has(stopId)) {
+					map.set(stopId, stopName);
+				}
+			}
+		}
+		return map;
+	});
+
+	let hiddenStopsList = $derived(
+		($config.hiddenStops || []).map((id) => ({
+			id,
+			name: stopNameMap.get(id) || id
+		}))
+	);
+
+	let allAgencies = $derived.by(() => {
+		const seen = new Set<string>();
+		for (const route of allRoutes) {
+			if (route.route_network_name) seen.add(route.route_network_name);
+		}
+		return [...seen].sort();
+	});
 
 	function openLocationPicker() {
 		locationPickerOpen = true;
@@ -179,13 +217,15 @@
 					<div class="toggle-container">
 						<Toggle
 							bind:checked={$config.manualColumnsMode}
-							disabled={$config.scaleMode === 'auto'}
+							disabled={$config.scaleMode === 'auto' || $config.viewMode === 'vertical'}
 						>
 							{#snippet label()}
 								<span>{$_('config.columns.manualColumnControl')}</span>
 							{/snippet}
 						</Toggle>
-						{#if $config.scaleMode === 'auto'}
+						{#if $config.viewMode === 'vertical'}
+							<small class="toggle-help-text">{$_('config.columns.disabledInVerticalMode')}</small>
+						{:else if $config.scaleMode === 'auto'}
 							<small class="toggle-help-text">{$_('config.autoScale.autoColumnsHelpText')}</small>
 						{/if}
 					</div>
@@ -233,6 +273,57 @@
 					{:else if $config.scaleMode !== 'auto'}
 						<small class="toggle-help-text">{$_('config.columns.automaticColumnControl')}</small>
 					{/if}
+
+					<label>
+						{$_('config.routeDisplay.viewMode')}
+						<div class="button-group">
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'card'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'card',
+										groupItinerariesByStop: false
+									}))}
+							>
+								<iconify-icon icon="ix:application-screen"></iconify-icon>
+								{$_('config.routeDisplay.card')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'board'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'board',
+										groupItinerariesByStop: true
+									}))}
+							>
+								<iconify-icon icon="ix:table"></iconify-icon>
+								{$_('config.routeDisplay.board')}
+							</button>
+							<button
+								type="button"
+								class="btn-option"
+								class:active={$config.viewMode === 'vertical'}
+								onclick={() =>
+									config.update((c) => ({
+										...c,
+										viewMode: 'vertical',
+										groupItinerariesByStop: true,
+										manualColumnsMode: false,
+										columns: 1
+									}))}
+							>
+								<iconify-icon icon="ix:list"></iconify-icon>
+								{$_('config.routeDisplay.vertical')}
+							</button>
+						</div>
+						<small class="help-text">{$_('config.routeDisplay.viewModeHelpText')}</small>
+					</label>
 
 					<div class="toggle-container">
 						<Toggle bind:checked={$config.showQRCode}>
@@ -448,14 +539,27 @@
 
 				<SolidSection title={$_('config.sections.routeOptions')}>
 					<div class="toggle-container">
-						<Toggle bind:checked={$config.groupItinerariesByStop}>
+						<Toggle
+							bind:checked={$config.groupItinerariesByStop}
+							disabled={$config.viewMode === 'board' || $config.viewMode === 'vertical'}
+						>
 							{#snippet label()}
 								<span>{$_('config.fields.groupItinerariesByStop')}</span>
 							{/snippet}
 						</Toggle>
-						<small class="toggle-help-text"
-							>{$_('config.stopManagement.groupItinerarieshelpText')}</small
-						>
+						{#if $config.viewMode === 'board'}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupAlwaysOnInBoardMode')}</small
+							>
+						{:else if $config.viewMode === 'vertical'}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupAlwaysOnInVerticalMode')}</small
+							>
+						{:else}
+							<small class="toggle-help-text"
+								>{$_('config.stopManagement.groupItinerarieshelpText')}</small
+							>
+						{/if}
 					</div>
 
 					<div class="toggle-container">
@@ -479,16 +583,32 @@
 							>{$_('config.routeDisplay.showRouteLongNameHelpText')}</small
 						>
 					</div>
-
-					<div class="toggle-container">
-						<Toggle bind:checked={$config.minimalAlerts}>
-							{#snippet label()}
-								<span>{$_('config.fields.minimalAlerts')}</span>
-							{/snippet}
-						</Toggle>
-						<small class="toggle-help-text">{$_('config.alerts.minimalAlertsHelpText')}</small>
-					</div>
 				</SolidSection>
+
+				<CollapsibleSection
+					title={$_('config.hiddenAgencies.title')}
+					helpText={$_('config.hiddenAgencies.helpText')}
+					initiallyOpen={true}
+				>
+					{#if allAgencies.length > 0}
+						<div class="route-management">
+							<div class="hidden-routes-list">
+								{#each allAgencies as agency}
+									{@const isHidden = ($config.hiddenAgencies || []).includes(agency)}
+									<button
+										type="button"
+										class="hidden-route-item"
+										onclick={() => toggleAgencyHidden(agency)}
+									>
+										<iconify-icon icon={isHidden ? 'ix:eye-cancelled-filled' : 'ix:eye-filled'}
+										></iconify-icon>
+										<span>{agency}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</CollapsibleSection>
 
 				<CollapsibleSection
 					title={$_('config.hiddenRoutes.title')}
@@ -506,6 +626,29 @@
 									>
 										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
 										<span>{route.route_short_name || route.route_long_name}</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</CollapsibleSection>
+
+				<CollapsibleSection
+					title={$_('config.hiddenStops.title')}
+					helpText={$_('config.hiddenStops.helpText')}
+					initiallyOpen={false}
+				>
+					{#if ($config.hiddenStops || []).length > 0}
+						<div class="route-management">
+							<div class="hidden-routes-list">
+								{#each hiddenStopsList as stop}
+									<button
+										type="button"
+										class="hidden-route-item"
+										onclick={() => toggleStopHidden(stop.id)}
+									>
+										<iconify-icon icon="ix:eye-cancelled-filled"></iconify-icon>
+										<span>{stop.name}</span>
 									</button>
 								{/each}
 							</div>
@@ -857,6 +1000,13 @@
 		background-color: var(--bg-header);
 		color: white;
 		font-weight: 600;
+	}
+
+	.btn-option iconify-icon {
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 0.3em;
+		font-size: 1.1em;
 	}
 
 	.location-input-group {

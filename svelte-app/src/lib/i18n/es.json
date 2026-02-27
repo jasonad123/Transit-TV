@@ -24,7 +24,6 @@
 			"groupItinerariesByStop": "Agrupar destinos con nombres de paradas compartidos",
 			"filterRedundantTerminus": "Ocultar terminal cercano",
 			"showRouteLongName": "Mostrar nombres y colores de línea",
-			"minimalAlerts": "Mostrar alertas mínimas",
 			"scaleMode": "Escala del contenido",
 			"autoScaleMinimum": "Escala automática mínima",
 			"manualScale": "Escala fija"
@@ -45,7 +44,8 @@
 			"manualColumnControl": "Control manual de columna",
 			"automaticColumnControl": "Usando diseño de columna automático",
 			"word": "{count, plural, one {1 columna} other {{count} columnas}}",
-			"columnWarning": "Es posible que las columnas sean demasiado estrechas con este ancho de pantalla. ({nomColWidth}px por columna)"
+			"columnWarning": "Es posible que las columnas sean demasiado estrechas con este ancho de pantalla. ({nomColWidth}px por columna)",
+			"disabledInVerticalMode": "Los controles de columna no se usan en el modo Vertical"
 		},
 		"theme": {
 			"light": "Claro",
@@ -61,6 +61,14 @@
 			"title": "Rutas encubiertas",
 			"helpText": "Haz clic aquí para ocultar las rutas"
 		},
+		"hiddenStops": {
+			"title": "Paradas ocultas",
+			"helpText": "Haz clic para mostrar paradas"
+		},
+		"hiddenAgencies": {
+			"title": "Agencias",
+			"helpText": "Haz clic para mostrar u ocultar una agencia"
+		},
 		"qrCode": {
 			"title": "Código QR",
 			"helpText": "Mostrar un código QR que cargue esta ubicación en Transit",
@@ -68,14 +76,18 @@
 			"scanPrompt2": "Escanea para abrir en la aplicación Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta",
+			"groupItinerarieshelpText": "Combina destinos con el mismo nombre de parada en una sola tarjeta (Habilitada de forma predeterminada en los modos Tablero y Vertical.)",
+			"groupAlwaysOnInBoardMode": "La agrupación por parada siempre está activada en modo Tablero",
+			"groupAlwaysOnInVerticalMode": "La agrupación por parada siempre está activada en modo Vertical",
 			"filterTerminushelpText": "En las estaciones terminales, solo muestre las direcciones opuestas o de salida"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización."
-		},
-		"alerts": {
-			"minimalAlertsHelpText": "Ocultar el texto completo de la alerta y mostrar el encabezado con el recuento de alertas"
+			"showRouteLongNameHelpText": "Utiliza nombres escritos en las líneas que solo usan un ícono como su nombre de visualización.",
+			"viewMode": "Modo de vista",
+			"card": "Tarjeta",
+			"board": "Tablero",
+			"vertical": "Vertical",
+			"viewModeHelpText": "Seleccione entre el modo Tarjeta (predeterminado, vista horizontal centrada en rutas), el modo Tablero (tablero horizontal agrupado por parada para visualización cercana) o el modo Vertical (tablero de salidas en retrato agrupado por parada)."
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -126,7 +138,11 @@
 			"moveToTop": "Subir al principio",
 			"moveUp": "Subir",
 			"moveDown": "Bajar",
-			"hide": "Esconder la ruta"
+			"hide": "Esconder la ruta",
+			"moveStopToTop": "Mover parada al principio",
+			"moveStopUp": "Subir parada",
+			"moveStopDown": "Bajar parada",
+			"hideStop": "Ocultar parada"
 		}
 	},
 	"aria": {
@@ -136,11 +152,21 @@
 		"moveRouteToTop": "Subir al principio",
 		"moveRouteUp": "Subir",
 		"moveRouteDown": "Bajar",
-		"hideRoute": "Esconder la ruta"
+		"hideRoute": "Esconder la ruta",
+		"hideStop": "Ocultar parada"
+	},
+	"stops": {
+		"distance": {
+			"away": "a {distance}"
+		}
 	},
 	"alerts": {
 		"default": "Avisos de servicio",
-		"title": "Avisos"
+		"title": "Avisos",
+		"none": "Sin avisos activos"
+	},
+	"departures": {
+		"last": "último"
 	},
 	"time": {
 		"min": "min",

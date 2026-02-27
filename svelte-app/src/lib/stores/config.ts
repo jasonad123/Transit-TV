@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { getCookie, setCookie } from '$lib/utils/cookies';
 
@@ -12,7 +12,10 @@ export interface Config {
 	isEditing: boolean;
 	title: string;
 	routeOrder: string[];
+	stopOrder: string[];
 	hiddenRoutes: string[];
+	hiddenStops: string[];
+	hiddenAgencies: string[];
 	latLng: LatLng;
 	timeFormat: string;
 	language: string;
@@ -25,7 +28,7 @@ export interface Config {
 	groupItinerariesByStop: boolean;
 	filterRedundantTerminus: boolean;
 	showRouteLongName: boolean;
-	minimalAlerts: boolean;
+	viewMode: 'card' | 'board' | 'vertical';
 	scaleMode: 'auto' | 'manual';
 	autoScaleMinimum: number;
 	manualScale: number;
@@ -37,7 +40,10 @@ const defaultConfig: Config = {
 	isEditing: true,
 	title: '',
 	routeOrder: [],
+	stopOrder: [],
 	hiddenRoutes: [],
+	hiddenStops: [],
+	hiddenAgencies: [],
 	latLng: {
 		latitude: 40.75426683398718,
 		longitude: -73.98672703719805
@@ -53,7 +59,7 @@ const defaultConfig: Config = {
 	groupItinerariesByStop: false,
 	filterRedundantTerminus: false,
 	showRouteLongName: false,
-	minimalAlerts: false,
+	viewMode: 'card',
 	scaleMode: 'manual',
 	autoScaleMinimum: 0.65, // Balances readability with density; allows ~20-25 routes on 1080p display
 	manualScale: 1.0,
@@ -108,9 +114,16 @@ function createConfigStore() {
 							parsed.manualColumnsMode = false;
 							configWasMigrated = true;
 						}
+						// Migrate old viewMode values: compact/list -> board
+						if (parsed.viewMode === 'compact' || parsed.viewMode === 'list') {
+							parsed.viewMode = 'board';
+							configWasMigrated = true;
+						}
 						set({
 							...defaultConfig,
 							...parsed,
+							// Ensure viewMode is set (migration for old configs)
+							viewMode: parsed.viewMode || defaultConfig.viewMode,
 							isEditing: false
 						});
 
@@ -164,6 +177,11 @@ function createConfigStore() {
 							unattendedConfig.manualColumnsMode = false;
 							unattendedConfigWasMigrated = true;
 						}
+						// Migrate old viewMode values: compact/list -> board
+						if (unattendedConfig.viewMode === 'compact' || unattendedConfig.viewMode === 'list') {
+							unattendedConfig.viewMode = 'board';
+							unattendedConfigWasMigrated = true;
+						}
 						set({
 							...defaultConfig,
 							...unattendedConfig,
@@ -187,26 +205,27 @@ function createConfigStore() {
 		save() {
 			if (!browser) return;
 
-			update((current) => {
-				const toSave = { ...current };
-				delete (toSave as Partial<Config>).isEditing;
+			// Read current value without triggering a store set/notify cycle.
+			// Previously this used update() which called set() with the same
+			// reference, causing a spurious store notification that could
+			// interfere with pending reactive updates (e.g. stop reordering).
+			const current = get({ subscribe });
+			const toSave = { ...current };
+			delete (toSave as Partial<Config>).isEditing;
 
+			try {
+				// Use cookies for better kiosk mode persistence
+				setCookie('config', JSON.stringify(toSave));
+			} catch (e) {
+				console.error('Error saving config to cookies:', e);
+				// Fall back to localStorage
 				try {
-					// Use cookies for better kiosk mode persistence
-					setCookie('config', JSON.stringify(toSave));
-				} catch (e) {
-					console.error('Error saving config to cookies:', e);
-					// Fall back to localStorage
-					try {
-						localStorage.setItem('config', JSON.stringify(toSave));
-						console.log('Saved to localStorage as fallback');
-					} catch (localStorageError) {
-						console.error('Both cookie and localStorage save failed:', localStorageError);
-					}
+					localStorage.setItem('config', JSON.stringify(toSave));
+					console.log('Saved to localStorage as fallback');
+				} catch (localStorageError) {
+					console.error('Both cookie and localStorage save failed:', localStorageError);
 				}
-
-				return current;
-			});
+			}
 		},
 
 		get latLngStr() {

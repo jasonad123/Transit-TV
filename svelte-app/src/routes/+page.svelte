@@ -6,9 +6,16 @@
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
 	import RouteItem from '$lib/components/RouteItem.svelte';
+	import ListView from '$lib/components/ListView.svelte';
+	import VerticalView from '$lib/components/VerticalView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
 	import type { Route } from '$lib/services/nearby';
+	import {
+		isHighPriorityMode,
+		haversineDistance,
+		PRIORITY_MODE_ELEVATION_METERS
+	} from '$lib/utils/sortingUtils';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
@@ -41,7 +48,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.4.1'); // Fallback version
+	let appVersion = $state<string>('1.5.0'); // Fallback version
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
@@ -102,6 +109,14 @@
 
 	let displayRoutes = $derived.by(() => {
 		const result: (Route & { _splitIndex?: number; _totalSplits?: number })[] = [];
+
+		// Vertical and board modes: no splitting, pass all routes through directly
+		if ($config.viewMode === 'vertical' || $config.viewMode === 'board') {
+			return routes.filter((r) => (r.itineraries || []).length > 0) as (Route & {
+				_splitIndex?: number;
+				_totalSplits?: number;
+			})[];
+		}
 
 		for (const route of routes) {
 			const itineraries = route.itineraries || [];
@@ -173,19 +188,22 @@
 
 	// Helper to create content signature for detecting meaningful changes
 	function getContentSignature(routes: Route[]): string {
-		return routes
-			.map((r) => {
-				const itineraryTextLen =
-					r.itineraries
-						?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
-						.reduce((a, b) => a + b, 0) || 0;
-				const alertTextLen =
-					r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
-				const splitCount = (r as any)._totalSplits || 1;
+		return (
+			`${$config.viewMode}:` +
+			routes
+				.map((r) => {
+					const itineraryTextLen =
+						r.itineraries
+							?.map((i) => (i.merged_headsign?.length || 0) + (i.direction_headsign?.length || 0))
+							.reduce((a, b) => a + b, 0) || 0;
+					const alertTextLen =
+						r.alerts?.map((a) => a.description?.length || 0).reduce((a, b) => a + b, 0) || 0;
+					const splitCount = (r as any)._totalSplits || 1;
 
-				return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
-			})
-			.join('|');
+					return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
+				})
+				.join('|')
+		);
 	}
 
 	// Adaptive polling configuration
@@ -210,7 +228,7 @@
 		const newInterval = Math.min(currentPollingInterval * BACKOFF_MULTIPLIER, MAX_POLLING_INTERVAL);
 		if (newInterval !== currentPollingInterval) {
 			currentPollingInterval = newInterval;
-			console.log(`Increasing polling interval to ${currentPollingInterval}ms due to errors`);
+			// Polling interval increased due to errors
 			resetPollingInterval();
 		}
 	}
@@ -219,7 +237,7 @@
 		consecutiveErrors = 0;
 		if (currentPollingInterval !== MIN_POLLING_INTERVAL) {
 			currentPollingInterval = MIN_POLLING_INTERVAL;
-			console.log(`Resetting polling interval to ${currentPollingInterval}ms`);
+			// Polling interval reset to normal
 			resetPollingInterval();
 		}
 	}
@@ -260,15 +278,48 @@
 			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, currentConfig.maxDistance);
 			allRoutes = fetchedRoutes;
 
+			const hiddenStops = currentConfig.hiddenStops || [];
+			const hiddenAgencies = currentConfig.hiddenAgencies || [];
 			routes = fetchedRoutes
 				.filter((r) => !currentConfig.hiddenRoutes.includes(r.global_route_id))
+				.filter((r) => !hiddenAgencies.includes(r.route_network_name ?? ''))
+				.map((r) => {
+					if (hiddenStops.length === 0 || !r.itineraries) return r;
+					const filtered = r.itineraries.filter((it: any) => {
+						const stopId =
+							it.closest_stop?.parent_station_global_stop_id ||
+							it.closest_stop?.global_stop_id ||
+							'unknown';
+						return !hiddenStops.includes(stopId);
+					});
+					return { ...r, itineraries: filtered };
+				})
+				.filter((r) => !r.itineraries || r.itineraries.length > 0)
 				.sort((a, b) => {
-					const aIndex = currentConfig.routeOrder.indexOf(a.global_route_id);
-					const bIndex = currentConfig.routeOrder.indexOf(b.global_route_id);
-					if (aIndex === -1 && bIndex === -1) return 0;
-					if (aIndex === -1) return 1;
-					if (bIndex === -1) return -1;
-					return aIndex - bIndex;
+					const aIdx = currentConfig.routeOrder.indexOf(a.global_route_id);
+					const bIdx = currentConfig.routeOrder.indexOf(b.global_route_id);
+					if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+					if (aIdx !== -1) return -1;
+					if (bIdx !== -1) return 1;
+					const { latitude: uLat, longitude: uLon } = currentConfig.latLng;
+					const getRouteDist = (route: Route) => {
+						if (!route.itineraries) return Infinity;
+						return Math.min(
+							...route.itineraries.map((it) => {
+								const s = it.closest_stop;
+								return s?.stop_lat != null && s?.stop_lon != null
+									? haversineDistance(uLat, uLon, s.stop_lat, s.stop_lon)
+									: Infinity;
+							})
+						);
+					};
+					const aDist = getRouteDist(a);
+					const bDist = getRouteDist(b);
+					const aHigh = isHighPriorityMode(a.mode_name) && aDist <= PRIORITY_MODE_ELEVATION_METERS;
+					const bHigh = isHighPriorityMode(b.mode_name) && bDist <= PRIORITY_MODE_ELEVATION_METERS;
+					if (aHigh !== bHigh) return aHigh ? -1 : 1;
+					if (aDist !== bDist) return aDist - bDist;
+					return a.global_route_id.localeCompare(b.global_route_id);
 				});
 
 			loading = false;
@@ -402,6 +453,57 @@
 		config.save();
 	}
 
+	function getCurrentStopOrder(routes: Route[]): string[] {
+		const stopIds = new Set<string>();
+		for (const route of routes) {
+			if (!route.itineraries) continue;
+			for (const itinerary of route.itineraries) {
+				const stopId =
+					itinerary.closest_stop?.parent_station_global_stop_id ||
+					itinerary.closest_stop?.global_stop_id ||
+					'unknown';
+				stopIds.add(stopId);
+			}
+		}
+
+		const saved = $config.stopOrder || [];
+		const ordered: string[] = [];
+		for (const id of saved) {
+			if (stopIds.has(id)) {
+				ordered.push(id);
+				stopIds.delete(id);
+			}
+		}
+		for (const id of stopIds) {
+			ordered.push(id);
+		}
+		return ordered;
+	}
+
+	function moveStop(stopId: string, direction: 'up' | 'down') {
+		const order = getCurrentStopOrder(routes);
+		const index = order.indexOf(stopId);
+		if (index === -1) return;
+
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= order.length) return;
+
+		[order[index], order[targetIndex]] = [order[targetIndex], order[index]];
+		config.update((c) => ({ ...c, stopOrder: order }));
+		config.save();
+	}
+
+	function moveStopToTop(stopId: string) {
+		const order = getCurrentStopOrder(routes);
+		const index = order.indexOf(stopId);
+		if (index <= 0) return;
+
+		order.splice(index, 1);
+		order.unshift(stopId);
+		config.update((c) => ({ ...c, stopOrder: order }));
+		config.save();
+	}
+
 	async function toggleRouteHidden(routeId: string) {
 		const wasHidden = $config.hiddenRoutes.includes(routeId);
 
@@ -422,6 +524,34 @@
 			// If hiding, just filter the current routes
 			routes = routes.filter((r) => r.global_route_id !== routeId);
 		}
+	}
+
+	async function toggleStopHidden(stopId: string) {
+		const wasHidden = $config.hiddenStops.includes(stopId);
+
+		config.update((c) => {
+			return {
+				...c,
+				hiddenStops: wasHidden
+					? c.hiddenStops.filter((id) => id !== stopId)
+					: [...c.hiddenStops, stopId]
+			};
+		});
+		config.save();
+
+		await loadNearby();
+	}
+
+	async function toggleAgencyHidden(networkName: string) {
+		const wasHidden = ($config.hiddenAgencies || []).includes(networkName);
+		config.update((c) => ({
+			...c,
+			hiddenAgencies: wasHidden
+				? (c.hiddenAgencies || []).filter((n) => n !== networkName)
+				: [...(c.hiddenAgencies || []), networkName]
+		}));
+		config.save();
+		await loadNearby();
 	}
 
 	function calculateContentScale(forceRecalc = false, fastPath = false) {
@@ -466,6 +596,7 @@
 					clone.style.top = '-9999px';
 					clone.style.left = '-9999px';
 					clone.style.fontSize = '100%';
+				clone.style.setProperty('--effective-scale', '1');
 					clone.style.visibility = 'hidden';
 
 					// Copy the computed grid layout to ensure clone measures correctly
@@ -552,10 +683,10 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.4.1';
+				appVersion = healthData.version || '1.5.0';
 			}
 		} catch (err) {
-			console.log('Could not fetch version, using fallback');
+			// Version fetch failed, using fallback
 		}
 
 		// Only load routes if screen is wide enough
@@ -593,9 +724,13 @@
 		}
 	});
 
-	// Enforce auto columns when auto-scale is enabled
+	// Enforce auto columns when auto-scale is enabled (not applicable in vertical mode)
 	$effect(() => {
-		if ($config.scaleMode === 'auto' && ($config.columns !== 'auto' || $config.manualColumnsMode)) {
+		if (
+			$config.scaleMode === 'auto' &&
+			$config.viewMode !== 'vertical' &&
+			($config.columns !== 'auto' || $config.manualColumnsMode)
+		) {
 			config.update((c) => ({
 				...c,
 				columns: 'auto',
@@ -896,6 +1031,8 @@
 		{useCurrentLocation}
 		{handleLocationInputBlur}
 		{toggleRouteHidden}
+		{toggleStopHidden}
+		{toggleAgencyHidden}
 		onsave={handleConfigSave}
 	/>
 
@@ -916,6 +1053,42 @@
 			<div class="loading">{$_('routes.loading')}</div>
 		{:else if routes.length === 0}
 			<div class="no-routes">{$_('routes.noRoutes')}</div>
+		{:else if $config.viewMode === 'vertical'}
+			<section
+				id="routes"
+				bind:this={routesElement}
+				class="cols-1 vertical-mode"
+				style:--effective-scale={effectiveScale}
+			>
+				<VerticalView
+					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
+					showLongName={$config.showRouteLongName}
+					showQRCode={$config.showQRCode && !$config.isEditing}
+					onMoveStop={moveStop}
+					onMoveStopToTop={moveStopToTop}
+					onHideRoute={toggleRouteHidden}
+					onHideStop={toggleStopHidden}
+				/>
+			</section>
+		{:else if $config.viewMode === 'board'}
+			<section
+				id="routes"
+				bind:this={routesElement}
+				class="board-mode"
+				style:--effective-scale={effectiveScale}
+			>
+				<ListView
+					routes={displayRoutes}
+					stopOrder={$config.stopOrder || []}
+					showLongName={$config.showRouteLongName}
+					showQRCode={$config.showQRCode && !$config.isEditing}
+					onMoveStop={moveStop}
+					onMoveStopToTop={moveStopToTop}
+					onHideRoute={toggleRouteHidden}
+					onHideStop={toggleStopHidden}
+				/>
+			</section>
 		{:else}
 			<section
 				id="routes"
@@ -991,7 +1164,7 @@
 		{/if}
 	</div>
 
-	{#if $config.showQRCode && !$config.isEditing}
+	{#if $config.showQRCode && !$config.isEditing && $config.viewMode !== 'board' && $config.viewMode !== 'vertical'}
 		<div class="floating-qr">
 			<p class="qr-label">
 				<span class="qr-label-1">{$_('config.qrCode.scanPrompt')}<br /></span>
@@ -1026,6 +1199,29 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: 0;
+	}
+
+	#routes.vertical-mode {
+		display: flex;
+		flex-direction: column;
+		overflow-y: hidden;
+		grid-template-columns: none;
+	}
+
+	#routes.vertical-mode > :global(*) {
+		width: 100%;
+	}
+
+	#routes.board-mode {
+		display: flex;
+		flex-direction: column;
+		overflow-y: hidden;
+		grid-template-columns: none;
+	}
+
+	#routes.board-mode > :global(*) {
+		width: 100%;
+		height: 100%;
 	}
 
 	#routes {

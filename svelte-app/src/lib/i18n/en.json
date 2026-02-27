@@ -24,7 +24,6 @@
 			"groupItinerariesByStop": "Group destinations with shared stop names",
 			"filterRedundantTerminus": "Hide nearby terminus",
 			"showRouteLongName": "Show line colours and names",
-			"minimalAlerts": "Show minimal alerts",
 			"scaleMode": "Content scaling",
 			"autoScaleMinimum": "Minimum auto-scale",
 			"manualScale": "Fixed scale"
@@ -45,7 +44,8 @@
 			"manualColumnControl": "Manual column control",
 			"automaticColumnControl": "Using automatic column layout",
 			"word": "{count, plural, one {1 column} other {{count} columns}}",
-			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)"
+			"columnWarning": "Columns may be too narrow at this screen width ({nomColWidth}px per column)",
+			"disabledInVerticalMode": "Column controls are not used in Vertical mode"
 		},
 		"theme": {
 			"light": "Light",
@@ -61,6 +61,14 @@
 			"title": "Hidden routes",
 			"helpText": "Click to unhide routes"
 		},
+		"hiddenStops": {
+			"title": "Hidden stops",
+			"helpText": "Click to unhide stops"
+		},
+		"hiddenAgencies": {
+			"title": "Agencies",
+			"helpText": "Click to show or hide an agency"
+		},
 		"qrCode": {
 			"title": "QR Code",
 			"helpText": "Show a QR code that loads this location in Transit",
@@ -68,14 +76,18 @@
 			"scanPrompt2": "Scan the code to open in Transit"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card",
+			"groupItinerarieshelpText": "Combine destinations with the same stop name into a single card (Enabled by default in Board and Vertical modes.)",
+			"groupAlwaysOnInBoardMode": "Stop grouping is always enabled in Board mode",
+			"groupAlwaysOnInVerticalMode": "Stop grouping is always enabled in Vertical mode",
 			"filterTerminushelpText": "At terminal stations, only show the opposite or outbound directions"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name."
-		},
-		"alerts": {
-			"minimalAlertsHelpText": "Hide full alert text and show the header with an alert count"
+			"showRouteLongNameHelpText": "Use written names for any lines that only use an icon as their display name.",
+			"viewMode": "View mode",
+			"card": "Card",
+			"board": "Board",
+			"vertical": "Vertical",
+			"viewModeHelpText": "Select between Card mode (default, route-centric landscape view), Board mode (stop-grouped landscape board for closer viewing), or Vertical mode (portrait departure board grouped by stop)."
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -132,7 +144,11 @@
 			"moveToTop": "Move to top",
 			"moveUp": "Move up",
 			"moveDown": "Move down",
-			"hide": "Hide route"
+			"hide": "Hide route",
+			"moveStopToTop": "Move stop to top",
+			"moveStopUp": "Move stop up",
+			"moveStopDown": "Move stop down",
+			"hideStop": "Hide stop"
 		}
 	},
 	"aria": {
@@ -142,11 +158,21 @@
 		"moveRouteToTop": "Move route to top",
 		"moveRouteUp": "Move route up",
 		"moveRouteDown": "Move route down",
-		"hideRoute": "Hide route"
+		"hideRoute": "Hide route",
+		"hideStop": "Hide stop"
+	},
+	"stops": {
+		"distance": {
+			"away": "{distance} away"
+		}
 	},
 	"alerts": {
 		"default": "Service alert",
-		"title": "Alerts"
+		"title": "Alerts",
+		"none": "No active alerts"
+	},
+	"departures": {
+		"last": "last"
 	},
 	"time": {
 		"min": "min",

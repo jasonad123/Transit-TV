@@ -24,7 +24,6 @@
 			"groupItinerariesByStop": "Gruppierungsziele mit gemeinsamen Haltestellennamen",
 			"filterRedundantTerminus": "Nahegelegenen Endpunkt ausblenden",
 			"showRouteLongName": "Linienfarben und -namen anzeigen",
-			"minimalAlerts": "Minimale Benachrichtigungen anzeigen",
 			"scaleMode": "Inhaltsskalierung",
 			"autoScaleMinimum": "Minimale automatische Skalierung",
 			"manualScale": "Feste Skalierung"
@@ -45,7 +44,8 @@
 			"manualColumnControl": "Manuelle Spaltensteuerung",
 			"automaticColumnControl": "Verwendung automatische Spaltensteuerung",
 			"word": "{count, plural, one {1 Spalte} other {{count} Spalten}}",
-			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)"
+			"columnWarning": "Die Spalten sind bei dieser Bildschirmbreite möglicherweise zu schmal. ({nomColWidth}px pro Spalte)",
+			"disabledInVerticalMode": "Spaltensteuerung wird im Vertikalmodus nicht verwendet"
 		},
 		"theme": {
 			"light": "Hell",
@@ -61,6 +61,14 @@
 			"title": "Versteckte Routen",
 			"helpText": "Zum Einblenden klicken"
 		},
+		"hiddenStops": {
+			"title": "Ausgeblendete Haltestellen",
+			"helpText": "Klicken zum Einblenden"
+		},
+		"hiddenAgencies": {
+			"title": "Betreiber",
+			"helpText": "Klicken, um einen Betreiber ein- oder auszublenden"
+		},
 		"qrCode": {
 			"title": "QR-Code",
 			"helpText": "Zeigen Sie einen QR-Code an, der diesen Standort in Transit lädt.",
@@ -68,14 +76,18 @@
 			"scanPrompt2": "Scannen, um in der Transit-App zu öffnen"
 		},
 		"stopManagement": {
-			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte",
+			"groupItinerarieshelpText": "Kombinieren Sie Ziele mit demselben Haltestellennamen in einer einzigen Karte (Im Tafel- und Vertikalmodus standardmäßig aktiviert.)",
+			"groupAlwaysOnInBoardMode": "Haltestellengruppierung ist im Tafelmodus immer aktiviert",
+			"groupAlwaysOnInVerticalMode": "Haltestellengruppierung ist im Vertikalmodus immer aktiviert",
 			"filterTerminushelpText": "An Endstationen nur die gegenüberliegenden oder ausgehenden Richtungen anzeigen"
 		},
 		"routeDisplay": {
-			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden."
-		},
-		"alerts": {
-			"minimalAlertsHelpText": "Vollständigen Warntext ausblenden und nur die Überschrift mit der Anzahl der Warnungen anzeigen."
+			"showRouteLongNameHelpText": "Verwenden Sie schriftliche Namen für alle Zeilen, die nur ein Symbol als Anzeigename verwenden.",
+			"viewMode": "Anzeigemodus",
+			"card": "Karte",
+			"board": "Tafel",
+			"vertical": "Vertikal",
+			"viewModeHelpText": "Wählen Sie zwischen Kartenmodus (Standard, routenzentrierte Querformatansicht), Tafelmodus (nach Haltestelle gruppierte Querformat-Abfahrtstafel für Nahbetrachtung) oder Vertikalmodus (Hochformat-Abfahrtstafel nach Haltestelle gruppiert)."
 		},
 		"scaleMode": {
 			"auto": "Auto",
@@ -126,20 +138,35 @@
 			"moveToTop": "Nach oben verschieben",
 			"moveUp": "Aufsteigen",
 			"moveDown": "Absteigen",
-			"hide": "Verstecken routen"
+			"hide": "Verstecken routen",
+			"moveStopToTop": "Haltestelle nach oben",
+			"moveStopUp": "Haltestelle aufsteigen",
+			"moveStopDown": "Haltestelle absteigen",
+			"hideStop": "Haltestelle ausblenden"
 		}
 	},
 	"aria": {
 		"transitApp": "Transit App",
+		"customLogo": "Logo der Organisation",
 		"settings": "Einstellungen",
 		"moveRouteToTop": "Nach oben verschieben",
 		"moveRouteUp": "Aufsteigen",
 		"moveRouteDown": "Absteigen",
-		"hideRoute": "Verstecken routen"
+		"hideRoute": "Verstecken routen",
+		"hideStop": "Haltestelle ausblenden"
+	},
+	"stops": {
+		"distance": {
+			"away": "{distance} entfernt"
+		}
 	},
 	"alerts": {
 		"default": "Störungsinformation",
-		"title": "Störungen"
+		"title": "Störungen",
+		"none": "Keine aktiven Störungen"
+	},
+	"departures": {
+		"last": "letzt"
 	},
 	"time": {
 		"min": "min",
