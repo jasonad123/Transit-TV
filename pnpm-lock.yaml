@@ -5,9 +5,11 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  minimatch@>=10.0.0 <10.2.3: '>=10.2.3'
   minimatch@>=5.0.0 <5.1.7: '>=5.1.7'
   qs@>=6.7.0 <=6.14.1: '>=6.14.2'
   svelte@<=5.51.4: '>=5.51.5'
+  svelte@<=5.53.4: '>=5.53.5'
   svelte@>=5.39.3 <5.51.5: '>=5.51.5'
   svelte@>=5.46.0 <=5.46.3: '>=5.46.4'
 
@@ -47,8 +49,8 @@ importers:
         specifier: ^1.58.1
         version: 1.58.2
       '@types/node':
-        specifier: ^24.10.10
-        version: 24.10.13
+        specifier: ^24.11.0
+        version: 24.11.0
       pino-pretty:
         specifier: ^13.1.3
         version: 13.1.3
@@ -93,8 +95,8 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
-  '@types/node@24.10.13':
-    resolution: {integrity: sha512-oH72nZRfDv9lADUBSo104Aq7gPHpQZc4BTx38r9xf9pg5LfP6EzSyH2n7qFmmxRQXh7YlUXODcYsg6PuTDSxGg==}
+  '@types/node@24.11.0':
+    resolution: {integrity: sha512-fPxQqz4VTgPI/IQ+lj9r0h+fDR66bzoeMGHp8ASee+32OSGIkeASsoZuJixsQoVef1QJbeubcPBxKk22QVoWdw==}
 
   accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
@@ -650,7 +652,7 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-  '@types/node@24.10.13':
+  '@types/node@24.11.0':
     dependencies:
       undici-types: 7.16.0
 
