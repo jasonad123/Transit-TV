@@ -9,7 +9,7 @@ exports.show = async function (req, res) {
 
 	var imageName = req.params.id,
 		primaryColor = req.query.primaryColor || '010101',
-		secondaryColor = req.query.secondaryColor || 'EFEFEF';
+		secondaryColor = req.query.secondaryColor || 'FEFEFE';
 
 	// Validate imageName to prevent SSRF and path traversal
 	// Only allow alphanumeric, underscore, hyphen, must start with a letter/number, no path traversal, max length 68.
@@ -60,7 +60,7 @@ exports.show = async function (req, res) {
 		try {
 			data = data
 				.replace(new RegExp(`#010101`, 'gi'), `#${primaryColor}`)
-				.replace(new RegExp(`#EFEFEF`, 'gi'), `#${secondaryColor}`);
+				.replace(new RegExp(`#FEFEFE`, 'gi'), `#${secondaryColor}`);
 		} catch (err) {
 			req.log.error({ err: err, imageName: imageName }, 'Error processing image data');
 			return handleError(req, res, 'Failed to process image data');
