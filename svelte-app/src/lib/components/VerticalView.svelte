@@ -212,8 +212,7 @@
 			return Infinity;
 		};
 
-		const sorted = Array.from(mergedGroups.values())
-			.filter((g) => g.rows.length > 0);
+		const sorted = Array.from(mergedGroups.values()).filter((g) => g.rows.length > 0);
 
 		// Pre-compute distances for sorting and display
 		for (const group of sorted) {
@@ -221,21 +220,21 @@
 		}
 
 		return sorted.sort((a, b) => {
-				const aIdx = stopOrder.indexOf(a.stopId);
-				const bIdx = stopOrder.indexOf(b.stopId);
-				if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-				if (aIdx !== -1) return -1;
-				if (bIdx !== -1) return 1;
-				const aHigh =
-					a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
-					a.distance <= PRIORITY_MODE_ELEVATION_METERS;
-				const bHigh =
-					b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
-					b.distance <= PRIORITY_MODE_ELEVATION_METERS;
-				if (aHigh !== bHigh) return aHigh ? -1 : 1;
-				if (a.distance !== b.distance) return a.distance - b.distance;
-				return a.stopId.localeCompare(b.stopId);
-			});
+			const aIdx = stopOrder.indexOf(a.stopId);
+			const bIdx = stopOrder.indexOf(b.stopId);
+			if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+			if (aIdx !== -1) return -1;
+			if (bIdx !== -1) return 1;
+			const aHigh =
+				a.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+				a.distance <= PRIORITY_MODE_ELEVATION_METERS;
+			const bHigh =
+				b.rows.some((r) => isHighPriorityMode(r.route.mode_name)) &&
+				b.distance <= PRIORITY_MODE_ELEVATION_METERS;
+			if (aHigh !== bHigh) return aHigh ? -1 : 1;
+			if (a.distance !== b.distance) return a.distance - b.distance;
+			return a.stopId.localeCompare(b.stopId);
+		});
 	});
 
 	// Consolidated alerts from all routes, deduplicated, with route attribution
@@ -309,7 +308,11 @@
 				<div class="stop-header">
 					<span class="stop-name">{group.stopName}</span>
 					{#if isFinite(group.distance)}
-						<span class="stop-distance">{$_('stops.distance.away', { values: { distance: formatDistance(group.distance) } })}</span>
+						<span class="stop-distance"
+							>{$_('stops.distance.away', {
+								values: { distance: formatDistance(group.distance) }
+							})}</span
+						>
 					{/if}
 					{#if onMoveStop || onMoveStopToTop || onHideStop}
 						<div class="stop-controls">
@@ -368,11 +371,13 @@
 							<RouteIcon route={row.route} {showLongName} compact={true} />
 						</div>
 						<div class="row-destination">
-							{#if row.itinerary.branch_code}<span class="branch-code-badge">{row.itinerary.branch_code}</span>{/if}<span
+							{#if row.itinerary.branch_code}<span class="branch-code-badge"
+									>{row.itinerary.branch_code}</span
+								>{/if}<span
 								class="destination-text"
 								class:scrolling={overflowingDestinations.has(destKey)}
-								use:bindDestinationElement={destKey}
-							>{row.itinerary.merged_headsign}</span>
+								use:bindDestinationElement={destKey}>{row.itinerary.merged_headsign}</span
+							>
 						</div>
 						<div class="row-times">
 							{#if row.alertSeverity !== 'none'}

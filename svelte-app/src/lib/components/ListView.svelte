@@ -354,7 +354,13 @@
 							<RouteIcon route={row.route} {showLongName} compact={true} />
 						</div>
 						<div class="row-destination">
-							{#if row.itinerary.branch_code}<span class="branch-code-badge">{row.itinerary.branch_code}</span>{/if}<span class="destination-text" class:scrolling={overflowingDestinations.has(destKey)} use:bindDestinationElement={destKey}>{row.itinerary.merged_headsign}</span>
+							{#if row.itinerary.branch_code}<span class="branch-code-badge"
+									>{row.itinerary.branch_code}</span
+								>{/if}<span
+								class="destination-text"
+								class:scrolling={overflowingDestinations.has(destKey)}
+								use:bindDestinationElement={destKey}>{row.itinerary.merged_headsign}</span
+							>
 						</div>
 						<div class="row-times">
 							{#if row.alertSeverity !== 'none'}

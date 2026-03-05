@@ -48,7 +48,7 @@
 	let validationSuccess = $state<boolean | null>(null);
 
 	// App version state
-	let appVersion = $state<string>('1.5.0'); // Fallback version
+	let appVersion = $state<string>('1.5.1'); // Fallback version
 
 	// Auto-scale state
 	let contentScale = $state(1.0);
@@ -596,7 +596,7 @@
 					clone.style.top = '-9999px';
 					clone.style.left = '-9999px';
 					clone.style.fontSize = '100%';
-				clone.style.setProperty('--effective-scale', '1');
+					clone.style.setProperty('--effective-scale', '1');
 					clone.style.visibility = 'hidden';
 
 					// Copy the computed grid layout to ensure clone measures correctly
@@ -683,7 +683,7 @@
 			const healthResponse = await fetch(`${apiBase}/health`);
 			if (healthResponse.ok) {
 				const healthData = await healthResponse.json();
-				appVersion = healthData.version || '1.5.0';
+				appVersion = healthData.version || '1.5.1';
 			}
 		} catch (err) {
 			// Version fetch failed, using fallback
