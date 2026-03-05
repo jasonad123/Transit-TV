@@ -5,17 +5,31 @@
 	import { browser } from '$app/environment';
 	import { config } from '$lib/stores/config';
 	import { findNearbyRoutes } from '$lib/services/nearby';
+	import {
+		fetchPlacemarks,
+		groupByNetwork,
+		type NetworkStationGroup,
+		type NetworkFloatingGroup
+	} from '$lib/services/placemarks';
+	import MicromobilityCard from '$lib/components/MicromobilityCard.svelte';
+	import {
+		crowdingStore,
+		refreshCrowding,
+		startCrowdingPolling,
+		updateCrowdingRoutes,
+		stopCrowdingPolling
+	} from '$lib/services/crowding';
 	import RouteItem from '$lib/components/RouteItem.svelte';
 	import ListView from '$lib/components/ListView.svelte';
 	import VerticalView from '$lib/components/VerticalView.svelte';
 	import QRCode from '$lib/components/QRCode.svelte';
 	import ConfigModal from '$lib/components/ConfigModal.svelte';
-	import type { Route } from '$lib/services/nearby';
 	import {
 		isHighPriorityMode,
 		haversineDistance,
 		PRIORITY_MODE_ELEVATION_METERS
 	} from '$lib/utils/sortingUtils';
+	import type { Route, CrowdingMap } from '$lib/services/nearby';
 	import 'iconify-icon';
 	let routes = $state<Route[]>([]);
 	let allRoutes = $state<Route[]>([]);
@@ -28,6 +42,10 @@
 	let errorMessage = $state<string | null>(null);
 	let retryCountdown = $state<number | null>(null);
 	let errorType = $state<'rate-limit' | 'auth' | 'timeout' | 'backend' | 'generic' | null>(null);
+
+	// Micromobility state
+	let stationGroups = $state<NetworkStationGroup[]>([]);
+	let floatingGroups = $state<NetworkFloatingGroup[]>([]);
 
 	// Screen width check
 	let windowWidth = $state(0);
@@ -202,7 +220,8 @@
 
 					return `${r.global_route_id}:${r.itineraries?.length || 0}:${r.alerts?.length || 0}:${itineraryTextLen}:${alertTextLen}:${splitCount}`;
 				})
-				.join('|')
+				.join('|') +
+			`-${stationGroups.length}s${floatingGroups.length}f`
 		);
 	}
 
@@ -275,8 +294,35 @@
 			const currentConfig = $config;
 			if (!currentConfig.latLng) return;
 
-			const fetchedRoutes = await findNearbyRoutes(currentConfig.latLng, currentConfig.maxDistance);
+			const promises: [
+				Promise<Route[]>,
+				Promise<import('$lib/services/placemarks').Placemark[]> | null
+			] = [
+				findNearbyRoutes(currentConfig.latLng, currentConfig.maxDistance),
+				currentConfig.showMicromobility
+					? fetchPlacemarks(currentConfig.latLng.latitude, currentConfig.latLng.longitude, currentConfig.maxDistance)
+					: null
+			];
+
+			const [routeResult, placemarksResult] = await Promise.allSettled(
+				promises.filter((p): p is NonNullable<typeof p> => p !== null)
+			);
+
+			if (routeResult.status === 'rejected') {
+				throw routeResult.reason;
+			}
+			const fetchedRoutes = routeResult.value as Route[];
 			allRoutes = fetchedRoutes;
+
+			// Process placemarks (fails silently)
+			if (currentConfig.showMicromobility && placemarksResult && placemarksResult.status === 'fulfilled') {
+				const grouped = groupByNetwork(placemarksResult.value as import('$lib/services/placemarks').Placemark[]);
+				stationGroups = grouped.stationGroups;
+				floatingGroups = grouped.floatingGroups;
+			} else if (!currentConfig.showMicromobility) {
+				stationGroups = [];
+				floatingGroups = [];
+			}
 
 			const hiddenStops = currentConfig.hiddenStops || [];
 			const hiddenAgencies = currentConfig.hiddenAgencies || [];
@@ -694,6 +740,12 @@
 			await loadNearby();
 			// Use adaptive polling interval (starts at 20s)
 			intervalId = setInterval(loadNearby, currentPollingInterval);
+
+			// Start crowding polling if enabled
+			if ($config.showCrowding && routes.length > 0) {
+				refreshCrowding(routes);
+				startCrowdingPolling(routes);
+			}
 		}
 
 		// Update clock every second
@@ -721,6 +773,28 @@
 				loadNearby();
 				intervalId = setInterval(loadNearby, currentPollingInterval);
 			}
+		}
+	});
+
+	// Start/stop crowding polling when toggle or editing state changes
+	$effect(() => {
+		const enabled = $config.showCrowding;
+		const editing = $config.isEditing;
+
+		if (enabled && !editing) {
+			startCrowdingPolling(untrack(() => routes));
+		} else {
+			stopCrowdingPolling();
+			if (!enabled) {
+				crowdingStore.set(new Map());
+			}
+		}
+	});
+
+	// Pass fresh route data to crowding service without restarting the poll
+	$effect(() => {
+		if (routes.length > 0 && $config.showCrowding) {
+			updateCrowdingRoutes(routes);
 		}
 	});
 
@@ -822,6 +896,7 @@
 	});
 
 	onDestroy(() => {
+		stopCrowdingPolling();
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
@@ -1065,6 +1140,7 @@
 					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
+					crowdingMap={$config.showCrowding ? $crowdingStore : undefined}
 					onMoveStop={moveStop}
 					onMoveStopToTop={moveStopToTop}
 					onHideRoute={toggleRouteHidden}
@@ -1083,6 +1159,8 @@
 					stopOrder={$config.stopOrder || []}
 					showLongName={$config.showRouteLongName}
 					showQRCode={$config.showQRCode && !$config.isEditing}
+					stationGroups={$config.showMicromobility ? stationGroups : []}
+					floatingGroups={$config.showMicromobility ? floatingGroups : []}
 					onMoveStop={moveStop}
 					onMoveStopToTop={moveStopToTop}
 					onHideRoute={toggleRouteHidden}
@@ -1108,7 +1186,7 @@
 			>
 				{#each displayRoutes as route, index (`${route.global_route_id}-${route._splitIndex ?? 0}`)}
 					<div class="route-wrapper" transition:fade={{ duration: 300 }}>
-						<RouteItem {route} showLongName={$config.showRouteLongName} />
+						<RouteItem {route} showLongName={$config.showRouteLongName} crowdingMap={$config.showCrowding ? $crowdingStore : undefined} />
 						{#if route._splitIndex !== undefined && route._totalSplits !== undefined}
 							<div class="route-split-badge">
 								{route._splitIndex + 1}/{route._totalSplits}
@@ -1160,6 +1238,18 @@
 						</div>
 					</div>
 				{/each}
+				{#if $config.showMicromobility}
+					{#each stationGroups as group (group.networkId)}
+						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+							<MicromobilityCard item={group} />
+						</div>
+					{/each}
+					{#each floatingGroups as group (group.networkId)}
+						<div class="route-wrapper" transition:fade={{ duration: 300 }}>
+							<MicromobilityCard item={group} />
+						</div>
+					{/each}
+				{/if}
 			</section>
 		{/if}
 	</div>

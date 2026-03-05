@@ -10,7 +10,9 @@ module.exports = function (app) {
 	// Insert routes below
 	app.use('/api/images', require('./api/image'));
 	app.use('/api/routes', require('./api/routes'));
+	app.use('/api/vehicles', require('./api/vehicles'));
 	app.use('/api/config', require('./api/config'));
+	app.use('/api/placemarks', require('./api/placemarks'));
 
 	// Health check endpoint for monitoring and orchestration
 	// Always allow CORS for health endpoint to support dev mode version fetching

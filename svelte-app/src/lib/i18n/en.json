@@ -89,6 +89,10 @@
 			"vertical": "Vertical",
 			"viewModeHelpText": "Select between Card mode (default, route-centric landscape view), Board mode (stop-grouped landscape board for closer viewing), or Vertical mode (portrait departure board grouped by stop)."
 		},
+		"crowding": {
+			"showCrowding": "Show crowding indicators",
+			"showCrowdingHelpText": "Display occupancy icons on real-time departures (if provided by your transit agency)"
+		},
 		"scaleMode": {
 			"auto": "Auto",
 			"manual": "Manual",
@@ -159,7 +163,12 @@
 		"moveRouteUp": "Move route up",
 		"moveRouteDown": "Move route down",
 		"hideRoute": "Hide route",
-		"hideStop": "Hide stop"
+		"hideStop": "Hide stop",
+		"crowding": {
+			"notCrowded": "Not crowded",
+			"someCrowding": "Some crowding",
+			"crowded": "Crowded"
+		}
 	},
 	"stops": {
 		"distance": {
@@ -183,6 +192,11 @@
 		"message": "This application is designed for large displays such as monitors and televisions. To view transit departures on your phone, please download the Transit app.",
 		"minimumWidth": "Minimum width: 640 pixels",
 		"developerMessage": "Developers: use toggleWidthCheck() in the console to disable this message"
+	},
+	"micromobility": {
+		"stations": "{count, plural, one {1 station} other {{count} stations}}",
+		"nearby": "nearby",
+		"show": "Show nearby bikes & scooters"
 	},
 	"errors": {
 		"rateLimit": "Checking for updates. Retrying in {seconds} seconds...",
