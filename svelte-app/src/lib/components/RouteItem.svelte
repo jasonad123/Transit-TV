@@ -529,7 +529,16 @@
 				hex = shouldInvertInDarkMode ? route.route_text_color : route.route_color;
 			}
 
-			return `/api/images/${iconName}.svg?primaryColor=${hex}`;
+			let secondaryHex: string;
+			if (iconOverride?.color) {
+				secondaryHex = route.route_text_color;
+			} else if (useLightMode) {
+				secondaryHex = route.route_text_color;
+			} else {
+				secondaryHex = shouldInvertInDarkMode ? route.route_color : route.route_text_color;
+			}
+
+			return `/api/images/${iconName}.svg?primaryColor=${hex}&secondaryColor=${secondaryHex}`;
 		}
 		return null;
 	}
