@@ -25,74 +25,6 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Transforms v4 API response to v3 format for frontend compatibility.
- * v4 wraps itineraries in merged_itineraries with additional nesting.
- * This function flattens it back to v3 structure while preserving stop information.
- * @param {Object} v4Response - The v4 API response
- * @returns {Object} - Transformed response in v3 format
- */
-function transformV4ToV3Format(v4Response) {
-	if (!v4Response || !v4Response.nearby_routes) {
-		return v4Response;
-	}
-
-	// Transform nearby_routes to routes format
-	const routes = v4Response.nearby_routes.map((route) => {
-		// Flatten merged_itineraries structure
-		const flattenedRoute = { ...route };
-		delete flattenedRoute.merged_itineraries;
-
-		// Combine all itineraries and schedule_items from merged_itineraries
-		// Preserve closest_stop from merged_itinerary on each itinerary
-		// Associate schedule_items with their itineraries using internal_itinerary_id
-		const allItineraries = [];
-		const allScheduleItems = [];
-		const scheduleItemsByItineraryId = {};
-
-		if (Array.isArray(route.merged_itineraries)) {
-			// First pass: collect all schedule items grouped by internal_itinerary_id
-			for (const merged of route.merged_itineraries) {
-				if (Array.isArray(merged.schedule_items)) {
-					for (const scheduleItem of merged.schedule_items) {
-						const itineraryId = scheduleItem.internal_itinerary_id;
-						if (!scheduleItemsByItineraryId[itineraryId]) {
-							scheduleItemsByItineraryId[itineraryId] = [];
-						}
-						// Remove internal_itinerary_id from schedule_item (v3 doesn't have it at item level)
-						const { internal_itinerary_id, ...scheduleItemWithoutId } = scheduleItem;
-						scheduleItemsByItineraryId[itineraryId].push(scheduleItemWithoutId);
-					}
-					allScheduleItems.push(...merged.schedule_items);
-				}
-			}
-
-			// Second pass: create itineraries with their associated schedule_items
-			for (const merged of route.merged_itineraries) {
-				if (Array.isArray(merged.itineraries)) {
-					// Add closest_stop from merged_itinerary to each itinerary
-					// Also add schedule_items that belong to this itinerary
-					const itinerariesWithData = merged.itineraries.map((itinerary) => ({
-						...itinerary,
-						closest_stop: merged.closest_stop,
-						schedule_items: scheduleItemsByItineraryId[itinerary.internal_itinerary_id] || []
-					}));
-					allItineraries.push(...itinerariesWithData);
-				}
-			}
-		}
-
-		// Return route in v3 format
-		return {
-			...flattenedRoute,
-			itineraries: allItineraries,
-			schedule_items: allScheduleItems
-		};
-	});
-
-	return { routes };
-}
-
-/**
  * Checks whether any route in the response has active alerts.
  * Used to assign a shorter cache TTL so new/resolved alerts are visible
  * within the next polling cycle instead of waiting up to 120s.
@@ -268,7 +200,7 @@ exports.nearby = async function (req, res) {
 	const fetchPromise = (async () => {
 		try {
 			const response = await fetch(
-				`https://external.transitapp.com/v4/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}&max_num_departures=6`,
+				`https://external.transitapp.com/v3/public/nearby_routes?lat=${lat}&lon=${lon}&max_distance=${distance}&max_num_departures=6`,
 				{
 					headers: {
 						Accept: 'application/json',
@@ -316,13 +248,10 @@ exports.nearby = async function (req, res) {
 				throw error;
 			}
 
-			const v4Data = await response.json();
-
-			// Transform v4 response to v3 format for frontend compatibility
-			const data = transformV4ToV3Format(v4Data);
+			const data = await response.json();
 
 			// Client-side filtering by distance
-			// Transit API v4 doesn't properly filter by max_distance, so we do it here
+			// Transit API doesn't properly filter by max_distance, so we do it here
 			if (data.routes && Array.isArray(data.routes)) {
 				data.routes = data.routes.filter((route) => {
 					// Keep route if ANY of its stops are within max_distance
