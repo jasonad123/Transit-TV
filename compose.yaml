@@ -1,7 +1,7 @@
 services:
   # Usage: docker compose up -d
   transit-tv:
-    image: ghcr.io/jasonad123/transit-tv:latest
+    image: ghcr.io/jasonad123/transit-tv:latest@sha256:fed354ce9cf542807a9c36a3a706ef78e30ba6108f90d445d4db7038f5769ce8
     container_name: transit-tv
     restart: unless-stopped
     ports:
