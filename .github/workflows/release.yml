@@ -19,7 +19,7 @@ jobs:
         id: check_prerelease
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"
-          if [[ "$TAG_NAME" =~ (alpha|beta|rc|RC) ]]; then
+          if [[ "$TAG_NAME" =~ (alpha|beta|rc|RC|backport) ]]; then
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
             echo "is_prerelease=false" >> $GITHUB_OUTPUT

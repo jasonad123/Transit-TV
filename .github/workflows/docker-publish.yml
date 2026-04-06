@@ -169,6 +169,10 @@ jobs:
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'alpha' }}
             type=raw,value=alpha,enable=${{ steps.version.outputs.release_type == 'alpha' }}
 
+            # For backport releases (v1.2.3-backport.1), tag with version and backport (no latest)
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'backport' }}
+            type=raw,value=backport,enable=${{ steps.version.outputs.release_type == 'backport' }}
+
             # For manual "latest" releases
             type=raw,value=latest,enable=${{ steps.version.outputs.release_type == 'latest' }}
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'latest' }}
@@ -242,6 +246,10 @@ jobs:
               echo "**Release Type:** Alpha Prerelease" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
+            "backport")
+              echo "**Release Type:** Backport Release (v3 API)" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
             "latest")
               echo "**Release Type:** Manual Latest Release" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
@@ -294,6 +302,13 @@ jobs:
               echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpha" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "# Specific alpha version" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "backport")
+              echo "# Latest backport release (v3 API)" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:backport" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "# Specific backport version" >> $GITHUB_STEP_SUMMARY
               echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
               ;;
             "latest")

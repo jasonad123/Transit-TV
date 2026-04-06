@@ -155,6 +155,10 @@ jobs:
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'rc' }}
             type=raw,value=rc,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'rc' }}
 
+            # Backport: tags '1.2.3-backport.1' and 'backport' (no latest)
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'backport' }}
+            type=raw,value=backport,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'backport' }}
+
             # Manual
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
           labels: |
@@ -218,6 +222,10 @@ jobs:
               ;;
             "rc")
               echo "**Release Type:** Release Candidate" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "backport")
+              echo "**Release Type:** Backport Release (v3 API)" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
             *)

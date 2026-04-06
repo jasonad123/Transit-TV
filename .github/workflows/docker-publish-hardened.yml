@@ -172,6 +172,10 @@ jobs:
             type=raw,value=${{ steps.version.outputs.version }}-hardened,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'alpha' }}
             type=raw,value=hardened-alpha,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'alpha' }}
 
+            # For backport releases (v1.2.3-backport.1), tag with version-hardened and hardened-backport (no hardened-latest)
+            type=raw,value=${{ steps.version.outputs.version }}-hardened,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'backport' }}
+            type=raw,value=hardened-backport,enable=${{ steps.version.outputs.is_tag == 'true' && steps.version.outputs.release_type == 'backport' }}
+
             # For manual hardened releases (stable, beta, test)
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
           labels: |
@@ -242,6 +246,10 @@ jobs:
               ;;
             "alpha")
               echo "**Release Type:** Alpha Prerelease (Semver Tag)" >> $GITHUB_STEP_SUMMARY
+              echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "backport")
+              echo "**Release Type:** Backport Release (v3 API)" >> $GITHUB_STEP_SUMMARY
               echo "**Version:** \`v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               ;;
             *)
