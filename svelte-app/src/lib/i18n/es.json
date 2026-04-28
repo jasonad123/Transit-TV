@@ -1,10 +1,10 @@
 {
 	"app": {
-		"title": "Transit TV",
+		"title": "Headsign",
 		"nearbyRoutes": "Líneas cercanas"
 	},
 	"config": {
-		"title": "Configurar Transit TV",
+		"title": "Configurar Headsign",
 		"sections": {
 			"display": "Configuración de pantalla",
 			"style": "Estilo",
@@ -182,7 +182,7 @@
 		"rateLimit": "Buscando actualizaciones. Reintentando en {seconds} segundos...",
 		"auth": "No se puede conectar al API de Transit.",
 		"timeout": "Buscando actualizaciones...",
-		"backend": "Transit TV está fuera de servicio. Reintentando...",
-		"generic": "Transit TV tuvo un problema. Reintentando..."
+		"backend": "Headsign está fuera de servicio. Reintentando...",
+		"generic": "Headsign tuvo un problema. Reintentando..."
 	}
 }

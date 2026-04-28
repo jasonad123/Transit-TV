@@ -970,7 +970,7 @@
 	<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
 	<link rel="shortcut icon" href="/assets/favicon.ico" />
 	<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
-	<meta name="apple-mobile-web-app-title" content="Transit TV" />
+	<meta name="apple-mobile-web-app-title" content="Headsign" />
 	<link rel="manifest" href="/assets/site.webmanifest" />
 </svelte:head>
 
