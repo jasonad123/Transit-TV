@@ -1,5 +1,5 @@
 {
-	"name": "transit-tv-server",
+	"name": "headsign-server",
 	"version": "1.5.2",
 	"main": "server/app.js",
 	"dependencies": {
