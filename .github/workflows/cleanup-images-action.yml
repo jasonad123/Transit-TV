@@ -32,7 +32,7 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           use-regex: true
           # Delete semver beta tags (e.g., 1.2.3-beta.1) but exclude floating tag
@@ -52,7 +52,7 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           use-regex: true
           # Delete semver alpha tags (e.g., 1.2.3-alpha.1) but exclude floating tag
@@ -72,7 +72,7 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           keep-n-tagged: ${{ env.KEEP_PRERELEASE_COUNT }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           use-regex: true
           # Delete semver rc tags (e.g., 1.2.3-rc.1) but exclude floating tag
@@ -92,7 +92,7 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           keep-n-tagged: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           use-regex: true
           # Delete all branch-test images (tags ending with 7-char SHA, excluding prereleases and hardened)
@@ -111,7 +111,7 @@ jobs:
         with:
           validate: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
 
   cleanup-orphans:
@@ -127,7 +127,7 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           delete-orphaned-images: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           validate: true
       - name: Delete ghost images
@@ -136,6 +136,6 @@ jobs:
           dry-run: ${{ inputs.dry_run == true }}
           delete-ghost-images: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          package: transit-tv
+          package: headsign
           owner: ${{ github.repository_owner }}
           validate: true
