@@ -1,7 +1,7 @@
 services:
   # Usage: docker compose up -d
   headsign:
-    image: ghcr.io/jasonad123/headsign:latest
+    image: ghcr.io/jasonad123/headsign:latest@sha256:9ad2111ad985c903adf8e2b37b5b6eaf5ff8b5f482c5714ad7513a93c9b6c46b
     container_name: headsign
     restart: unless-stopped
     ports:
