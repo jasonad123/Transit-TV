@@ -182,7 +182,7 @@
 		"rateLimit": "Vérification des mises à jour. J'essaie encore dans {seconds} secondes...",
 		"auth": "Impossible de se connecter au API de Transit.",
 		"timeout": "Vérification des mises à jour...",
-		"backend": "Transit TV est hors service. J'essaie encore...",
-		"generic": "Transit TV a rencontré un problème. J'essaie encore..."
+		"backend": "Headsign est hors service. J'essaie encore...",
+		"generic": "Headsign a rencontré un problème. J'essaie encore..."
 	}
 }

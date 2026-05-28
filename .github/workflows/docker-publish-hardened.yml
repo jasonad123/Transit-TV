@@ -23,7 +23,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # Convert repository name to lowercase for GitHub Container Registry
-  IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
+  IMAGE_NAME: ${{ github.repository_owner }}/headsign
 
 jobs:
   build-and-push:
@@ -179,9 +179,9 @@ jobs:
             # For manual hardened releases (stable, beta, test)
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
           labels: |
-            org.opencontainers.image.title=Transit-TV (Hardened)
-            org.opencontainers.image.description=Hardened Docker image variant of Transit-TV using Docker hardened images. Use the Transit API to show real-time transit departures on your TV or digital display.
-            org.opencontainers.image.authors=Transit-TV Contributors
+            org.opencontainers.image.title=Headsign (Hardened)
+            org.opencontainers.image.description=Hardened Docker image variant of Headsign using Docker hardened images. Use the Transit API to show real-time transit departures on your TV or digital display.
+            org.opencontainers.image.authors=Headsign Contributors
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}

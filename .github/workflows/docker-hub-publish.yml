@@ -20,9 +20,9 @@ on:
         type: string
 
 env:
-  IMAGE_NAME: jasonad123/transit-tv
+  IMAGE_NAME: jasonad123/headsign
   IMAGE_USERNAME: jasonad123
-  IMAGE_IMGNAME: transit-tv
+  IMAGE_IMGNAME: headsign
 
 jobs:
   build-and-push:
@@ -162,9 +162,9 @@ jobs:
             # Manual
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.is_tag == 'false' }}
           labels: |
-            org.opencontainers.image.title=Transit-TV
-            org.opencontainers.image.description=Transit TV is an app that uses the Transit App API to show arrival times for nearby public transit.
-            org.opencontainers.image.authors=Transit-TV Contributors
+            org.opencontainers.image.title=Headsign
+            org.opencontainers.image.description=Headsign is an app that uses the Transit API to show arrival times for nearby public transit.
+            org.opencontainers.image.authors=Headsign Contributors
             org.opencontainers.image.url=https://hub.docker.com/r/${{ env.IMAGE_USERNAME }}/${{ env.IMAGE_IMGNAME }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}

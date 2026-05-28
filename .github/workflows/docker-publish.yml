@@ -28,7 +28,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # Convert repository name to lowercase for GitHub Container Registry
-  IMAGE_NAME: ${{ github.repository_owner }}/transit-tv
+  IMAGE_NAME: ${{ github.repository_owner }}/headsign
 
 jobs:
   build-and-push:
@@ -180,9 +180,9 @@ jobs:
             # For branch test builds
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release_type == 'branch-test' }}
           labels: |
-            org.opencontainers.image.title=Transit-TV
+            org.opencontainers.image.title=Headsign
             org.opencontainers.image.description=Use the Transit API to show real-time transit departures on your TV or digital display.
-            org.opencontainers.image.authors=Transit-TV Contributors
+            org.opencontainers.image.authors=Headsign Contributors
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
@@ -334,5 +334,5 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*Built with semantic versioning strategy for Transit-TV*" >> $GITHUB_STEP_SUMMARY
+          echo "*Built with semantic versioning strategy for Headsign*" >> $GITHUB_STEP_SUMMARY
           echo "*Generated using agentic coding assistance*" >> $GITHUB_STEP_SUMMARY

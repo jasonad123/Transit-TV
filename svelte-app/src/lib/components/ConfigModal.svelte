@@ -659,8 +659,8 @@
 				<div class="credits">
 					<h3>{$_('config.credits.title')}</h3>
 					<h4>
-						Transit TV version <a
-							href="https://github.com/jasonad123/Transit-TV/releases/tag/v{appVersion}"
+						Headsign version <a
+							href="https://github.com/jasonad123/headsign/releases/tag/v{appVersion}"
 							target="_blank"
 							rel="noopener">{appVersion}</a
 						>
